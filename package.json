@@ -39,7 +39,7 @@
     "@types/jest": "^29.5.3",
     "@types/node": "^20.4.5",
     "@types/nodemailer": "^7.0.4",
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.14",
