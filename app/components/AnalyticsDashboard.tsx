@@ -44,6 +44,9 @@ export default function AnalyticsDashboard({ className = '' }: AnalyticsDashboar
   const formatNumber = (value: number) => value.toLocaleString('en-US');
 
   const eventCounts = overview?.eventCounts;
+  const commentsSubmitted = eventCounts?.commentsSubmitted ?? eventCounts?.comments ?? 0;
+  const commentsApproved = eventCounts?.commentsApproved ?? 0;
+  const commentsPending = Math.max(commentsSubmitted - commentsApproved, 0);
   const totalTracked = overview?.totalEvents || 0;
 
   const eventMix = useMemo(() => {
@@ -52,7 +55,7 @@ export default function AnalyticsDashboard({ className = '' }: AnalyticsDashboar
       { label: 'Page Views', value: eventCounts.pageViews, color: 'bg-cyan-500' },
       { label: 'Provider Clicks', value: eventCounts.providerClicks, color: 'bg-emerald-500' },
       { label: 'Alert Sign-ups', value: eventCounts.subscriptions, color: 'bg-amber-500' },
-      { label: 'Comments', value: eventCounts.comments, color: 'bg-rose-500' },
+      { label: 'Comments submitted', value: commentsSubmitted, color: 'bg-rose-500' },
       { label: 'Exports & Shares', value: eventCounts.exports, color: 'bg-slate-500' },
     ];
     return entries.filter((entry) => entry.value > 0);
@@ -211,9 +214,15 @@ export default function AnalyticsDashboard({ className = '' }: AnalyticsDashboar
                   <div className="flex items-center justify-between">
                     <span>Comments posted</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {formatNumber(eventCounts?.comments || 0)}
+                      {formatNumber(commentsApproved)}
                     </span>
                   </div>
+                  {commentsPending > 0 && (
+                    <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300">
+                      <span>Pending review</span>
+                      <span className="font-semibold">{formatNumber(commentsPending)}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span>Exports & shares</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">

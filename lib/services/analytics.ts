@@ -1,5 +1,6 @@
 import { getDb } from '@/lib/db/firestore';
 import { providerService } from '@/lib/services/providers';
+import { commentService } from '@/lib/services/comments';
 import { log } from '@/lib/utils/logger';
 import type { ProviderAnalytics, CostMetrics, AnalyticsOverview } from '@/lib/types/analytics';
 
@@ -196,6 +197,8 @@ export class AnalyticsService {
                     providerClicks: 0,
                     subscriptions: 0,
                     comments: 0,
+                    commentsSubmitted: 0,
+                    commentsApproved: 0,
                     exports: 0,
                 },
                 lastEventAt: null,
@@ -214,6 +217,8 @@ export class AnalyticsService {
             providerClicks: 0,
             subscriptions: 0,
             comments: 0,
+            commentsSubmitted: 0,
+            commentsApproved: 0,
             exports: 0,
         };
         const sessions = new Set<string>();
@@ -253,6 +258,7 @@ export class AnalyticsService {
                 }
                 if (type === 'comment_post') {
                     eventCounts.comments++;
+                    eventCounts.commentsSubmitted++;
                     counted = true;
                 }
                 if (type === 'export' || type === 'share' || type === 'copy_api_url') {
@@ -269,6 +275,14 @@ export class AnalyticsService {
                 }
             });
         }
+
+        let commentsApproved = 0;
+        try {
+            commentsApproved = await commentService.countApprovedSince(since);
+        } catch (error) {
+            log('error', 'Failed to load approved comments count', { error });
+        }
+        eventCounts.commentsApproved = commentsApproved;
 
         return {
             windowDays,

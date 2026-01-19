@@ -19,6 +19,8 @@ export interface AnalyticsOverview {
         providerClicks: number;
         subscriptions: number;
         comments: number;
+        commentsSubmitted?: number;
+        commentsApproved?: number;
         exports: number;
     };
     lastEventAt: string | null;

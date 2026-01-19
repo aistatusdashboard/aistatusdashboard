@@ -20,6 +20,16 @@ export interface Comment {
 
 export class CommentService {
     private readonly COLLECTION = 'comments';
+    private toDate(value: any): Date | null {
+        if (!value) return null;
+        if (value instanceof Date) return value;
+        if (typeof value?.toDate === 'function') return value.toDate();
+        if (typeof value === 'string') {
+            const parsed = new Date(value);
+            return isNaN(parsed.getTime()) ? null : parsed;
+        }
+        return null;
+    }
 
     async getComments(options: {
         limit?: number;
@@ -215,6 +225,36 @@ export class CommentService {
         } catch (error) {
             log('error', 'Failed to create comment', { error });
             return null;
+        }
+    }
+
+    async countApprovedSince(since: Date): Promise<number> {
+        try {
+            const db = getDb();
+            const snapshot = await db
+                .collection(this.COLLECTION)
+                .where('approved', '==', true)
+                .where('createdAt', '>=', since)
+                .get();
+            return snapshot.size;
+        } catch (error: any) {
+            if (error.code === 9 || error.message?.includes('index')) {
+                log('warn', 'Index required for comments count, falling back to scan');
+                try {
+                    const db = getDb();
+                    const snapshot = await db.collection(this.COLLECTION).where('approved', '==', true).get();
+                    let count = 0;
+                    snapshot.docs.forEach((doc) => {
+                        const createdAt = this.toDate(doc.data().createdAt);
+                        if (createdAt && createdAt >= since) count += 1;
+                    });
+                    return count;
+                } catch (innerError) {
+                    log('error', 'Fallback comments count failed', { innerError });
+                }
+            }
+            log('error', 'Failed to count approved comments', { error });
+            return 0;
         }
     }
 }
