@@ -4,13 +4,29 @@
     <title>AI Status Dashboard Incidents</title>
     <link>https://aistatusdashboard.com/</link>
     <description>Incidents and maintenances</description>
-    <lastBuildDate>Sat, 17 Jan 2026 07:12:25 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 19 Jan 2026 02:52:44 GMT</lastBuildDate>
     <ttl>60</ttl>
+    <item>
+      <title>cerebras: Llama 3.3 70B Service Unavailable</title>
+      <link>https://aistatusdashboard.com/incidents/cerebras:3k88y08my27d</link>
+      <guid>incident-cerebras:3k88y08my27d</guid>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
+      <description>Llama 3.3 70B Service Unavailable</description>
+      <category>cerebras</category>
+    </item>
+    <item>
+      <title>runway: Increased Gen 4.5 wait times</title>
+      <link>https://aistatusdashboard.com/incidents/runway:f0kq73q1fhnz</link>
+      <guid>incident-runway:f0kq73q1fhnz</guid>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
+      <description>Increased Gen 4.5 wait times</description>
+      <category>runway</category>
+    </item>
     <item>
       <title>cerebras: Partial Service Disruption- API Key Error</title>
       <link>https://aistatusdashboard.com/incidents/cerebras:6rbx7nr1ljmw</link>
       <guid>incident-cerebras:6rbx7nr1ljmw</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Partial Service Disruption- API Key Error</description>
       <category>cerebras</category>
     </item>
@@ -18,7 +34,7 @@
       <title>anthropic: Compaction is having issues</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:6ykk5hyrg95v</link>
       <guid>incident-anthropic:6ykk5hyrg95v</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Compaction is having issues</description>
       <category>anthropic</category>
     </item>
@@ -26,7 +42,7 @@
       <title>replicate: Prediction Errors</title>
       <link>https://aistatusdashboard.com/incidents/replicate:01KF09F8PY0Y7BGZ055S3ZW0WE</link>
       <guid>incident-replicate:01KF09F8PY0Y7BGZ055S3ZW0WE</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Prediction Errors</description>
       <category>replicate</category>
     </item>
@@ -34,7 +50,7 @@
       <title>anthropic: Elevated error rates on Opus 4.5 and Sonnet 4.5</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:tgzm3mf45wzc</link>
       <guid>incident-anthropic:tgzm3mf45wzc</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Elevated error rates on Opus 4.5 and Sonnet 4.5</description>
       <category>anthropic</category>
     </item>
@@ -42,7 +58,7 @@
       <title>openai: Elevated error rates for ChatGPT users</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KEWWZ8Y87E1WFFQQJZAM0GMK</link>
       <guid>incident-openai:01KEWWZ8Y87E1WFFQQJZAM0GMK</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Elevated error rates for ChatGPT users</description>
       <category>openai</category>
     </item>
@@ -50,7 +66,7 @@
       <title>anthropic: Increased rate of errors for Opus 4.5</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:09v917vcc8kg</link>
       <guid>incident-anthropic:09v917vcc8kg</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Increased rate of errors for Opus 4.5</description>
       <category>anthropic</category>
     </item>
@@ -58,7 +74,7 @@
       <title>anthropic: Elevated rate of errors for multiple models</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:zt2q0ltqcvbx</link>
       <guid>incident-anthropic:zt2q0ltqcvbx</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Elevated rate of errors for multiple models</description>
       <category>anthropic</category>
     </item>
@@ -66,7 +82,7 @@
       <title>anthropic: Increased rate of errors for Opus 4.5</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:s2g3slcdq9jk</link>
       <guid>incident-anthropic:s2g3slcdq9jk</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Increased rate of errors for Opus 4.5</description>
       <category>anthropic</category>
     </item>
@@ -74,7 +90,7 @@
       <title>openai: Connectors/Apps unselectable in ChatGPT Input Menu</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KESV314P64MK8XSV6Q5DCDJ2</link>
       <guid>incident-openai:01KESV314P64MK8XSV6Q5DCDJ2</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Connectors/Apps unselectable in ChatGPT Input Menu</description>
       <category>openai</category>
     </item>
@@ -82,7 +98,7 @@
       <title>anthropic: Elevated error rates on Sonnet 4.5 1M context</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:cns634h0tfmv</link>
       <guid>incident-anthropic:cns634h0tfmv</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Elevated error rates on Sonnet 4.5 1M context</description>
       <category>anthropic</category>
     </item>
@@ -90,7 +106,7 @@
       <title>anthropic: Degraded performance for API requests involving structured outputs.</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:846yxgg3v8nr</link>
       <guid>incident-anthropic:846yxgg3v8nr</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Degraded performance for API requests involving structured outputs.</description>
       <category>anthropic</category>
     </item>
@@ -98,7 +114,7 @@
       <title>anthropic: New Subscription Activation &amp; Payment Issues</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:pttlfp1vg4g3</link>
       <guid>incident-anthropic:pttlfp1vg4g3</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>New Subscription Activation &amp; Payment Issues</description>
       <category>anthropic</category>
     </item>
@@ -106,7 +122,7 @@
       <title>anthropic: Increased latency on Sonnet 4.5</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:jlg58yl731jj</link>
       <guid>incident-anthropic:jlg58yl731jj</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Increased latency on Sonnet 4.5</description>
       <category>anthropic</category>
     </item>
@@ -114,7 +130,7 @@
       <title>openai: Increased error rate for ChatGPT and API for prompts with images</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KEFMJWBHC4JBGJWMXNQTSTH6</link>
       <guid>incident-openai:01KEFMJWBHC4JBGJWMXNQTSTH6</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Increased error rate for ChatGPT and API for prompts with images</description>
       <category>openai</category>
     </item>
@@ -122,7 +138,7 @@
       <title>anthropic: Claude subscription usage limits not visible in Claude.ai and Claude Code</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:4hr61fgdzbtc</link>
       <guid>incident-anthropic:4hr61fgdzbtc</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Claude subscription usage limits not visible in Claude.ai and Claude Code</description>
       <category>anthropic</category>
     </item>
@@ -130,7 +146,7 @@
       <title>openai: High error rate for Dall-e</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KEDRBQ2A3Y9JJ7G3F3YM4KT3</link>
       <guid>incident-openai:01KEDRBQ2A3Y9JJ7G3F3YM4KT3</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>High error rate for Dall-e</description>
       <category>openai</category>
     </item>
@@ -138,7 +154,7 @@
       <title>openai: Some Codex cloud tasks are failing</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KEDP2078ND35EQG75BVDZE5E</link>
       <guid>incident-openai:01KEDP2078ND35EQG75BVDZE5E</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Some Codex cloud tasks are failing</description>
       <category>openai</category>
     </item>
@@ -146,7 +162,7 @@
       <title>openai: Elevated error rates for Responses API</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KEDB9WGPMX6HK8X629AFM907</link>
       <guid>incident-openai:01KEDB9WGPMX6HK8X629AFM907</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Elevated error rates for Responses API</description>
       <category>openai</category>
     </item>
@@ -154,7 +170,7 @@
       <title>anthropic: Elevated error rates on Opus 4.5</title>
       <link>https://aistatusdashboard.com/incidents/anthropic:1y7x01b0ldlj</link>
       <guid>incident-anthropic:1y7x01b0ldlj</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>Elevated error rates on Opus 4.5</description>
       <category>anthropic</category>
     </item>
@@ -162,7 +178,7 @@
       <title>openai: ChatGPT issues while retrieving workspace members</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KEACZ6R02744RQKCMSK1ZG54</link>
       <guid>incident-openai:01KEACZ6R02744RQKCMSK1ZG54</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>ChatGPT issues while retrieving workspace members</description>
       <category>openai</category>
     </item>
@@ -170,7 +186,7 @@
       <title>openai: GPT-5.1 Codex Max Elevated Error Rate</title>
       <link>https://aistatusdashboard.com/incidents/openai:01KE98V1TQRRQC8T1VAHH18NDC</link>
       <guid>incident-openai:01KE98V1TQRRQC8T1VAHH18NDC</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>GPT-5.1 Codex Max Elevated Error Rate</description>
       <category>openai</category>
     </item>
@@ -178,7 +194,7 @@
       <title>aws: BEDROCK_TEST</title>
       <link>https://aistatusdashboard.com/incidents/aws:aws-health-test-2026-01-06T04:18:57Z</link>
       <guid>incident-aws:aws-health-test-2026-01-06T04:18:57Z</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>BEDROCK_TEST</description>
       <category>aws</category>
     </item>
@@ -186,25 +202,9 @@
       <title>aws: AWS_BEDROCK_TEST</title>
       <link>https://aistatusdashboard.com/incidents/aws:aws-health-1767669851763</link>
       <guid>incident-aws:aws-health-1767669851763</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
+      <pubDate>Mon, 19 Jan 2026 02:52:43 GMT</pubDate>
       <description>AWS_BEDROCK_TEST</description>
       <category>aws</category>
-    </item>
-    <item>
-      <title>anthropic: Errors on requests to Haiku 3.5</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:m4bbg9f9lfjk</link>
-      <guid>incident-anthropic:m4bbg9f9lfjk</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
-      <description>Errors on requests to Haiku 3.5</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>runway: Video upscale tasks cannot be started</title>
-      <link>https://aistatusdashboard.com/incidents/runway:gy72t9kttbpr</link>
-      <guid>incident-runway:gy72t9kttbpr</guid>
-      <pubDate>Sat, 17 Jan 2026 07:12:25 GMT</pubDate>
-      <description>Video upscale tasks cannot be started</description>
-      <category>runway</category>
     </item>
   </channel>
 </rss>

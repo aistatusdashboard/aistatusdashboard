@@ -38,7 +38,7 @@ export default function LandingSearch({ providers }: LandingSearchProps) {
     [providers]
   );
 
-  const resolveProvider = (value: string) => {
+  const resolveProvider = (value: string): { id: string; score: number } | null => {
     const needle = normalize(value);
     if (!needle) return null;
 

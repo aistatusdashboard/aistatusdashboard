@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-17T07:12:25.018Z",
+  "generated_at": "2026-01-19T02:52:43.591Z",
   "site_url": "https://aistatusdashboard.com",
   "generator": "scripts/generate-static-discovery-assets.cjs",
   "node": "v20.19.0",
@@ -12,15 +12,15 @@
       "path": "/sitemap.xml",
       "url": "https://aistatusdashboard.com/sitemap.xml",
       "expected_content_type": "application/xml; charset=utf-8",
-      "bytes": 12430,
-      "sha256": "6898e2b03b37fd84522a4d44605f1e9cada3401be03467138a90f8571d512e1d"
+      "bytes": 12429,
+      "sha256": "988af5da51702c61ac1f424f49b8747e314e21f1516bad6527752faed12bbcaa"
     },
     {
       "path": "/rss.xml",
       "url": "https://aistatusdashboard.com/rss.xml",
       "expected_content_type": "application/rss+xml; charset=utf-8",
-      "bytes": 10321,
-      "sha256": "6814df8b06d87035cc7a54431fa75f491a5a30f76d7766d8fc60bdda2954129b"
+      "bytes": 10303,
+      "sha256": "26bdb7f53cf3e13788931db45dbca7c338a657cbe46f8d49ad84a3d9e25088f6"
     },
     {
       "path": "/openapi.yaml",
@@ -68,15 +68,15 @@
       "path": "/datasets/incidents.ndjson",
       "url": "https://aistatusdashboard.com/datasets/incidents.ndjson",
       "expected_content_type": "application/x-ndjson; charset=utf-8",
-      "bytes": 10948,
-      "sha256": "affce4524649e88258ade43a399ab206dd1aa1feaacc4f0a0dca3ef50885a56d"
+      "bytes": 10942,
+      "sha256": "80a245f870d376e767082b4f02d3c2bef03f2d539443545d91a420a39ca4bc62"
     },
     {
       "path": "/datasets/metrics.csv",
       "url": "https://aistatusdashboard.com/datasets/metrics.csv",
       "expected_content_type": "text/csv; charset=utf-8",
       "bytes": 347,
-      "sha256": "869a2205bf1dd78c50d88e2080f178f0fc1988042526efe653ef890f9201e667"
+      "sha256": "85742e8e43c4ec1947212c2117bfd12dfc63537ed2d626258fd3f96505ce4f22"
     },
     {
       "path": "/docs.md",
