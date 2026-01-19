@@ -175,7 +175,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       url: SITE_URL,
       potentialAction: {
         '@type': 'SearchAction',
-        target: `${SITE_URL}/?q={search_term_string}`,
+        target: `${SITE_URL}/dashboard?q={search_term_string}`,
         'query-input': 'required name=search_term_string',
       },
     },

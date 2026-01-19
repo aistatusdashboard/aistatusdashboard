@@ -1,9 +1,54 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
 export default function Footer() {
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || process.env.CONTACT_EMAIL;
+  const pathname = usePathname();
+  const isLanding = pathname === '/';
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const contactHref = contactEmail
     ? `mailto:${contactEmail}?subject=Trademark%20Removal%20Request`
     : 'https://github.com/aistatusdashboard/aistatusdashboard/issues/new?labels=trademark&title=Trademark%20Removal%20Request';
   const contactLabel = contactEmail ? 'contact us' : 'open an issue';
+
+  if (isLanding) {
+    return (
+      <footer role="contentinfo" className="mt-auto">
+        <div className="max-w-4xl mx-auto px-4 py-8 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
+          <p>Live status data from official provider pages.</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href="/dashboard"
+              className="underline hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              Open dashboard
+            </Link>
+            <Link
+              href="/terms"
+              className="underline hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/privacy"
+              className="underline hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              Privacy
+            </Link>
+            <a
+              href="https://agentability.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              Validated by Agentability.org
+            </a>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer
@@ -53,26 +98,26 @@ export default function Footer() {
             Copyright 2025 AI Status Dashboard. Real-time AI Provider Monitoring since 2025
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            <a
+            <Link
               href="/providers"
               className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               Providers
-            </a>
+            </Link>
             {' | '}
-            <a
+            <Link
               href="/how-it-works"
               className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               How it works
-            </a>
+            </Link>
             {' | '}
-            <a
+            <Link
               href="/system-health"
               className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               System Health
-            </a>
+            </Link>
             {' | '}
             <a
               href="/api/public/v1/status/summary"
@@ -81,12 +126,12 @@ export default function Footer() {
               Status JSON
             </a>
             {' | '}
-            <a
+            <Link
               href="/docs/api"
               className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               API Docs
-            </a>
+            </Link>
             {' | '}
             <a
               href="/openapi.json"
@@ -95,19 +140,19 @@ export default function Footer() {
               OpenAPI
             </a>
             {' | '}
-            <a
+            <Link
               href="/terms"
               className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               Terms
-            </a>
+            </Link>
             {' | '}
-            <a
+            <Link
               href="/privacy"
               className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               Privacy
-            </a>
+            </Link>
           </p>
         </div>
 

@@ -102,6 +102,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  const basePath = '/dashboard';
 
   // Sync tab selection from the URL (supports navbar links + back/forward)
   useEffect(() => {
@@ -134,7 +135,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
 
     const query = params.toString();
     isUrlSyncRef.current = true;
-    router.replace(query ? `/?${query}` : '/', { scroll: false });
+    router.replace(query ? `${basePath}?${query}` : basePath, { scroll: false });
   };
 
   const startTour = (mode: TourMode) => {
@@ -156,7 +157,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
       params.delete('notify');
     }
     isUrlSyncRef.current = true;
-    router.replace(`/?${params.toString()}`, { scroll: false });
+    router.replace(`${basePath}?${params.toString()}`, { scroll: false });
   };
 
   const toggleWatchlist = (providerId: string) => {
@@ -313,7 +314,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
     const next = params.toString();
     if (next !== current) {
       isUrlSyncRef.current = true;
-      router.replace(next ? `/?${next}` : '/', { scroll: false });
+      router.replace(next ? `${basePath}?${next}` : basePath, { scroll: false });
     }
   }, [
     searchQueryDebounced,

@@ -4,9 +4,40 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import DarkModeToggle from './DarkModeToggle';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isLanding = pathname === '/';
+
+  if (isLanding) {
+    return (
+      <header className="absolute top-0 left-0 right-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+            <div className="h-10 w-10 rounded-2xl bg-white/95 dark:bg-slate-50 text-slate-900 flex items-center justify-center border border-slate-200/70 dark:border-slate-700/60 shadow-lg shadow-slate-900/10 dark:shadow-black/30">
+              <Image
+                src="/logo.png"
+                alt="AI Status Dashboard Logo"
+                width={28}
+                height={28}
+                className="rounded-lg drop-shadow-sm"
+                priority
+              />
+            </div>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white">AI Status</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <DarkModeToggle />
+            <Link href="/dashboard" className="cta-secondary text-xs">
+              Open dashboard
+            </Link>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50">
@@ -41,7 +72,7 @@ export default function Navbar() {
               data-tour="nav"
             >
               <Link
-                href="/"
+                href="/dashboard"
                 className="px-3 py-2 rounded-full hover:text-slate-900 dark:hover:text-white transition"
               >
                 Dashboard
@@ -60,25 +91,25 @@ export default function Navbar() {
                 ChatGPT Status
               </Link>
               <Link
-                href="/?tab=notifications"
+                href="/dashboard?tab=notifications"
                 className="px-3 py-2 rounded-full hover:text-slate-900 dark:hover:text-white transition"
               >
                 Notifications
               </Link>
               <Link
-                href="/?tab=analytics"
+                href="/dashboard?tab=analytics"
                 className="px-3 py-2 rounded-full hover:text-slate-900 dark:hover:text-white transition"
               >
                 Analytics
               </Link>
               <Link
-                href="/?tab=reliability"
+                href="/dashboard?tab=reliability"
                 className="px-3 py-2 rounded-full hover:text-slate-900 dark:hover:text-white transition"
               >
                 Reliability Lab
               </Link>
               <Link
-                href="/?tab=api"
+                href="/dashboard?tab=api"
                 className="px-3 py-2 rounded-full hover:text-slate-900 dark:hover:text-white transition"
               >
                 API
@@ -103,7 +134,7 @@ export default function Navbar() {
             >
               Guided tour
             </button>
-            <Link href="/?tab=notifications" className="cta-primary text-xs" data-tour="nav-alerts">
+            <Link href="/dashboard?tab=notifications" className="cta-primary text-xs" data-tour="nav-alerts">
               Get alerts
             </Link>
           </div>
@@ -154,13 +185,13 @@ export default function Navbar() {
           <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-700/70 z-50 md:hidden">
             <nav className="px-4 py-6 space-y-3 text-slate-700 dark:text-slate-200">
               {[
-                { href: '/', label: 'Dashboard' },
+                { href: '/dashboard', label: 'Dashboard' },
                 { href: '/casual', label: 'Casual Mode' },
                 { href: '/casual/chatgpt', label: 'ChatGPT Status' },
-                { href: '/?tab=notifications', label: 'Notifications' },
-                { href: '/?tab=analytics', label: 'Analytics' },
-                { href: '/?tab=reliability', label: 'Reliability Lab' },
-                { href: '/?tab=api', label: 'API' },
+                { href: '/dashboard?tab=notifications', label: 'Notifications' },
+                { href: '/dashboard?tab=analytics', label: 'Analytics' },
+                { href: '/dashboard?tab=reliability', label: 'Reliability Lab' },
+                { href: '/dashboard?tab=api', label: 'API' },
                 { href: '/rss.xml', label: 'RSS' },
               ].map((item) =>
                 item.href.startsWith('/rss') ? (
@@ -195,7 +226,7 @@ export default function Navbar() {
                 Guided tour
               </button>
               <Link
-                href="/?tab=notifications"
+                href="/dashboard?tab=notifications"
                 className="block py-3 px-4 rounded-xl bg-slate-900 text-white text-base font-semibold text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
