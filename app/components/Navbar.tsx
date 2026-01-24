@@ -13,7 +13,7 @@ export default function Navbar() {
 
   if (isLanding) {
     return (
-      <header className="absolute top-0 left-0 right-0 z-50">
+      <header className="absolute top-0 left-0 right-0 z-50 landing-header">
         <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <div className="h-10 w-10 rounded-2xl bg-white/95 dark:bg-slate-50 text-slate-900 flex items-center justify-center border border-slate-200/70 dark:border-slate-700/60 shadow-lg shadow-slate-900/10 dark:shadow-black/30">

@@ -7,7 +7,7 @@ export default async function TodayStrip() {
   const reports = snapshot.communityReports !== null ? snapshot.communityReports : '—';
 
   return (
-    <div className="w-full bg-slate-900/90 text-white text-xs">
+    <div className="today-strip w-full bg-slate-900/90 text-white text-xs">
       <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap items-center justify-center gap-2">
         <span>Last check: {updatedAgo}</span>
         <span aria-hidden="true">•</span>

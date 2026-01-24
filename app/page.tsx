@@ -13,7 +13,10 @@ export default async function LandingPage() {
   return (
     <main className="flex-1">
       <h1 className="sr-only">AI Status Dashboard</h1>
-      <section className="relative isolate px-4 sm:px-6 py-24 md:py-32 min-h-[70vh] flex items-center">
+      <section
+        id="landing-hero"
+        className="relative isolate px-4 sm:px-6 py-24 md:py-32 min-h-[70vh] flex items-center"
+      >
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.22),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(30,64,175,0.18),_transparent_58%)]" />
           <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/95 to-slate-50/80 dark:from-slate-950 dark:via-slate-950/95 dark:to-slate-900/85" />
