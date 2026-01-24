@@ -43,6 +43,18 @@ function parseLatestUpdated(providers: Array<Record<string, any>>): string | nul
 }
 
 export const getLivePulseSnapshot = cache(async (): Promise<LivePulseSnapshot> => {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return {
+      status: 'unknown',
+      tracking: providerService.getProviders().length,
+      lastUpdated: null,
+      avgLatency: null,
+      incidents24h: 0,
+      recentIncidents: [],
+      communityReports: null,
+    };
+  }
+
   const now = Date.now();
   const since24h = new Date(now - 24 * 60 * 60 * 1000).toISOString();
 
