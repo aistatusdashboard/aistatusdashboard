@@ -186,7 +186,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const privatePrefixes = ['/app', '/account', '/org', '/billing', '/api/private'];
   const isPrivate = privatePrefixes.some((prefix) => pathname.startsWith(prefix));

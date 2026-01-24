@@ -12,6 +12,7 @@ import Script from 'next/script';
 import GlobalErrorHandler from './components/GlobalErrorHandler';
 import OfflineIndicator from './components/OfflineIndicator';
 import TodayStrip from './components/TodayStrip';
+import { headers } from 'next/headers';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-ZV3PS0MPQ7';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -154,6 +155,8 @@ function GoogleAnalytics() {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = headers().get('x-pathname') || '';
+  const hideLandingChrome = pathname === '/';
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -240,8 +243,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             >
               Skip to main content
             </a>
-            <Navbar />
-            <TodayStrip />
+            {!hideLandingChrome && <Navbar />}
+            {!hideLandingChrome && <TodayStrip />}
             <OfflineIndicator />
             <div id="main" className="flex-1">
               {children}
