@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import McpCallout from '../../../components/McpCallout';
+import McpCallout from '@/app/components/McpCallout';
 
 export const metadata: Metadata = {
   title: 'MCP Quickstart',

@@ -3,11 +3,11 @@ import { statusService } from '@/lib/services/status';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { log } from '@/lib/utils/logger';
 import sourcesConfig from '@/lib/data/sources.json';
-import DashboardTabs from '../components/DashboardTabs';
-import ClientWrapper from '../components/ClientWrapper';
+import DashboardTabs from '@/app/components/DashboardTabs';
+import ClientWrapper from '@/app/components/ClientWrapper';
 import { Suspense } from 'react';
 import Link from 'next/link';
-import McpCallout from '../components/McpCallout';
+import McpCallout from '@/app/components/McpCallout';
 
 export const dynamic = 'force-dynamic';
 

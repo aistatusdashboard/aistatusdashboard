@@ -1,20 +1,7 @@
 import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
 import { formatTimeAgo } from '@/lib/utils/time';
-import { headers } from 'next/headers';
 
 export default async function TodayStrip() {
-  const headerList = headers();
-  const rawPath =
-    headerList.get('x-pathname') ||
-    headerList.get('x-forwarded-uri') ||
-    headerList.get('x-original-url') ||
-    headerList.get('x-url') ||
-    headerList.get('x-rewrite-url') ||
-    headerList.get('x-invoke-path') ||
-    '';
-  const pathname = rawPath.split('?')[0];
-  if (pathname === '/') return null;
-
   const snapshot = await getLivePulseSnapshot();
   const updatedAgo = formatTimeAgo(snapshot.lastUpdated);
   const reports = snapshot.communityReports !== null ? snapshot.communityReports : '—';

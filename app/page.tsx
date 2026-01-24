@@ -1,28 +1,17 @@
 import { providerService } from '@/lib/services/providers';
 import LandingSearch from './components/LandingSearch';
-import LivePulse from './components/LivePulse';
-import { getChangelogEntries } from '@/lib/services/changelog';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LandingPage() {
   const providers = providerService.getProviders();
-  const changelog = await getChangelogEntries(5);
 
   return (
     <main className="flex-1">
       <h1 className="sr-only">AI Status Dashboard</h1>
-      <style>{`
-        body > header,
-        body > .today-strip,
-        [data-role="site-header"],
-        [data-role="today-strip"] {
-          display: none !important;
-        }
-      `}</style>
       <section
         id="landing-hero"
-        className="relative isolate px-4 sm:px-6 py-24 md:py-32 min-h-[70vh] flex items-center"
+        className="relative isolate px-4 sm:px-6 min-h-screen flex items-center"
       >
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.22),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(30,64,175,0.18),_transparent_58%)]" />
@@ -42,62 +31,6 @@ export default async function LandingPage() {
           />
         </div>
       </section>
-
-      <section className="px-4 sm:px-6 pb-16">
-        <div className="max-w-5xl mx-auto space-y-10">
-          <LivePulse />
-          <div className="surface-card p-5 text-sm text-slate-600 dark:text-slate-300">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                  What&apos;s new
-                </p>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mt-2">
-                  Latest updates
-                </h3>
-              </div>
-              <Link
-                href="/changelog"
-                className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-              >
-                View changelog →
-              </Link>
-            </div>
-            {changelog.entries.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-                No recent updates logged yet.
-              </p>
-            ) : (
-              <ul className="mt-3 space-y-2">
-                {changelog.entries.map((entry) => (
-                  <li
-                    key={`${entry.date}-${entry.title}`}
-                    className="flex flex-wrap items-center justify-between gap-2"
-                  >
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      {entry.title}
-                    </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {entry.date}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <noscript>
-        <div className="px-4 sm:px-6 pb-10">
-          <div className="max-w-3xl mx-auto surface-card p-4 text-sm">
-            <p className="font-semibold">No JavaScript? Browse providers directly:</p>
-            <a href="/providers" className="underline">
-              /providers
-            </a>
-          </div>
-        </div>
-      </noscript>
     </main>
   );
 }

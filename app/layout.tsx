@@ -2,17 +2,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
-import ClientTimestamp from './components/ClientTimestamp';
 import { geistSans, geistMono } from './fonts';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 import { Suspense } from 'react';
 import { Providers } from './providers';
 import Script from 'next/script';
 import GlobalErrorHandler from './components/GlobalErrorHandler';
 import OfflineIndicator from './components/OfflineIndicator';
-import TodayStrip from './components/TodayStrip';
-import { headers } from 'next/headers';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-ZV3PS0MPQ7';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -155,24 +150,6 @@ function GoogleAnalytics() {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const headerList = headers();
-  const rawPath =
-    headerList.get('x-pathname') ||
-    headerList.get('x-forwarded-uri') ||
-    headerList.get('x-original-url') ||
-    headerList.get('x-url') ||
-    headerList.get('x-rewrite-url') ||
-    headerList.get('x-invoke-path') ||
-    '';
-  let pathname = rawPath.split('?')[0];
-  if (pathname.startsWith('http://') || pathname.startsWith('https://')) {
-    try {
-      pathname = new URL(pathname).pathname;
-    } catch {
-      pathname = '/';
-    }
-  }
-  const hideLandingChrome = pathname === '/';
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -253,20 +230,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Suspense fallback={null}>
               <ClientInit />
             </Suspense>
-            <a
-              href="#main"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-3 rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
-            >
-              Skip to main content
-            </a>
-            {!hideLandingChrome && <Navbar />}
-            {!hideLandingChrome && <TodayStrip />}
             <OfflineIndicator />
-            <div id="main" className="flex-1">
-              {children}
-            </div>
-
-            <Footer />
+            {children}
           </Providers>
         </ErrorBoundary>
         <noscript>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import McpCallout from '../components/McpCallout';
+import McpCallout from '@/app/components/McpCallout';
 import { MCP_REGISTRY_URL } from '@/lib/config/links';
 
 export const metadata: Metadata = {

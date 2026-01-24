@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import McpCallout from '../components/McpCallout';
+import McpCallout from '@/app/components/McpCallout';
 
 export const metadata: Metadata = {
   title: 'Docs',

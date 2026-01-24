@@ -4,14 +4,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import DarkModeToggle from './DarkModeToggle';
-import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const isLanding = pathname === '/';
-
-  if (isLanding) return null;
 
   return (
     <header className="sticky top-0 z-50" data-role="site-header">
