@@ -155,7 +155,23 @@ function GoogleAnalytics() {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pathname = headers().get('x-pathname') || '';
+  const headerList = headers();
+  const rawPath =
+    headerList.get('x-pathname') ||
+    headerList.get('x-forwarded-uri') ||
+    headerList.get('x-original-url') ||
+    headerList.get('x-url') ||
+    headerList.get('x-rewrite-url') ||
+    headerList.get('x-invoke-path') ||
+    '';
+  let pathname = rawPath.split('?')[0];
+  if (pathname.startsWith('http://') || pathname.startsWith('https://')) {
+    try {
+      pathname = new URL(pathname).pathname;
+    } catch {
+      pathname = '/';
+    }
+  }
   const hideLandingChrome = pathname === '/';
   const jsonLd = [
     {

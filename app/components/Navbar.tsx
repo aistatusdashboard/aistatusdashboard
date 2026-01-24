@@ -11,36 +11,10 @@ export default function Navbar() {
   const pathname = usePathname();
   const isLanding = pathname === '/';
 
-  if (isLanding) {
-    return (
-      <header className="absolute top-0 left-0 right-0 z-50 landing-header">
-        <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <div className="h-10 w-10 rounded-2xl bg-white/95 dark:bg-slate-50 text-slate-900 flex items-center justify-center border border-slate-200/70 dark:border-slate-700/60 shadow-lg shadow-slate-900/10 dark:shadow-black/30">
-              <Image
-                src="/brand/logo-mark.png"
-                alt="AI Status Dashboard Logo"
-                width={28}
-                height={28}
-                className="rounded-lg drop-shadow-sm dark:brightness-110"
-                priority
-              />
-            </div>
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">AI Status Dashboard</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <DarkModeToggle />
-            <Link href="/dashboard" className="cta-secondary text-xs">
-              Open dashboard
-            </Link>
-          </div>
-        </div>
-      </header>
-    );
-  }
+  if (isLanding) return null;
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-50" data-role="site-header">
       <div className="bg-white/80 dark:bg-slate-900/70 backdrop-blur border-b border-slate-200/70 dark:border-slate-700/70">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">

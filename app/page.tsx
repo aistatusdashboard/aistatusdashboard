@@ -2,7 +2,6 @@ import { providerService } from '@/lib/services/providers';
 import LandingSearch from './components/LandingSearch';
 import LivePulse from './components/LivePulse';
 import { getChangelogEntries } from '@/lib/services/changelog';
-import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +13,10 @@ export default async function LandingPage() {
     <main className="flex-1">
       <h1 className="sr-only">AI Status Dashboard</h1>
       <style>{`
-        .landing-header,
-        .today-strip {
+        body > header,
+        body > .today-strip,
+        [data-role="site-header"],
+        [data-role="today-strip"] {
           display: none !important;
         }
       `}</style>
@@ -29,15 +30,7 @@ export default async function LandingPage() {
           <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-200/30 blur-[110px] dark:bg-emerald-500/10" />
         </div>
 
-        <div className="max-w-3xl mx-auto w-full text-center space-y-8 animate-[rise_0.6s_ease-out]">
-          <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.5em] text-slate-500 dark:text-slate-400">
-              AI Status Dashboard
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Find the status of any AI provider in seconds.
-            </p>
-          </div>
+        <div className="max-w-2xl mx-auto w-full text-center animate-[rise_0.6s_ease-out]">
           <LandingSearch
             variant="hero"
             providers={providers.map((provider) => ({
@@ -47,24 +40,6 @@ export default async function LandingPage() {
               aliases: provider.aliases,
             }))}
           />
-          <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-            <span>Popular:</span>
-            <Link href="/casual/chatgpt" className="hover:text-slate-900 dark:hover:text-white transition">
-              ChatGPT
-            </Link>
-            <span>•</span>
-            <Link href="/casual/claude" className="hover:text-slate-900 dark:hover:text-white transition">
-              Claude
-            </Link>
-            <span>•</span>
-            <Link href="/casual/gemini" className="hover:text-slate-900 dark:hover:text-white transition">
-              Gemini
-            </Link>
-            <span>•</span>
-            <Link href="/providers" className="hover:text-slate-900 dark:hover:text-white transition">
-              All providers
-            </Link>
-          </div>
         </div>
       </section>
 
