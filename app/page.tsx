@@ -13,33 +13,24 @@ export default async function LandingPage() {
   return (
     <main className="flex-1">
       <h1 className="sr-only">AI Status Dashboard</h1>
-      <section className="relative isolate px-4 sm:px-6 py-20 md:py-28">
+      <section className="relative isolate px-4 sm:px-6 py-24 md:py-32 min-h-[70vh] flex items-center">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_58%),radial-gradient(circle_at_bottom,_rgba(59,130,246,0.18),_transparent_55%)]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-slate-50/80 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900/80" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.22),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(30,64,175,0.18),_transparent_58%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/95 to-slate-50/80 dark:from-slate-950 dark:via-slate-950/95 dark:to-slate-900/85" />
+          <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-200/30 blur-[110px] dark:bg-emerald-500/10" />
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-10">
-          <LivePulse />
-          <div className="text-center space-y-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400">
-            AI Status Dashboard
-          </p>
-          <div className="flex flex-wrap justify-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-            <Link href="/casual/chatgpt" className="px-3 py-2 rounded-full border border-slate-200/70 dark:border-slate-700/70 hover:text-slate-900 dark:hover:text-white transition">
-              ChatGPT status
-            </Link>
-            <Link href="/casual/claude" className="px-3 py-2 rounded-full border border-slate-200/70 dark:border-slate-700/70 hover:text-slate-900 dark:hover:text-white transition">
-              Claude status
-            </Link>
-            <Link href="/casual/gemini" className="px-3 py-2 rounded-full border border-slate-200/70 dark:border-slate-700/70 hover:text-slate-900 dark:hover:text-white transition">
-              Gemini status
-            </Link>
-            <Link href="/providers" className="px-3 py-2 rounded-full border border-slate-200/70 dark:border-slate-700/70 hover:text-slate-900 dark:hover:text-white transition">
-              View all providers
-            </Link>
+        <div className="max-w-3xl mx-auto w-full text-center space-y-8 animate-[rise_0.6s_ease-out]">
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.5em] text-slate-500 dark:text-slate-400">
+              AI Status Dashboard
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Find the status of any AI provider in seconds.
+            </p>
           </div>
           <LandingSearch
+            variant="hero"
             providers={providers.map((provider) => ({
               id: provider.id,
               name: provider.name,
@@ -47,18 +38,44 @@ export default async function LandingPage() {
               aliases: provider.aliases,
             }))}
           />
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Try: ChatGPT, Claude, Gemini, OpenAI, Anthropic
-          </p>
+          <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+            <span>Popular:</span>
+            <Link href="/casual/chatgpt" className="hover:text-slate-900 dark:hover:text-white transition">
+              ChatGPT
+            </Link>
+            <span>•</span>
+            <Link href="/casual/claude" className="hover:text-slate-900 dark:hover:text-white transition">
+              Claude
+            </Link>
+            <span>•</span>
+            <Link href="/casual/gemini" className="hover:text-slate-900 dark:hover:text-white transition">
+              Gemini
+            </Link>
+            <span>•</span>
+            <Link href="/providers" className="hover:text-slate-900 dark:hover:text-white transition">
+              All providers
+            </Link>
           </div>
+        </div>
+      </section>
 
+      <section className="px-4 sm:px-6 pb-16">
+        <div className="max-w-5xl mx-auto space-y-10">
+          <LivePulse />
           <div className="surface-card p-5 text-sm text-slate-600 dark:text-slate-300">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">What&apos;s new</p>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mt-2">Latest updates</h3>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  What&apos;s new
+                </p>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mt-2">
+                  Latest updates
+                </h3>
               </div>
-              <Link href="/changelog" className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+              <Link
+                href="/changelog"
+                className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+              >
                 View changelog →
               </Link>
             </div>
@@ -69,9 +86,16 @@ export default async function LandingPage() {
             ) : (
               <ul className="mt-3 space-y-2">
                 {changelog.entries.map((entry) => (
-                  <li key={`${entry.date}-${entry.title}`} className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-medium text-slate-900 dark:text-white">{entry.title}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{entry.date}</span>
+                  <li
+                    key={`${entry.date}-${entry.title}`}
+                    className="flex flex-wrap items-center justify-between gap-2"
+                  >
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      {entry.title}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {entry.date}
+                    </span>
                   </li>
                 ))}
               </ul>

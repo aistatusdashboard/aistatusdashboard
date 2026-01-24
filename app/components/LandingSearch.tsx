@@ -12,6 +12,7 @@ type ProviderOption = {
 
 interface LandingSearchProps {
   providers: ProviderOption[];
+  variant?: 'hero' | 'compact';
 }
 
 const normalize = (value: string) =>
@@ -20,9 +21,18 @@ const normalize = (value: string) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
-export default function LandingSearch({ providers }: LandingSearchProps) {
+export default function LandingSearch({ providers, variant = 'compact' }: LandingSearchProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const showButton = variant !== 'hero';
+  const containerClasses =
+    variant === 'hero'
+      ? 'px-6 py-4 md:px-8 md:py-5 gap-4'
+      : 'px-4 py-3 gap-3';
+  const inputClasses =
+    variant === 'hero'
+      ? 'text-lg md:text-xl'
+      : 'text-base md:text-lg';
 
   const index = useMemo(
     () =>
@@ -81,7 +91,9 @@ export default function LandingSearch({ providers }: LandingSearchProps) {
       onSubmit={handleSubmit}
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="flex items-center gap-3 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/70 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.6)] px-4 py-3 focus-within:ring-2 focus-within:ring-slate-900/20 dark:focus-within:ring-white/30 transition">
+      <div
+        className={`flex items-center rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/70 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.6)] focus-within:ring-2 focus-within:ring-slate-900/15 dark:focus-within:ring-white/25 transition ${containerClasses}`}
+      >
         <span className="text-slate-400 dark:text-slate-500">
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path
@@ -98,15 +110,21 @@ export default function LandingSearch({ providers }: LandingSearchProps) {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search an AI provider"
           list="provider-suggestions"
-          className="flex-1 bg-transparent text-base md:text-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
+          className={`flex-1 bg-transparent ${inputClasses} text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none`}
           aria-label="Search for a provider"
         />
-        <button
-          type="submit"
-          className="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-        >
-          Search
-        </button>
+        {showButton ? (
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+          >
+            Search
+          </button>
+        ) : (
+          <kbd className="hidden sm:inline-flex items-center rounded-full border border-slate-200/70 dark:border-slate-700/70 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:text-slate-300">
+            ↵
+          </kbd>
+        )}
       </div>
       <datalist id="provider-suggestions">
         {providers.map((provider) => (

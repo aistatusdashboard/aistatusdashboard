@@ -64,29 +64,20 @@ function readArgValue(args, name) {
   return args[idx + 1] || null;
 }
 
-function readArgValues(args, name) {
-  const values = [];
-  for (let i = 0; i < args.length; i += 1) {
-    if (args[i] === name && args[i + 1]) values.push(args[i + 1]);
-  }
-  return values;
-}
-
-function getCreatedAtIso(value) {
+function toDate(value) {
   if (!value) return null;
-  if (value instanceof Date) return value.toISOString();
-  if (typeof value?.toDate === 'function') return value.toDate().toISOString();
+  if (value instanceof Date) return value;
+  if (typeof value?.toDate === 'function') return value.toDate();
   if (typeof value === 'string') {
     const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
   return null;
 }
 
-function preview(text, max = 140) {
-  if (!text) return '';
-  const sanitized = String(text).replace(/\s+/g, ' ').trim();
-  return sanitized.length > max ? `${sanitized.slice(0, max - 3)}...` : sanitized;
+function formatRow(row) {
+  const providers = row.providers?.length ? row.providers.join(', ') : 'All providers';
+  return `${row.email} | ${row.confirmed ? 'confirmed' : 'pending'} | ${row.createdAt || 'unknown'} | ${providers}`;
 }
 
 async function initFirebase() {
@@ -150,111 +141,93 @@ function parseServiceAccountKey(rawValue) {
   throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format');
 }
 
-async function listPending({ providerId, limit, json }) {
+async function listSignups({ days, limit, status, json }) {
   const db = admin.firestore();
-  let query = db.collection('comments').where('approved', '==', false);
-  if (providerId) query = query.where('provider', '==', providerId);
-  const snap = await query.limit(limit).get();
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const rows = snap.docs.map((doc) => {
-    const data = doc.data() || {};
-    return {
-      id: doc.id,
-      author: data.author || 'Anonymous',
-      provider: data.provider || 'global',
-      createdAt: getCreatedAtIso(data.createdAt),
-      content: data.content || data.message || '',
-      status: data.approved ? 'approved' : 'pending',
-    };
-  });
+  const runQuery = async () => {
+    let query = db.collection('emailSubscriptions');
+    if (status !== 'all') {
+      query = query.where('confirmed', '==', status === 'confirmed');
+    }
+    query = query.where('createdAt', '>=', since).orderBy('createdAt', 'desc').limit(limit);
+    const snap = await query.get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() || {}) }));
+  };
+
+  let rows = [];
+  try {
+    rows = await runQuery();
+  } catch (error) {
+    const msg = error?.message || '';
+    if (error?.code === 9 || msg.includes('index')) {
+      const snap = await db.collection('emailSubscriptions').limit(500).get();
+      rows = snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() || {}) }));
+      rows = rows
+        .filter((row) => {
+          if (status !== 'all' && Boolean(row.confirmed) !== (status === 'confirmed')) return false;
+          const createdAt = toDate(row.createdAt);
+          return createdAt ? createdAt >= since : false;
+        })
+        .sort((a, b) => {
+          const aDate = toDate(a.createdAt)?.getTime() || 0;
+          const bDate = toDate(b.createdAt)?.getTime() || 0;
+          return bDate - aDate;
+        })
+        .slice(0, limit);
+    } else {
+      throw error;
+    }
+  }
+
+  const formatted = rows.map((row) => ({
+    email: row.email || row.id,
+    providers: Array.isArray(row.providers) ? row.providers : [],
+    confirmed: Boolean(row.confirmed),
+    active: Boolean(row.active),
+    createdAt: toDate(row.createdAt)?.toISOString() || null,
+    updatedAt: toDate(row.updatedAt)?.toISOString() || null,
+  }));
 
   if (json) {
-    console.log(JSON.stringify(rows, null, 2));
+    console.log(JSON.stringify(formatted, null, 2));
     return;
   }
 
-  if (rows.length === 0) {
-    console.log('No pending comments found.');
+  if (formatted.length === 0) {
+    console.log('No alert signups found for the selected window.');
     return;
   }
 
-  console.log(`Pending comments (${rows.length}):`);
-  rows.forEach((row) => {
-    console.log(
-      `- ${row.id} | ${row.author} | ${row.provider} | ${row.createdAt || 'unknown'} | ${preview(
-        row.content
-      )}`
-    );
+  console.log(`Alert signups (last ${days} days):`);
+  formatted.forEach((row) => {
+    console.log(formatRow(row));
   });
-}
-
-async function approveComments(ids, apply) {
-  if (!apply) {
-    console.error('Refusing to approve without --apply --confirm.');
-    process.exit(1);
-  }
-  const db = admin.firestore();
-  const batch = db.batch();
-  ids.forEach((id) => {
-    const ref = db.collection('comments').doc(id);
-    batch.update(ref, { approved: true, updatedAt: new Date() });
-  });
-  await batch.commit();
-  console.log(`Approved ${ids.length} comment(s).`);
-}
-
-async function rejectComments(ids, apply) {
-  if (!apply) {
-    console.error('Refusing to delete without --apply --confirm.');
-    process.exit(1);
-  }
-  const db = admin.firestore();
-  const batch = db.batch();
-  ids.forEach((id) => {
-    const ref = db.collection('comments').doc(id);
-    batch.delete(ref);
-  });
-  await batch.commit();
-  console.log(`Deleted ${ids.length} comment(s).`);
 }
 
 async function main() {
   const args = process.argv.slice(2);
-  const apply = args.includes('--apply');
-  const confirm = args.includes('--confirm') || args.includes('--yes');
-  const providerId = readArgValue(args, '--provider') || null;
   const limitArg = readArgValue(args, '--limit');
-  const limit = limitArg ? Math.max(parseInt(limitArg, 10) || 0, 1) : 25;
+  const daysArg = readArgValue(args, '--days');
+  const status = (readArgValue(args, '--status') || 'all').toLowerCase();
   const envFile =
     readArgValue(args, '--env') || process.env.ENV_FILE || path.resolve(process.cwd(), '.env.local');
   const json = args.includes('--json');
 
-  const approveIds = readArgValues(args, '--approve');
-  const rejectIds = readArgValues(args, '--reject');
+  const limit = limitArg ? Math.max(parseInt(limitArg, 10) || 0, 1) : 25;
+  const days = daysArg ? Math.max(parseInt(daysArg, 10) || 0, 1) : 7;
 
-  if (apply && !confirm) {
-    console.error('Refusing to modify without --confirm (dry-run by default).');
+  if (!['all', 'confirmed', 'pending'].includes(status)) {
+    console.error('Invalid --status. Use all|confirmed|pending.');
     process.exit(1);
   }
 
   loadEnvFile(envFile);
   await initFirebase();
-
-  if (approveIds.length > 0) {
-    await approveComments(approveIds, apply);
-    return;
-  }
-
-  if (rejectIds.length > 0) {
-    await rejectComments(rejectIds, apply);
-    return;
-  }
-
-  await listPending({ providerId, limit, json });
-  console.log('Tip: approve with --approve <id> --apply --confirm');
+  await listSignups({ days, limit, status, json });
 }
 
 main().catch((err) => {
-  console.error(`Moderation failed: ${err.message}`);
+  console.error(`Signup list failed: ${err.message}`);
   process.exit(1);
 });
