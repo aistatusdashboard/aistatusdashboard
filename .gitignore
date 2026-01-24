@@ -55,3 +55,7 @@ serviceAccountKey.json.env.production.local
 
 # local reports
 /agentability_audit_*/
+
+# local brand kit artifacts
+.tmp_logo_kit/
+/aistatusdashboard_logo_kit.zip

@@ -14,17 +14,31 @@ export default function Navbar() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+              <span className="sr-only">AI Status Dashboard</span>
               <Image
-                src="/brand/logo-mark.svg"
-                alt="AI Status Dashboard"
+                src="/brand/logo-mark-transparent.svg"
+                alt=""
                 width={36}
                 height={36}
                 className="h-9 w-9 drop-shadow-sm"
                 priority
               />
-              <span className="text-lg md:text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                AI Status Dashboard
-              </span>
+              <Image
+                src="/brand/logo-wordmark-light-transparent.svg"
+                alt=""
+                width={170}
+                height={28}
+                className="h-6 w-auto dark:hidden"
+                priority
+              />
+              <Image
+                src="/brand/logo-wordmark-dark-transparent.svg"
+                alt=""
+                width={170}
+                height={28}
+                className="h-6 w-auto hidden dark:block"
+                priority
+              />
             </Link>
           </div>
 

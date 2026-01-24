@@ -156,7 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       '@type': 'Organization',
       name: 'AI Status Dashboard',
       url: SITE_URL,
-      logo: `${SITE_URL}/brand/logo-mark.png`,
+      logo: `${SITE_URL}/brand/logo-mark-transparent-512.png`,
       contactPoint: process.env.NEXT_PUBLIC_CONTACT_EMAIL
         ? {
             '@type': 'ContactPoint',
