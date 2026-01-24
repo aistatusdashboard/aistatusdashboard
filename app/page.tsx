@@ -13,6 +13,12 @@ export default async function LandingPage() {
   return (
     <main className="flex-1">
       <h1 className="sr-only">AI Status Dashboard</h1>
+      <style>{`
+        .landing-header,
+        .today-strip {
+          display: none !important;
+        }
+      `}</style>
       <section
         id="landing-hero"
         className="relative isolate px-4 sm:px-6 py-24 md:py-32 min-h-[70vh] flex items-center"
