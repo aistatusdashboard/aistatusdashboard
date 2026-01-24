@@ -99,6 +99,7 @@ async function buildSitemap(incidents, providers) {
   addUrl(`${SITE_URL}/datasets/metrics`, '0.6', 'weekly');
   addUrl(`${SITE_URL}/docs`, '0.7', 'weekly');
   addUrl(`${SITE_URL}/status`, '0.7', 'weekly');
+  addUrl(`${SITE_URL}/changelog`, '0.6', 'weekly');
   addUrl(`${SITE_URL}/terms`, '0.5', 'monthly');
   addUrl(`${SITE_URL}/privacy`, '0.5', 'monthly');
   addUrl(`${SITE_URL}/air.json`, '0.6', 'weekly');
@@ -256,6 +257,36 @@ See ${SITE_URL}/docs/citations.md and /incidents/{id}/cite for evidence bundles.
 `;
 }
 
+function parseChangelogMarkdown(markdown) {
+  const entries = [];
+  let currentDate = null;
+
+  markdown.split('\n').forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('## ')) {
+      currentDate = trimmed.replace('##', '').trim();
+      return;
+    }
+    if (currentDate && trimmed.startsWith('- ')) {
+      entries.push({
+        date: currentDate,
+        title: trimmed.replace('- ', '').trim(),
+        link: `${SITE_URL}/changelog#${currentDate.replace(/[^0-9-]/g, '')}`,
+      });
+    }
+  });
+
+  if (!entries.length && currentDate) {
+    entries.push({
+      date: currentDate,
+      title: 'Update',
+      link: `${SITE_URL}/changelog#${currentDate.replace(/[^0-9-]/g, '')}`,
+    });
+  }
+
+  return entries;
+}
+
 
 async function run() {
   const providersData = JSON.parse(await fs.readFile(path.join(process.cwd(), 'lib', 'data', 'providers.json'), 'utf8'));
@@ -373,7 +404,7 @@ async function run() {
       url: `${SITE_URL}/openapi.json`,
       is_user_authenticated: false,
     },
-    logo_url: `${SITE_URL}/logo.png`,
+    logo_url: `${SITE_URL}/brand/logo-mark.png`,
     contact_email: 'hello@aistatusdashboard.com',
     legal_info_url: `${SITE_URL}/terms`,
   };
@@ -403,6 +434,30 @@ async function run() {
   // llms.txt + llms-full.txt
   await writeFile('llms.txt', buildLlmsTxt());
   await writeFile('llms-full.txt', buildLlmsFull());
+
+  // Changelog JSON (used by /changelog)
+  let changelogEntries = [];
+  try {
+    const changelogMarkdown = await fs.readFile(
+      path.join(process.cwd(), 'docs', 'changelog.md'),
+      'utf8'
+    );
+    changelogEntries = parseChangelogMarkdown(changelogMarkdown).slice(0, 50);
+  } catch (err) {
+    console.warn('Changelog markdown missing; generating empty changelog.json');
+  }
+
+  await writeFile(
+    'changelog.json',
+    JSON.stringify(
+      {
+        generated_at: now,
+        entries: changelogEntries,
+      },
+      null,
+      2
+    )
+  );
 
   // ---- Discovery audit (JSON + HTML) ----
   const auditFiles = await Promise.all([

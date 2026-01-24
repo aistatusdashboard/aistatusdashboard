@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-19T02:52:43.591Z",
+  "generated_at": "2026-01-24T02:09:59.697Z",
   "site_url": "https://aistatusdashboard.com",
   "generator": "scripts/generate-static-discovery-assets.cjs",
   "node": "v20.19.0",
@@ -12,15 +12,15 @@
       "path": "/sitemap.xml",
       "url": "https://aistatusdashboard.com/sitemap.xml",
       "expected_content_type": "application/xml; charset=utf-8",
-      "bytes": 12429,
-      "sha256": "988af5da51702c61ac1f424f49b8747e314e21f1516bad6527752faed12bbcaa"
+      "bytes": 12560,
+      "sha256": "e65b793ba1f25b605a479dc6461658eef7c4aad9e288b6f92d9ecf63ed3fadf1"
     },
     {
       "path": "/rss.xml",
       "url": "https://aistatusdashboard.com/rss.xml",
       "expected_content_type": "application/rss+xml; charset=utf-8",
-      "bytes": 10303,
-      "sha256": "26bdb7f53cf3e13788931db45dbca7c338a657cbe46f8d49ad84a3d9e25088f6"
+      "bytes": 10249,
+      "sha256": "c620dd82ee6b2427f4c98c0c0bfb9e8f2cfa6b446568e61f849a354a8399a0b4"
     },
     {
       "path": "/openapi.yaml",
@@ -54,8 +54,8 @@
       "path": "/.well-known/ai-plugin.json",
       "url": "https://aistatusdashboard.com/.well-known/ai-plugin.json",
       "expected_content_type": "application/json; charset=utf-8",
-      "bytes": 686,
-      "sha256": "185552f06db11c82734aa847e3b5812c8292ad3a9322284d82eb327e12a35af9"
+      "bytes": 697,
+      "sha256": "dd8b4b1ab36bb685425bc577764be30a993d9da9a78580e9f6d0d3585de67eb5"
     },
     {
       "path": "/.well-known/openapi.json",
@@ -68,15 +68,15 @@
       "path": "/datasets/incidents.ndjson",
       "url": "https://aistatusdashboard.com/datasets/incidents.ndjson",
       "expected_content_type": "application/x-ndjson; charset=utf-8",
-      "bytes": 10942,
-      "sha256": "80a245f870d376e767082b4f02d3c2bef03f2d539443545d91a420a39ca4bc62"
+      "bytes": 11030,
+      "sha256": "5273cf2abaf3b27c7e4890b8dad4e12e66b3659c992c1eff287ab0b0bcb09e2c"
     },
     {
       "path": "/datasets/metrics.csv",
       "url": "https://aistatusdashboard.com/datasets/metrics.csv",
       "expected_content_type": "text/csv; charset=utf-8",
       "bytes": 347,
-      "sha256": "85742e8e43c4ec1947212c2117bfd12dfc63537ed2d626258fd3f96505ce4f22"
+      "sha256": "5b728a37eeefbb49cf355bbe95822dc053617b7918808a0b8bbe87b6b4a7fd98"
     },
     {
       "path": "/docs.md",

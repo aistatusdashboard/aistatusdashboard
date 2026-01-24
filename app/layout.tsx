@@ -11,6 +11,7 @@ import { Providers } from './providers';
 import Script from 'next/script';
 import GlobalErrorHandler from './components/GlobalErrorHandler';
 import OfflineIndicator from './components/OfflineIndicator';
+import TodayStrip from './components/TodayStrip';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-ZV3PS0MPQ7';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -78,7 +79,7 @@ export const metadata: Metadata = {
       'Monitor the status of major AI providers including OpenAI, Anthropic, Google AI, and more in real-time.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og.png',
         width: 1200,
         height: 630,
         alt: 'AI Status Dashboard',
@@ -89,7 +90,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'AI Status Dashboard - Real-time AI Provider Monitoring',
     description: 'Real-time monitoring of AI provider APIs',
-    images: ['/og-image.png'],
+    images: ['/og.png'],
     creator: '@aistatusdash',
   },
   alternates: {
@@ -159,7 +160,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       '@type': 'Organization',
       name: 'AI Status Dashboard',
       url: SITE_URL,
-      logo: `${SITE_URL}/logo.png`,
+      logo: `${SITE_URL}/brand/logo-mark.png`,
       contactPoint: process.env.NEXT_PUBLIC_CONTACT_EMAIL
         ? {
             '@type': 'ContactPoint',
@@ -240,6 +241,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               Skip to main content
             </a>
             <Navbar />
+            <TodayStrip />
             <OfflineIndicator />
             <div id="main" className="flex-1">
               {children}
@@ -249,12 +251,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Providers>
         </ErrorBoundary>
         <noscript>
-          <div className="error-boundary">
-            <h2>JavaScript Required</h2>
-            <p>
-              This application requires JavaScript to function properly. Please enable JavaScript in
-              your browser settings.
-            </p>
+          <div className="noscript-notice">
+            <p>Interactive dashboard requires JavaScript. Live snapshot is available below.</p>
           </div>
         </noscript>
 

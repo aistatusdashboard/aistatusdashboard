@@ -113,6 +113,25 @@ jobs:
             fi
           done
 
+      - name: Post-deploy live pulse smoke check
+        run: |
+          set -e
+          html=$(curl -sS "https://aistatusdashboard.com/")
+          echo "$html" | grep -q "Tracking" || (echo "Homepage missing Tracking" && exit 1)
+          echo "$html" | grep -q "Updated" || (echo "Homepage missing Updated" && exit 1)
+          urls=(
+            "https://aistatusdashboard.com/changelog"
+            "https://aistatusdashboard.com/og.png"
+            "https://aistatusdashboard.com/favicon.ico"
+          )
+          for url in "${urls[@]}"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            if [ "$code" != "200" ]; then
+              echo "Smoke check failed: $url returned $code"
+              exit 1
+            fi
+          done
+
       - name: Agentability readiness validation
         run: |
           set -e
