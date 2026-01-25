@@ -3,6 +3,7 @@ import { providerService } from '@/lib/services/providers';
 import LandingSearch from '@/app/components/LandingSearch';
 import LivePulse from '@/app/components/LivePulse';
 import { getChangelogEntries } from '@/lib/services/changelog';
+import GuidedTourLink from '@/app/components/GuidedTourLink';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,48 +24,66 @@ export default async function LandingPage() {
           <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-200/30 blur-[110px] dark:bg-emerald-500/10" />
         </div>
 
-        <div className="max-w-3xl mx-auto w-full text-center space-y-8 animate-[rise_0.6s_ease-out]">
-          <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.5em] text-slate-500 dark:text-slate-400">
-              AI Status Dashboard
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Find the status of any AI provider in seconds.
-            </p>
+        <div className="max-w-6xl mx-auto w-full grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] items-center animate-[rise_0.6s_ease-out]">
+          <div className="order-2 lg:order-1 text-center lg:text-left space-y-6">
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.5em] text-slate-500 dark:text-slate-400">
+                AI Status Dashboard
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Find the status of any AI provider in seconds.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
+                Quick entry
+              </span>
+              <Link
+                href="/casual/chatgpt"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+              >
+                ChatGPT status
+              </Link>
+              <Link
+                href="/casual/claude"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+              >
+                Claude status
+              </Link>
+              <Link
+                href="/casual/gemini"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+              >
+                Gemini status
+              </Link>
+              <Link
+                href="/providers"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+              >
+                View all providers
+              </Link>
+            </div>
+            <div className="flex items-center justify-center lg:justify-start">
+              <GuidedTourLink className="underline underline-offset-4" />
+            </div>
+            <LandingSearch
+              variant="hero"
+              providers={providers.map((provider) => ({
+                id: provider.id,
+                name: provider.name,
+                displayName: provider.displayName,
+                aliases: provider.aliases,
+              }))}
+            />
           </div>
-          <LandingSearch
-            variant="hero"
-            providers={providers.map((provider) => ({
-              id: provider.id,
-              name: provider.name,
-              displayName: provider.displayName,
-              aliases: provider.aliases,
-            }))}
-          />
-          <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-            <span>Popular:</span>
-            <Link href="/casual/chatgpt" className="hover:text-slate-900 dark:hover:text-white transition">
-              ChatGPT
-            </Link>
-            <span>•</span>
-            <Link href="/casual/claude" className="hover:text-slate-900 dark:hover:text-white transition">
-              Claude
-            </Link>
-            <span>•</span>
-            <Link href="/casual/gemini" className="hover:text-slate-900 dark:hover:text-white transition">
-              Gemini
-            </Link>
-            <span>•</span>
-            <Link href="/providers" className="hover:text-slate-900 dark:hover:text-white transition">
-              All providers
-            </Link>
+          <div className="order-1 lg:order-2 w-full lg:max-w-[420px] lg:justify-self-end">
+            <LivePulse />
           </div>
         </div>
       </section>
 
       <section className="px-4 sm:px-6 pb-16">
         <div className="max-w-5xl mx-auto space-y-10">
-          <LivePulse />
           <div className="surface-card p-5 text-sm text-slate-600 dark:text-slate-300">
             <div className="flex items-center justify-between gap-3">
               <div>

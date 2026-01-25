@@ -33,6 +33,11 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Verify brand assets (production)
+        run: |
+          chmod +x scripts/verify_brand_assets.sh
+          scripts/verify_brand_assets.sh
+
       - name: Functions Install
         if: ${{ hashFiles('functions/package.json') != '' }}
         run: npm --prefix functions ci
@@ -82,3 +87,17 @@ jobs:
         with:
           name: discovery-audit
           path: discoverability_audit.md
+
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run smoke checks
+        env:
+          BASE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          chmod +x scripts/smoke-site.sh
+          scripts/smoke-site.sh

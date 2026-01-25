@@ -89,7 +89,7 @@ export default function LandingSearch({ providers, variant = 'compact' }: Landin
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-2xl mx-auto"
+      className="w-full max-w-2xl mx-auto lg:mx-0"
     >
       <div
         className={`flex items-center rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/70 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.6)] focus-within:ring-2 focus-within:ring-slate-900/15 dark:focus-within:ring-white/25 transition ${containerClasses}`}

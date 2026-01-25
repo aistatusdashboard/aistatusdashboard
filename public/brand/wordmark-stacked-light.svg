@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="256" viewBox="0 0 1024 256" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
 
     <defs>
       <linearGradient id="g" x1="48" y1="56" x2="208" y2="208" gradientUnits="userSpaceOnUse">
@@ -14,7 +14,8 @@
       </filter>
     </defs>
     
-<g transform="translate(24 0) scale(1)">
+<rect width="512" height="512" fill="#FFFFFF"/>
+<g transform="translate(128 56) scale(1)">
 
     <g>
       <circle cx="128" cy="128" r="88" stroke="url(#g)" stroke-width="14"/>
@@ -25,6 +26,6 @@
     </g>
     
 </g>
-<text x="304" y="132" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="72" font-weight="800" fill="#0B1021">AI Status</text>
-<text x="304" y="200" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="48" font-weight="600" fill="#6B7280">Dashboard</text>
+<text x="256" y="400" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="56" font-weight="800" fill="#0B1021">AI Status</text>
+<text x="256" y="456" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="40" font-weight="600" fill="#6B7280">Dashboard</text>
 </svg>

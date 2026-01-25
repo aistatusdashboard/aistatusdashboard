@@ -1,6 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="80" viewBox="0 0 520 80" role="img" aria-label="AI Status Dashboard">
-  <rect width="520" height="80" fill="none" />
-  <text x="0" y="52" fill="currentColor" font-family="Space Grotesk, Arial, sans-serif" font-size="40" font-weight="600">
+<svg xmlns="http://www.w3.org/2000/svg" width="216" height="24" viewBox="0 0 216 24" fill="none">
+  <text
+    x="0"
+    y="18"
+    font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial"
+    font-size="18"
+    font-weight="700"
+    fill="currentColor"
+  >
     AI Status Dashboard
   </text>
 </svg>

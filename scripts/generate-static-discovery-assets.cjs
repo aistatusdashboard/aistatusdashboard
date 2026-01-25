@@ -404,7 +404,7 @@ async function run() {
       url: `${SITE_URL}/openapi.json`,
       is_user_authenticated: false,
     },
-    logo_url: `${SITE_URL}/brand/logo-mark.png`,
+    logo_url: `${SITE_URL}/brand/mark-transparent-512.png`,
     contact_email: 'hello@aistatusdashboard.com',
     legal_info_url: `${SITE_URL}/terms`,
   };

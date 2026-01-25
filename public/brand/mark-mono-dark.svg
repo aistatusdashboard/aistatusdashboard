@@ -14,10 +14,10 @@
       </filter>
     </defs>
     
-
-<circle cx="128" cy="128" r="88" stroke="url(#g)" stroke-width="14" opacity="1"/>
-<polyline points="62 156, 98 156, 114 126, 136 182, 160 138, 194 138" stroke="url(#g)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft)"/>
-<circle cx="62" cy="156" r="9" fill="url(#g)"/>
-<circle cx="114" cy="126" r="9" fill="url(#g)"/>
-<circle cx="194" cy="138" r="9" fill="url(#g)"/>
+<rect x="16" y="16" width="224" height="224" rx="56" fill="#FFFFFF"/>
+<circle cx="128" cy="128" r="88" stroke="#0B1021" stroke-width="14" opacity="1"/>
+<polyline points="62 156, 98 156, 114 126, 136 182, 160 138, 194 138" stroke="#0B1021" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft)"/>
+<circle cx="62" cy="156" r="9" fill="#0B1021"/>
+<circle cx="114" cy="126" r="9" fill="#0B1021"/>
+<circle cx="194" cy="138" r="9" fill="#0B1021"/>
 </svg>

@@ -10,7 +10,7 @@ import GlobalErrorHandler from './components/GlobalErrorHandler';
 import OfflineIndicator from './components/OfflineIndicator';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-ZV3PS0MPQ7';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://aistatusdashboard.com';
 const googleSiteVerificationTokens = [
   process.env.GOOGLE_SITE_VERIFICATION || 'ueTuf7cizmQ207EZVX_RnvXzSW0FUqd_zAg7Kq2QpBU',
   process.env.GOOGLE_SITE_VERIFICATION_ALT || 'thZbMJrJpI5W61kPQCXhMn44Gt9ycmYeTX6f2xxIg68',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
       'Monitor the status of major AI providers including OpenAI, Anthropic, Google AI, and more in real-time.',
     images: [
       {
-        url: '/og.png',
+        url: `${SITE_URL}/og.png`,
         width: 1200,
         height: 630,
         alt: 'AI Status Dashboard',
@@ -86,7 +86,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'AI Status Dashboard - Real-time AI Provider Monitoring',
     description: 'Real-time monitoring of AI provider APIs',
-    images: ['/og.png'],
+    images: [`${SITE_URL}/og.png`],
     creator: '@aistatusdash',
   },
   alternates: {
@@ -156,7 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       '@type': 'Organization',
       name: 'AI Status Dashboard',
       url: SITE_URL,
-      logo: `${SITE_URL}/brand/logo-mark-transparent-512.png`,
+      logo: `${SITE_URL}/brand/mark-transparent-512.png`,
       contactPoint: process.env.NEXT_PUBLIC_CONTACT_EMAIL
         ? {
             '@type': 'ContactPoint',

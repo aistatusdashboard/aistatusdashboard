@@ -58,7 +58,9 @@ export async function servePublicFile(relPath: string, options: ServeOptions = {
   const contentType = options.contentType || CONTENT_TYPES[ext] || 'application/octet-stream';
   const cacheControl = options.cacheControl || cacheControlFor(relPath, ext);
 
-  return new NextResponse(data, {
+  const body = new Uint8Array(data);
+
+  return new NextResponse(body, {
     status: 200,
     headers: {
       'Content-Type': contentType,

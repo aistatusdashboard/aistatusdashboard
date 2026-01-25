@@ -14,6 +14,7 @@
       </filter>
     </defs>
     
+<rect width="1024" height="256" fill="#0B1021"/>
 <g transform="translate(24 0) scale(1)">
 
     <g>
@@ -25,6 +26,6 @@
     </g>
     
 </g>
-<text x="304" y="132" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="72" font-weight="800" fill="#0B1021">AI Status</text>
-<text x="304" y="200" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="48" font-weight="600" fill="#6B7280">Dashboard</text>
+<text x="304" y="132" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="72" font-weight="800" fill="#FFFFFF">AI Status</text>
+<text x="304" y="200" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Arial" font-size="48" font-weight="600" fill="#A3A3A3">Dashboard</text>
 </svg>
