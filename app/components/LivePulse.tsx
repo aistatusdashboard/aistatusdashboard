@@ -63,17 +63,17 @@ export default async function LivePulse() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm text-slate-700 dark:text-slate-200">
         <div className="rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/70 dark:bg-slate-900/60 p-3">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Tracking</p>
-          <p className="flex items-baseline gap-1 whitespace-nowrap leading-none text-base md:text-lg font-semibold">
-            <span>{snapshot.tracking}</span>
-            <span className="text-xs md:text-sm font-semibold text-slate-500 dark:text-slate-400">providers</span>
+          <p className="inline-flex items-baseline gap-1.5 whitespace-nowrap leading-none">
+            <span className="text-lg md:text-xl font-semibold tracking-tight">{snapshot.tracking}</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">providers</span>
           </p>
         </div>
         <div className="rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/70 dark:bg-slate-900/60 p-3">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Avg latency</p>
           {snapshot.avgLatency !== null ? (
-            <p className="flex items-baseline gap-1 whitespace-nowrap leading-none text-base md:text-lg font-semibold">
-              <span>{snapshot.avgLatency}</span>
-              <span className="text-xs md:text-sm font-semibold text-slate-500 dark:text-slate-400">ms</span>
+            <p className="inline-flex items-baseline gap-1.5 whitespace-nowrap leading-none">
+              <span className="text-lg md:text-xl font-semibold tracking-tight">{snapshot.avgLatency}</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">ms</span>
             </p>
           ) : (
             <p className="text-base md:text-lg font-semibold leading-none">—</p>
