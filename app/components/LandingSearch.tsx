@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 type ProviderOption = {
@@ -24,6 +24,7 @@ const normalize = (value: string) =>
 export default function LandingSearch({ providers, variant = 'compact' }: LandingSearchProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const lastNavigatedRef = useRef<string | null>(null);
   const showButton = variant !== 'hero';
   const containerClasses =
     variant === 'hero'
@@ -69,6 +70,19 @@ export default function LandingSearch({ providers, variant = 'compact' }: Landin
     return best;
   };
 
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    const timer = window.setTimeout(() => {
+      const match = resolveProvider(trimmed);
+      if (match && match.score >= 3 && match.id !== lastNavigatedRef.current) {
+        lastNavigatedRef.current = match.id;
+        router.push(`/provider/${match.id}`);
+      }
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [query, router]);
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const trimmed = query.trim();
@@ -107,7 +121,18 @@ export default function LandingSearch({ providers, variant = 'compact' }: Landin
         <input
           type="search"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            const nextValue = event.target.value;
+            setQuery(nextValue);
+            const nativeEvent = event.nativeEvent as InputEvent;
+            if (nativeEvent?.inputType === 'insertReplacementText') {
+              const match = resolveProvider(nextValue);
+              if (match && match.score >= 2) {
+                lastNavigatedRef.current = match.id;
+                router.push(`/provider/${match.id}`);
+              }
+            }
+          }}
           placeholder="Search an AI provider"
           list="provider-suggestions"
           className={`flex-1 bg-transparent ${inputClasses} text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none`}
