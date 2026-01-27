@@ -46,7 +46,7 @@ export default async function LivePulse() {
     <section className="surface-card-strong p-6 md:p-8 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
             Live Pulse
           </p>
           <h2 className={`text-2xl font-semibold ${statusMeta.tone} mt-2 flex items-center gap-2`}>
@@ -62,7 +62,9 @@ export default async function LivePulse() {
 
       <div className="grid gap-3 sm:grid-cols-2 text-slate-700 dark:text-slate-200">
         <div className="rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/70 dark:bg-slate-900/60 p-3">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tracking</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
+            Tracking
+          </p>
           <p className="mt-2 inline-flex items-baseline gap-2 whitespace-nowrap leading-none">
             <span className="text-2xl font-semibold tracking-tight tabular-nums text-slate-900 dark:text-white">
               {snapshot.tracking}
@@ -71,7 +73,9 @@ export default async function LivePulse() {
           </p>
         </div>
         <div className="rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/70 dark:bg-slate-900/60 p-3">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Avg latency</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
+            Avg latency
+          </p>
           {snapshot.avgLatency !== null ? (
             <p className="mt-2 inline-flex items-baseline gap-2 whitespace-nowrap leading-none">
               <span className="text-2xl font-semibold tracking-tight tabular-nums text-slate-900 dark:text-white">
@@ -84,7 +88,7 @@ export default async function LivePulse() {
           )}
         </div>
         <div className="rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/70 dark:bg-slate-900/60 p-3">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
             Incidents (24h)
           </p>
           <p className="mt-2 text-2xl font-semibold tracking-tight leading-none whitespace-nowrap tabular-nums text-slate-900 dark:text-white">
@@ -92,7 +96,7 @@ export default async function LivePulse() {
           </p>
         </div>
         <div className="rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/70 dark:bg-slate-900/60 p-3">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
             Community reports
           </p>
           <p className="mt-2 text-2xl font-semibold tracking-tight leading-none whitespace-nowrap tabular-nums text-slate-900 dark:text-white">

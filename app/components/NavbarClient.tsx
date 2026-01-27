@@ -22,13 +22,13 @@ type NavItem = {
 };
 
 const navLinkClass =
-  'flex items-center min-h-[40px] px-3 py-1.5 rounded-full whitespace-nowrap leading-none text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition';
+  'flex items-center min-h-[40px] px-3 py-1.5 rounded-full whitespace-nowrap leading-none text-[13px] font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition';
 
 const dropdownButtonClass =
-  'flex items-center min-h-[40px] px-3 py-1.5 rounded-full whitespace-nowrap leading-none text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition';
+  'flex items-center min-h-[40px] px-3 py-1.5 rounded-full whitespace-nowrap leading-none text-[13px] font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition';
 
 const dropdownItemClass =
-  'flex items-center min-h-[40px] px-3 py-2 rounded-xl whitespace-nowrap leading-none text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition';
+  'flex items-center min-h-[40px] px-3 py-2 rounded-xl whitespace-nowrap leading-none text-[13px] font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition';
 
 const statusToneStyles: Record<StatusTone, { dot: string; text: string }> = {
   operational: { dot: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300' },
@@ -173,7 +173,7 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
             />
             <Link
               href="/dashboard?tab=notifications"
-              className="cta-primary text-xs px-4 py-2 min-h-[40px] whitespace-nowrap leading-none"
+              className="cta-primary text-sm font-semibold px-4 py-2 min-h-[40px] whitespace-nowrap leading-none"
               data-tour="nav-alerts"
             >
               Get alerts
@@ -227,7 +227,7 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-medium"
+                    className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-semibold text-slate-800 dark:text-slate-100"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.label}
@@ -243,7 +243,7 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
                     <a
                       key={item.label}
                       href={item.href}
-                      className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-medium"
+                      className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-semibold text-slate-800 dark:text-slate-100"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}
@@ -252,7 +252,7 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
                     <Link
                       key={item.label}
                       href={item.href}
-                      className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-medium"
+                      className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-semibold text-slate-800 dark:text-slate-100"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}
@@ -269,7 +269,7 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
                     <Link
                       key={item.label}
                       href={item.href}
-                      className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-medium"
+                      className="block min-h-[40px] px-4 py-2 rounded-xl whitespace-nowrap leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-base font-semibold text-slate-800 dark:text-slate-100"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}

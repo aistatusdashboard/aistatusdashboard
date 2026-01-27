@@ -27,44 +27,44 @@ export default async function LandingPage() {
         <div className="max-w-6xl mx-auto w-full grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] items-center animate-[rise_0.6s_ease-out]">
           <div className="order-2 lg:order-1 text-center lg:text-left space-y-6">
             <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.5em] text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
                 AI Status Dashboard
               </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-xl md:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white leading-snug">
                 Find the status of any AI provider in seconds.
               </p>
             </div>
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <span className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <span className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
                 Quick entry
               </span>
               <Link
                 href="/casual/chatgpt"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
               >
                 ChatGPT status
               </Link>
               <Link
                 href="/casual/claude"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
               >
                 Claude status
               </Link>
               <Link
                 href="/casual/gemini"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
               >
                 Gemini status
               </Link>
               <Link
                 href="/providers"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition"
+                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
               >
                 View all providers
               </Link>
             </div>
             <div className="flex items-center justify-center lg:justify-start">
-              <GuidedTourLink className="underline underline-offset-4" />
+              <GuidedTourLink className="underline underline-offset-4 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition" />
             </div>
             <LandingSearch
               variant="hero"
@@ -87,7 +87,7 @@ export default async function LandingPage() {
           <div className="surface-card p-5 text-sm text-slate-600 dark:text-slate-300">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
                   What&apos;s new
                 </p>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mt-2">
