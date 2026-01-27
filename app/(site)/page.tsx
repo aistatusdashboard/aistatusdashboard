@@ -24,7 +24,7 @@ export default async function LandingPage() {
           <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-200/30 blur-[110px] dark:bg-emerald-500/10" />
         </div>
 
-        <div className="max-w-6xl mx-auto w-full grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] items-center animate-[rise_0.6s_ease-out]">
+        <div className="max-w-6xl mx-auto w-full grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] items-start animate-[rise_0.6s_ease-out]">
           <div className="order-2 lg:order-1 text-center lg:text-left space-y-6">
             <div className="space-y-3">
               <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
