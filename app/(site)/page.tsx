@@ -16,7 +16,7 @@ export default async function LandingPage() {
       <h1 className="sr-only">AI Status Dashboard</h1>
       <section
         id="landing-hero"
-        className="relative isolate px-4 sm:px-6 py-24 md:py-32 min-h-[70vh] flex items-center"
+        className="relative isolate px-4 sm:px-6 pt-12 md:pt-16 pb-20 md:pb-24"
       >
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.22),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(30,64,175,0.18),_transparent_58%)]" />
