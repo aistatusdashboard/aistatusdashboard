@@ -64,7 +64,7 @@ export default async function LandingPage() {
               </Link>
             </div>
             <div className="flex items-center justify-center lg:justify-start">
-              <GuidedTourLink className="underline underline-offset-4 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition" />
+              <GuidedTourLink className="underline underline-offset-4" />
             </div>
             <LandingSearch
               variant="hero"
