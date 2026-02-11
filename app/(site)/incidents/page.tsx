@@ -33,7 +33,7 @@ export default async function IncidentsPage() {
               Latest incidents across monitored AI providers.
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
-              <a href="/api/public/v1/incidents" className="cta-secondary text-xs">Incidents API</a>
+              <Link href="/api/public/v1/incidents" className="cta-secondary text-xs">Incidents API</Link>
               <a href="/openapi.json" className="cta-secondary text-xs">OpenAPI</a>
               <a href="/rss.xml" className="cta-secondary text-xs">RSS</a>
             </div>

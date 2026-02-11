@@ -38,7 +38,10 @@ export default async function CasualAppPage({ params }: { params: Promise<Casual
   const status = await getCasualStatus({ appId: app.id });
   if (!status) return notFound();
 
-  const updatedMinutes = Math.max(1, Math.round((Date.now() - Date.parse(status.updated_at)) / 60000));
+  const updatedAt = new Date(status.updated_at);
+  const updatedLabel = Number.isNaN(updatedAt.getTime())
+    ? status.updated_at
+    : updatedAt.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   const typical = status.history.typical_resolution_minutes
     ? `Usually resolves in ~${status.history.typical_resolution_minutes} min.`
     : 'Resolution time varies; we will update as we learn more.';
@@ -58,7 +61,7 @@ export default async function CasualAppPage({ params }: { params: Promise<Casual
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Casual Mode</p>
             <h1 className="text-3xl font-semibold text-slate-900 dark:text-white mt-2">{app.label}</h1>
             <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">
-              Plain-English status for {app.label.replace(' Status', '')}. Updated {updatedMinutes} min ago.
+              Plain-English status for {app.label.replace(' Status', '')}. Updated {updatedLabel}.
             </p>
           </header>
 
@@ -67,7 +70,7 @@ export default async function CasualAppPage({ params }: { params: Promise<Casual
               <span className={`text-xs uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${statusTone(status.overall_status)}`}>
                 {status.overall_status}
               </span>
-              <span className="text-xs text-slate-500">Last updated {updatedMinutes} min ago</span>
+              <span className="text-xs text-slate-500">Last updated {updatedLabel}</span>
             </div>
             <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">{status.headline}</h2>
             <div className="grid gap-4 md:grid-cols-2">

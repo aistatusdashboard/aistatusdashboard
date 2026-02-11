@@ -65,7 +65,7 @@ export default function DocsPage() {
           <section className="surface-card p-6 space-y-3">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Casual Mode</h2>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Consumer-first status pages with symptoms, guidance, and \"is it just me?\" indicators.
+              Consumer-first status pages with symptoms, guidance, and &quot;is it just me?&quot; indicators.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/casual/chatgpt" className="cta-secondary text-xs">

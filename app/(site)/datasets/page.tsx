@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { listProviders } from '@/lib/services/public-data';
 import { queryMetricSeries } from '@/lib/services/metrics';
@@ -142,7 +143,7 @@ export default async function DatasetsPage() {
               <li>Download size: {formatBytes(incidentBytes)}</li>
               <li>Updated: {new Date(incidentUpdatedAt).toLocaleString('en-US')}</li>
             </ul>
-            <a href="/datasets/incidents" className="cta-secondary text-xs">View incidents dataset</a>
+            <Link href="/datasets/incidents" className="cta-secondary text-xs">View incidents dataset</Link>
           </section>
 
           <section className="surface-card p-6 space-y-3">
@@ -155,7 +156,7 @@ export default async function DatasetsPage() {
               <li>Download size: {formatBytes(metricsBytes)}</li>
               <li>Updated: {metricsUpdatedAt.toLocaleString('en-US')}</li>
             </ul>
-            <a href="/datasets/metrics" className="cta-secondary text-xs">View metrics dataset</a>
+            <Link href="/datasets/metrics" className="cta-secondary text-xs">View metrics dataset</Link>
           </section>
 
           <section className="surface-card p-6 space-y-3">

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { openCookieConsentPreferences } from '@/lib/utils/cookie-consent';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -36,6 +37,13 @@ export default function Footer() {
             >
               Privacy
             </Link>
+            <button
+              type="button"
+              onClick={openCookieConsentPreferences}
+              className="underline hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              Cookie preferences
+            </button>
             <a
               href="https://agentability.org/"
               target="_blank"
@@ -119,12 +127,12 @@ export default function Footer() {
               System Health
             </Link>
             {' | '}
-            <a
+            <Link
               href="/api/public/v1/status/summary"
               className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               Status JSON
-            </a>
+            </Link>
             {' | '}
             <Link
               href="/docs/api"
@@ -153,6 +161,14 @@ export default function Footer() {
             >
               Privacy
             </Link>
+            {' | '}
+            <button
+              type="button"
+              onClick={openCookieConsentPreferences}
+              className="hover:text-slate-900 dark:hover:text-white transition-colors inline-flex items-center justify-center min-h-[44px] py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+            >
+              Cookie preferences
+            </button>
           </p>
         </div>
 

@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { StatusResult } from '@/lib/types';
 import { getProbeDefaultsMap } from '@/lib/utils/probe-defaults';
+import {
+  COOKIE_CONSENT_UPDATED_EVENT,
+  type CookieConsentDecision,
+  getCookieConsentDecision,
+  hasCookieConsent,
+} from '@/lib/utils/cookie-consent';
 
 declare global {
   interface Window {
@@ -107,11 +113,30 @@ function sendWithSdk(payload: Record<string, any>) {
 export default function TelemetryBeacon({ statuses }: { statuses: StatusResult[] }) {
   const sentRef = useRef(false);
   const defaultsRef = useRef<Record<string, ReturnType<typeof getProbeDefaultsMap>[string]>>({});
+  const [consentDecision, setConsentDecision] = useState<CookieConsentDecision | null>(null);
+
+  useEffect(() => {
+    setConsentDecision(getCookieConsentDecision());
+
+    const handleConsentUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ decision?: CookieConsentDecision }>).detail;
+      setConsentDecision(detail?.decision || getCookieConsentDecision());
+    };
+
+    window.addEventListener(COOKIE_CONSENT_UPDATED_EVENT, handleConsentUpdated as EventListener);
+    return () => {
+      window.removeEventListener(
+        COOKIE_CONSENT_UPDATED_EVENT,
+        handleConsentUpdated as EventListener
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (!statuses?.length) return;
     if (!TELEMETRY_KEY) return;
     if (sentRef.current) return;
+    if (!hasCookieConsent()) return;
     if (!shouldSend()) return;
 
     defaultsRef.current = getProbeDefaultsMap();
@@ -145,7 +170,7 @@ export default function TelemetryBeacon({ statuses }: { statuses: StatusResult[]
       sentRef.current = true;
       markSent();
     });
-  }, [statuses]);
+  }, [statuses, consentDecision]);
 
   return null;
 }

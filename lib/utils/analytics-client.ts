@@ -1,3 +1,5 @@
+import { hasCookieConsent } from '@/lib/utils/cookie-consent';
+
 const SESSION_KEY = 'ai_status_session_v1';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
 
@@ -10,6 +12,7 @@ function generateSessionId(): string {
 
 export function getAnalyticsSessionId(): string | null {
   if (typeof window === 'undefined') return null;
+  if (!hasCookieConsent()) return null;
 
   try {
     const raw = window.localStorage.getItem(SESSION_KEY);
@@ -45,6 +48,7 @@ export function trackEvent(
   options: { providerId?: string; metadata?: Record<string, any> } = {}
 ): void {
   if (typeof window === 'undefined') return;
+  if (!hasCookieConsent()) return;
 
   const sessionId = getAnalyticsSessionId();
   const payload = {

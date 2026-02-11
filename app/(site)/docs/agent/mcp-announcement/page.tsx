@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'MCP Announcement',
@@ -42,8 +43,8 @@ export default function McpAnnouncementPage() {
           <section className="surface-card p-6 space-y-3">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Start here</h2>
             <div className="flex flex-wrap gap-3">
-              <a href="/mcp" className="cta-secondary text-xs">MCP endpoint</a>
-              <a href="/docs/agent/mcp-quickstart" className="cta-secondary text-xs">MCP quickstart</a>
+              <Link href="/mcp" className="cta-secondary text-xs">MCP endpoint</Link>
+              <Link href="/docs/agent/mcp-quickstart" className="cta-secondary text-xs">MCP quickstart</Link>
               <a href="/openapi.json" className="cta-secondary text-xs">OpenAPI</a>
             </div>
           </section>

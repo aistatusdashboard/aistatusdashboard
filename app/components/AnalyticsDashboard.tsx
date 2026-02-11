@@ -59,7 +59,7 @@ export default function AnalyticsDashboard({ className = '' }: AnalyticsDashboar
       { label: 'Exports & Shares', value: eventCounts.exports, color: 'bg-slate-500' },
     ];
     return entries.filter((entry) => entry.value > 0);
-  }, [eventCounts]);
+  }, [eventCounts, commentsSubmitted]);
 
   if (loading) {
     return (

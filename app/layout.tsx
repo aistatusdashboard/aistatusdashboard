@@ -8,6 +8,8 @@ import { Providers } from './providers';
 import Script from 'next/script';
 import GlobalErrorHandler from './components/GlobalErrorHandler';
 import OfflineIndicator from './components/OfflineIndicator';
+import GoogleAnalytics from './components/GoogleAnalytics';
+import CookieConsentBanner from './components/CookieConsentBanner';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-ZV3PS0MPQ7';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://aistatusdashboard.com';
@@ -125,30 +127,6 @@ function ClientInit() {
   return null;
 }
 
-// Google Analytics component
-function GoogleAnalytics() {
-  if (!GA_MEASUREMENT_ID) return null;
-
-  return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-        strategy="afterInteractive"
-      />
-      <Script id="ga-init" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${GA_MEASUREMENT_ID}', {
-            page_path: window.location.pathname,
-          });
-        `}
-      </Script>
-    </>
-  );
-}
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const jsonLd = [
     {
@@ -219,18 +197,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify([homeJsonLd, ...jsonLd]) }}
         />
 
-        <Suspense fallback={null}>
-          <GoogleAnalytics />
-        </Suspense>
       </head>
       <body className={`${geistSans.className} ${geistMono.variable} antialiased min-h-screen bg-background font-sans`}>
         <ErrorBoundary>
           <Providers>
+            <Suspense fallback={null}>
+              <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
+            </Suspense>
             <GlobalErrorHandler />
             <Suspense fallback={null}>
               <ClientInit />
             </Suspense>
             <OfflineIndicator />
+            <CookieConsentBanner />
             {children}
           </Providers>
         </ErrorBoundary>

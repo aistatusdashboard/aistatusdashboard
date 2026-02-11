@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export const metadata = {
   title: 'System Health',
   description: 'Public health checks and site reliability endpoints for AI Status Dashboard.',
@@ -21,16 +23,16 @@ export default function SystemHealthPage() {
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Health endpoints</h2>
           <ul className="text-sm text-slate-600 dark:text-slate-300 space-y-1">
             <li>
-              <a className="underline" href="/api/health">/api/health</a> — runtime health check
+              <Link className="underline" href="/api/health">/api/health</Link> — runtime health check
             </li>
             <li>
-              <a className="underline" href="/api/public/v1/status/summary">
+              <Link className="underline" href="/api/public/v1/status/summary">
                 /api/public/v1/status/summary
-              </a>{' '}
+              </Link>{' '}
               — public status summary JSON
             </li>
             <li>
-              <a className="underline" href="/status/site-health">/status/site-health</a> — site health job
+              <Link className="underline" href="/status/site-health">/status/site-health</Link> — site health job
             </li>
           </ul>
         </section>

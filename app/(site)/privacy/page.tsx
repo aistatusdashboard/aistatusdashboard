@@ -36,6 +36,23 @@ export default function PrivacyPage() {
             If you opt in to account-specific telemetry, data is hashed and stored without personal
             identifiers. You can request removal at any time.
           </p>
+        </section>
+
+        <section id="cookies" className="surface-card p-6 space-y-4 text-sm text-slate-600 dark:text-slate-300">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Cookies and local storage</h2>
+          <p>
+            We use essential browser storage for core product features such as accessibility
+            settings and session continuity.
+          </p>
+          <p>
+            Optional analytics and telemetry storage is only enabled when you accept it in the
+            cookie banner. If you reject optional storage, we do not send client-side analytics or
+            telemetry events from your browser.
+          </p>
+          <p>
+            You can update your choice any time using the <strong>Cookie preferences</strong>{' '}
+            link in the footer.
+          </p>
           <p>
             Contact: <a className="underline" href="mailto:hello@aistatusdashboard.com">hello@aistatusdashboard.com</a>
           </p>

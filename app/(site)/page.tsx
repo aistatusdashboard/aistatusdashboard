@@ -130,9 +130,9 @@ export default async function LandingPage() {
         <div className="px-4 sm:px-6 pb-10">
           <div className="max-w-3xl mx-auto surface-card p-4 text-sm">
             <p className="font-semibold">No JavaScript? Browse providers directly:</p>
-            <a href="/providers" className="underline">
+            <Link href="/providers" className="underline">
               /providers
-            </a>
+            </Link>
           </div>
         </div>
       </noscript>

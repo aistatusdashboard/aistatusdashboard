@@ -75,9 +75,14 @@ export default async function DashboardPage() {
         (summary.degradedComponentCount || 0) > 0;
       const pollSeconds = sourcePolls.get(status.id) ?? 120;
       const updatedAt = summary.lastUpdated ? Date.parse(summary.lastUpdated) : NaN;
+      const baselineCheckedAt = status.lastChecked ? Date.parse(status.lastChecked) : NaN;
+      const freshDeltaMs =
+        Number.isFinite(updatedAt) && Number.isFinite(baselineCheckedAt)
+          ? Math.abs(baselineCheckedAt - updatedAt)
+          : Number.POSITIVE_INFINITY;
       const isFresh =
         Number.isFinite(updatedAt) &&
-        Date.now() - updatedAt <= pollSeconds * 2 * 1000 + 60000;
+        freshDeltaMs <= pollSeconds * 2 * 1000 + 60000;
       const useSummary =
         !!summary.status &&
         summary.status !== 'unknown' &&
@@ -123,8 +128,8 @@ export default async function DashboardPage() {
           <div className="surface-card p-4 mb-4">
             <p>AI Status Dashboard snapshot (noscript):</p>
             <ul>
-              <li><a href="/api/public/v1/status/summary">/api/public/v1/status/summary</a></li>
-              <li><a href="/api/public/v1/incidents">/api/public/v1/incidents</a></li>
+              <li><Link href="/api/public/v1/status/summary">/api/public/v1/status/summary</Link></li>
+              <li><Link href="/api/public/v1/incidents">/api/public/v1/incidents</Link></li>
               <li><a href="/openapi.json">OpenAPI</a></li>
               <li><a href="/llms.txt">llms.txt</a></li>
             </ul>

@@ -49,7 +49,7 @@ export default function AiLandingPage() {
           <section className="surface-card p-6 space-y-3">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Quick links</h2>
             <div className="flex flex-wrap gap-3">
-              <a href="/mcp" className="cta-secondary text-xs">MCP endpoint</a>
+              <Link href="/mcp" className="cta-secondary text-xs">MCP endpoint</Link>
               <a href="/llms.txt" className="cta-secondary text-xs">llms.txt</a>
               <a href="/llms-full.txt" className="cta-secondary text-xs">llms-full.txt</a>
               <a href="/openapi.json" className="cta-secondary text-xs">OpenAPI JSON</a>
@@ -64,21 +64,21 @@ export default function AiLandingPage() {
               <a href="https://github.com/aistatusdashboard/aistatusdashboard" className="cta-secondary text-xs">
                 GitHub repo
               </a>
-              <a href="/reports/weekly-ai-reliability" className="cta-secondary text-xs">
+              <Link href="/reports/weekly-ai-reliability" className="cta-secondary text-xs">
                 Weekly reliability report
-              </a>
-              <a href="/reports/monthly-provider-scorecards" className="cta-secondary text-xs">
+              </Link>
+              <Link href="/reports/monthly-provider-scorecards" className="cta-secondary text-xs">
                 Monthly provider scorecards
-              </a>
-              <a href="/casual/chatgpt" className="cta-secondary text-xs">
+              </Link>
+              <Link href="/casual/chatgpt" className="cta-secondary text-xs">
                 Casual Mode (ChatGPT)
-              </a>
-              <a href="/casual" className="cta-secondary text-xs">
+              </Link>
+              <Link href="/casual" className="cta-secondary text-xs">
                 Casual Mode hub
-              </a>
-              <a href="/docs/discoverability-audit" className="cta-secondary text-xs">
+              </Link>
+              <Link href="/docs/discoverability-audit" className="cta-secondary text-xs">
                 Discoverability audit
-              </a>
+              </Link>
               <a href="/discovery/audit/latest.json" className="cta-secondary text-xs">
                 Discovery audit (JSON)
               </a>

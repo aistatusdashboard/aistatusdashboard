@@ -1,11 +1,13 @@
 import { intelligenceService } from '@/lib/services/intelligence';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { providerService } from '@/lib/services/providers';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MonthlyProviderScorecards() {
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
   const incidents = (await intelligenceService.getIncidents({ startDate: since.toISOString(), limit: 500 }))
     .map(normalizeIncidentDates);
 
@@ -81,9 +83,9 @@ export default async function MonthlyProviderScorecards() {
                 {topRows.map((row) => (
                   <tr key={row.id} className="border-b border-slate-100/70 dark:border-slate-800/60">
                     <td className="py-2 pr-4">
-                      <a href={`/provider/${row.id}`} className="font-medium text-slate-900 dark:text-white hover:underline">
+                      <Link href={`/provider/${row.id}`} className="font-medium text-slate-900 dark:text-white hover:underline">
                         {row.name}
-                      </a>
+                      </Link>
                     </td>
                     <td className="py-2 pr-4">{row.incidentCount}</td>
                     <td className="py-2 pr-4">{row.degradedMinutes}</td>
@@ -100,8 +102,8 @@ export default async function MonthlyProviderScorecards() {
           <ul className="list-disc list-inside text-sm text-slate-600 dark:text-slate-300">
             {topIncidents.map((incident) => (
               <li key={incident.id}>
-                <a href={`/incidents/${incident.providerId}:${incident.id}`}>{incident.title}</a>{' '}
-                (<a href={`/incidents/${incident.providerId}:${incident.id}/cite`}>cite</a>){' '}
+                <Link href={`/incidents/${incident.providerId}:${incident.id}`}>{incident.title}</Link>{' '}
+                (<Link href={`/incidents/${incident.providerId}:${incident.id}/cite`}>cite</Link>){' '}
                 {incident.rawUrl && <a href={incident.rawUrl}>official</a>}
               </li>
             ))}

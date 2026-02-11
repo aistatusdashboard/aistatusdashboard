@@ -134,7 +134,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
     }
 
     const query = params.toString();
-    isUrlSyncRef.current = true;
+    setIsUrlSync(true);
     router.replace(query ? `${basePath}?${query}` : basePath, { scroll: false });
   };
 
@@ -156,7 +156,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
     } else {
       params.delete('notify');
     }
-    isUrlSyncRef.current = true;
+    setIsUrlSync(true);
     router.replace(`${basePath}?${params.toString()}`, { scroll: false });
   };
 
@@ -183,8 +183,8 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
   const [earlyWarningsLoading, setEarlyWarningsLoading] = useState(false);
   const [stalenessSignals, setStalenessSignals] = useState<StalenessSignal[]>([]);
   const [stalenessLoading, setStalenessLoading] = useState(false);
+  const [isUrlSync, setIsUrlSync] = useState(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
-  const isUrlSyncRef = React.useRef(false);
   const searchParamsString = searchParams.toString();
 
   useEffect(() => {
@@ -255,8 +255,8 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
 
   // Sync filters from URL
   useEffect(() => {
-    if (isUrlSyncRef.current) {
-      isUrlSyncRef.current = false;
+    if (isUrlSync) {
+      setIsUrlSync(false);
       return;
     }
     const params = new URLSearchParams(searchParamsString);
@@ -277,7 +277,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
     setSortBy(sortParam);
     setSortOrder(orderParam);
     setIssuesOnly(issuesValue);
-  }, [searchParamsString]);
+  }, [isUrlSync, searchParamsString]);
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
@@ -313,7 +313,7 @@ export default function DashboardTabs({ statuses = [] }: DashboardTabsProps) {
     const current = searchParamsString;
     const next = params.toString();
     if (next !== current) {
-      isUrlSyncRef.current = true;
+      setIsUrlSync(true);
       router.replace(next ? `${basePath}?${next}` : basePath, { scroll: false });
     }
   }, [

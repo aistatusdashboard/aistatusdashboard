@@ -1,4 +1,5 @@
 import Script from 'next/script';
+import Link from 'next/link';
 import { MCP_ANNOUNCEMENT_URL, MCP_GITHUB_URL, MCP_REGISTRY_URL } from '@/lib/config/links';
 
 export default function McpCallout() {
@@ -12,7 +13,7 @@ export default function McpCallout() {
             <li><a href={MCP_GITHUB_URL}>Install from GitHub</a></li>
             <li><a href={MCP_ANNOUNCEMENT_URL}>See the announcement</a></li>
             <li><a href={MCP_REGISTRY_URL}>View in MCP Registry</a></li>
-            <li><a href="/docs/agent/mcp-quickstart">MCP Quickstart</a></li>
+            <li><Link href="/docs/agent/mcp-quickstart">MCP Quickstart</Link></li>
           </ul>
           <div className="callout__endpoint" aria-label="MCP server endpoint">
             <span>MCP endpoint:</span>

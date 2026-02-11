@@ -1,10 +1,12 @@
 import { intelligenceService } from '@/lib/services/intelligence';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function WeeklyReliabilityReport() {
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const since = new Date();
+  since.setDate(since.getDate() - 7);
   const incidents = (await intelligenceService.getIncidents({ startDate: since.toISOString(), limit: 200 }))
     .map(normalizeIncidentDates);
 
@@ -51,8 +53,8 @@ export default async function WeeklyReliabilityReport() {
           <ul className="list-disc list-inside text-sm text-slate-600 dark:text-slate-300">
             {topIncidents.map((incident) => (
               <li key={incident.id}>
-                <a href={`/incidents/${incident.providerId}:${incident.id}`}>{incident.title}</a>{' '}
-                (<a href={`/incidents/${incident.providerId}:${incident.id}/cite`}>cite</a>){' '}
+                <Link href={`/incidents/${incident.providerId}:${incident.id}`}>{incident.title}</Link>{' '}
+                (<Link href={`/incidents/${incident.providerId}:${incident.id}/cite`}>cite</Link>){' '}
                 {incident.rawUrl && <a href={incident.rawUrl}>official</a>}
               </li>
             ))}

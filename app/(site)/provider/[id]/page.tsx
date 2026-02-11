@@ -224,9 +224,9 @@ export default async function ProviderPage({
                 {providerId || 'unknown'}
               </div>
               <div className="flex flex-wrap gap-3">
-                <a href="/providers" className="cta-secondary text-xs">Browse providers</a>
-                <a href="/api/public/v1/providers" className="cta-secondary text-xs">Providers JSON</a>
-                <a href="/api/public/v1/status/summary" className="cta-secondary text-xs">Status summary JSON</a>
+                <Link href="/providers" className="cta-secondary text-xs">Browse providers</Link>
+                <Link href="/api/public/v1/providers" className="cta-secondary text-xs">Providers JSON</Link>
+                <Link href="/api/public/v1/status/summary" className="cta-secondary text-xs">Status summary JSON</Link>
               </div>
             </section>
           </div>
@@ -248,8 +248,13 @@ export default async function ProviderPage({
   const summary = summaries.find((entry) => entry.providerId === provider.id);
   const pollSeconds = sourcePolls.get(provider.id) ?? 120;
   const updatedAt = summary?.lastUpdated ? Date.parse(summary.lastUpdated) : NaN;
+  const baselineCheckedAt = baseStatus.lastChecked ? Date.parse(baseStatus.lastChecked) : NaN;
+  const freshDeltaMs =
+    Number.isFinite(updatedAt) && Number.isFinite(baselineCheckedAt)
+      ? Math.abs(baselineCheckedAt - updatedAt)
+      : Number.POSITIVE_INFINITY;
   const isFresh =
-    Number.isFinite(updatedAt) && Date.now() - updatedAt <= pollSeconds * 2 * 1000 + 60000;
+    Number.isFinite(updatedAt) && freshDeltaMs <= pollSeconds * 2 * 1000 + 60000;
   const hasEvidence =
     (summary?.activeIncidentCount || 0) > 0 ||
     (summary?.activeMaintenanceCount || 0) > 0 ||

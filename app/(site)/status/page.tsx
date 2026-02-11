@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Status',
@@ -15,8 +16,8 @@ export default function StatusPage() {
           For real-time view, see the homepage. Snapshot links below are static/SSR-friendly.
         </p>
         <ul className="list-disc list-inside text-sm text-slate-600 dark:text-slate-300">
-          <li><a href="/api/public/v1/status/summary">/api/public/v1/status/summary</a></li>
-          <li><a href="/api/public/v1/incidents">/api/public/v1/incidents</a></li>
+          <li><Link href="/api/public/v1/status/summary">/api/public/v1/status/summary</Link></li>
+          <li><Link href="/api/public/v1/incidents">/api/public/v1/incidents</Link></li>
           <li><a href="/openapi.json">/openapi.json</a></li>
           <li><a href="/llms.txt">/llms.txt</a></li>
         </ul>

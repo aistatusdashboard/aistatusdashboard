@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 type ProviderOption = {
@@ -49,26 +49,29 @@ export default function LandingSearch({ providers, variant = 'compact' }: Landin
     [providers]
   );
 
-  const resolveProvider = (value: string): { id: string; score: number } | null => {
-    const needle = normalize(value);
-    if (!needle) return null;
+  const resolveProvider = useCallback(
+    (value: string): { id: string; score: number } | null => {
+      const needle = normalize(value);
+      if (!needle) return null;
 
-    let best: { id: string; score: number } | null = null;
-    index.forEach((provider) => {
-      provider.tokens.forEach((token) => {
-        const normalizedToken = normalize(token);
-        if (!normalizedToken) return;
-        let score = 0;
-        if (normalizedToken === needle) score = 3;
-        else if (normalizedToken.startsWith(needle)) score = 2;
-        else if (normalizedToken.includes(needle)) score = 1;
-        if (!best || score > best.score) {
-          best = { id: provider.id, score };
-        }
+      let best: { id: string; score: number } | null = null;
+      index.forEach((provider) => {
+        provider.tokens.forEach((token) => {
+          const normalizedToken = normalize(token);
+          if (!normalizedToken) return;
+          let score = 0;
+          if (normalizedToken === needle) score = 3;
+          else if (normalizedToken.startsWith(needle)) score = 2;
+          else if (normalizedToken.includes(needle)) score = 1;
+          if (!best || score > best.score) {
+            best = { id: provider.id, score };
+          }
+        });
       });
-    });
-    return best;
-  };
+      return best;
+    },
+    [index]
+  );
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -81,7 +84,7 @@ export default function LandingSearch({ providers, variant = 'compact' }: Landin
       }
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [query, router]);
+  }, [query, resolveProvider, router]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
