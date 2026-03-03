@@ -55,6 +55,7 @@ type DifficultyProfile = {
   hitBase: number;
   comboBonus: number;
   integrityRecover: number;
+  missionTarget: number;
 };
 
 type BadgeTier = {
@@ -79,6 +80,7 @@ const DIFFICULTY_PROFILES: Record<DifficultyKey, DifficultyProfile> = {
     hitBase: 16,
     comboBonus: 2,
     integrityRecover: 3,
+    missionTarget: 180,
   },
   standard: {
     label: 'Standard',
@@ -90,6 +92,7 @@ const DIFFICULTY_PROFILES: Record<DifficultyKey, DifficultyProfile> = {
     hitBase: 14,
     comboBonus: 3,
     integrityRecover: 2,
+    missionTarget: 260,
   },
   challenge: {
     label: 'Challenge',
@@ -101,6 +104,7 @@ const DIFFICULTY_PROFILES: Record<DifficultyKey, DifficultyProfile> = {
     hitBase: 12,
     comboBonus: 4,
     integrityRecover: 1,
+    missionTarget: 340,
   },
 };
 
@@ -308,6 +312,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
   const lastSpawnRef = useRef(0);
   const difficultyTouchedRef = useRef(false);
   const unlockedBadgeRef = useRef('');
+  const missionCompletedRef = useRef(false);
   const difficultyProfile = DIFFICULTY_PROFILES[difficulty];
 
   useEffect(() => {
@@ -361,6 +366,21 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
       unlockedBadgeRef.current = '';
     }
   }, [combo, difficulty]);
+
+  useEffect(() => {
+    if (score >= difficultyProfile.missionTarget && !missionCompletedRef.current) {
+      missionCompletedRef.current = true;
+      setBotMessage(`Objective complete. ${difficultyProfile.label} mission cleared at ${score} points.`);
+      trackEvent('status_radar_mission_complete', {
+        metadata: {
+          difficulty,
+          score,
+          target: difficultyProfile.missionTarget,
+          bestCombo,
+        },
+      });
+    }
+  }, [bestCombo, difficulty, difficultyProfile.label, difficultyProfile.missionTarget, score]);
 
   useEffect(() => {
     if (score <= highScore) return;
@@ -504,6 +524,10 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
   );
   const streakBadge = useMemo(() => getBadgeForCombo(combo), [combo]);
   const careerBadge = useMemo(() => getBadgeForCombo(bestCombo), [bestCombo]);
+  const missionProgress = Math.min(
+    100,
+    Math.round((Math.max(0, score) / difficultyProfile.missionTarget) * 100)
+  );
 
   const eyeTone = activeTargets.length > 0 || integrity < 45 ? 'bg-rose-400' : 'bg-emerald-400';
   const integrityTone =
@@ -614,6 +638,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     setSelectedTargetId(null);
     setShareFeedback('');
     unlockedBadgeRef.current = '';
+    missionCompletedRef.current = false;
   };
 
   const resetSimulation = () => {
@@ -632,6 +657,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     lastSpawnRef.current = seed;
     setShareFeedback('');
     unlockedBadgeRef.current = '';
+    missionCompletedRef.current = false;
   };
 
   useEffect(() => {
@@ -702,6 +728,31 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
       {shareFeedback ? (
         <p className="text-xs text-slate-500 dark:text-slate-400">{shareFeedback}</p>
       ) : null}
+      <div className="surface-card p-3 md:p-4">
+        <p className="text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-slate-400">
+          Objective
+        </p>
+        <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
+          Clear red anomaly pings before timeout. Every miss reduces integrity. Reach{' '}
+          <span className="font-semibold">{difficultyProfile.missionTarget}</span> points before integrity hits 0.
+        </p>
+        <div className="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span>
+            Mission progress ({difficultyProfile.label})
+          </span>
+          <span className="tabular-nums">
+            {score}/{difficultyProfile.missionTarget}
+          </span>
+        </div>
+        <div className="mt-2 h-2 rounded-full bg-slate-200/70 dark:bg-slate-800/80 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${
+              missionProgress >= 100 ? 'bg-emerald-500' : 'bg-sky-500'
+            }`}
+            style={{ width: `${missionProgress}%` }}
+          />
+        </div>
+      </div>
 
       <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] items-stretch">
         <div className="surface-card p-4 md:p-5">
