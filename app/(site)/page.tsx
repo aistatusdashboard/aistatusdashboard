@@ -4,12 +4,39 @@ import LandingSearch from '@/app/components/LandingSearch';
 import LivePulse from '@/app/components/LivePulse';
 import { getChangelogEntries } from '@/lib/services/changelog';
 import GuidedTourLink from '@/app/components/GuidedTourLink';
+import StatusRadarGame, { type RadarProvider, type StatusRadarPulse } from '@/app/components/StatusRadarGame';
+import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LandingPage() {
   const providers = providerService.getProviders();
   const changelog = await getChangelogEntries(5);
+  const livePulse = await getLivePulseSnapshot();
+  const incidentProviderIds = new Set(
+    livePulse.recentIncidents
+      .map((incident) => incident.provider_id || incident.providerId)
+      .filter((value): value is string => Boolean(value))
+  );
+  const radarProviders: RadarProvider[] = providers.map((provider) => ({
+    id: provider.id,
+    label: provider.displayName || provider.name,
+    status: incidentProviderIds.has(provider.id)
+      ? livePulse.status === 'down'
+        ? ('down' as const)
+        : ('degraded' as const)
+      : ('operational' as const),
+  }));
+  const radarPulse: StatusRadarPulse = {
+    status: livePulse.status,
+    incidents24h: livePulse.incidents24h,
+    tracking: livePulse.tracking,
+    recentIncidents: livePulse.recentIncidents.map((incident) => ({
+      incidentId: incident.incident_id,
+      title: incident.title,
+      providerId: incident.provider_id || incident.providerId,
+    })),
+  };
 
   return (
     <main className="flex-1">
@@ -75,9 +102,12 @@ export default async function LandingPage() {
                 aliases: provider.aliases,
               }))}
             />
+            <div className="pt-2 lg:pr-4">
+              <StatusRadarGame providers={radarProviders} pulse={radarPulse} />
+            </div>
           </div>
           <div className="order-1 lg:order-2 w-full lg:max-w-[420px] lg:justify-self-end">
-            <LivePulse />
+            <LivePulse snapshot={livePulse} />
           </div>
         </div>
       </section>

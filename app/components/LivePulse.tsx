@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
+import { getLivePulseSnapshot, type LivePulseSnapshot } from '@/lib/services/live-pulse';
 import { providerService } from '@/lib/services/providers';
 import { formatTimeAgo } from '@/lib/utils/time';
 
@@ -31,8 +31,12 @@ const STATUS_COPY = {
   },
 } as const;
 
-export default async function LivePulse() {
-  const snapshot = await getLivePulseSnapshot();
+interface LivePulseProps {
+  snapshot?: LivePulseSnapshot;
+}
+
+export default async function LivePulse({ snapshot: initialSnapshot }: LivePulseProps = {}) {
+  const snapshot = initialSnapshot || (await getLivePulseSnapshot());
   const statusMeta = STATUS_COPY[snapshot.status] || STATUS_COPY.unknown;
   const updatedAgo = formatTimeAgo(snapshot.lastUpdated);
   const providerMap = new Map(
