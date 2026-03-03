@@ -45,6 +45,12 @@ type RadarTarget = {
   anomalyLevel: number;
 };
 
+type ClickResolution = {
+  hit: boolean;
+  providerLabel: string;
+  level: number;
+};
+
 type DifficultyProfile = {
   label: string;
   spawnMultiplier: number;
@@ -217,6 +223,23 @@ function getBadgeForCombo(combo: number): BadgeTier {
     }
   }
   return STREAK_BADGES[0];
+}
+
+function resolveTargetClick(
+  targets: RadarTarget[],
+  targetId: string,
+  now: number
+): ClickResolution {
+  const target = targets.find((entry) => entry.id === targetId);
+  if (!target) {
+    return { hit: false, providerLabel: 'Unknown', level: 0 };
+  }
+  const isHot = target.anomalyUntil !== null && target.anomalyUntil > now;
+  return {
+    hit: isHot,
+    providerLabel: target.label,
+    level: isHot ? target.anomalyLevel : 0,
+  };
 }
 
 function buildTargets(
@@ -449,13 +472,21 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
           let vx = target.vx;
           let vy = target.vy;
 
-          if (x < 7 || x > 93) {
-            vx *= -1;
-            x = Math.min(93, Math.max(7, x));
-          }
-          if (y < 7 || y > 93) {
-            vy *= -1;
-            y = Math.min(93, Math.max(7, y));
+          // Keep every target inside the circular radar boundary.
+          const centerX = 50;
+          const centerY = 50;
+          const radarRadius = 43;
+          const dx = x - centerX;
+          const dy = y - centerY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance > radarRadius) {
+            const nx = dx / distance;
+            const ny = dy / distance;
+            const dot = vx * nx + vy * ny;
+            vx = vx - 2 * dot * nx;
+            vy = vy - 2 * dot * ny;
+            x = centerX + nx * radarRadius;
+            y = centerY + ny * radarRadius;
           }
 
           if (target.anomalyUntil !== null && target.anomalyUntil <= now) {
@@ -537,17 +568,14 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     if (integrityRef.current <= 0) return;
     setSelectedTargetId(targetId);
 
-    let wasHit = false;
-    let providerLabel = '';
-    let level = 0;
+    const clickTime = nowMs > 0 ? nowMs : Math.max(1, lastSpawnRef.current);
+    setNowMs(clickTime);
+    const resolution = resolveTargetClick(targets, targetId, clickTime);
 
     setTargets((prev) =>
       prev.map((target) => {
         if (target.id !== targetId) return target;
-        providerLabel = target.label;
-        if (target.anomalyUntil !== null && target.anomalyUntil > nowMs) {
-          wasHit = true;
-          level = target.anomalyLevel;
+        if (target.anomalyUntil !== null && target.anomalyUntil > clickTime) {
           return {
             ...target,
             anomalyUntil: null,
@@ -560,18 +588,18 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
       })
     );
 
-    if (wasHit) {
+    if (resolution.hit) {
       const comboBonus = comboRef.current * difficultyProfile.comboBonus;
-      setScore((value) => value + difficultyProfile.hitBase + comboBonus + level * 4);
+      setScore((value) => value + difficultyProfile.hitBase + comboBonus + resolution.level * 4);
       setCombo((value) => value + 1);
       setIntegrity((value) => Math.min(100, value + difficultyProfile.integrityRecover));
-      setBotMessage(`Patch successful at ${providerLabel}. Keep chaining detections.`);
+      setBotMessage(`Patch successful at ${resolution.providerLabel}. Keep chaining detections.`);
       return;
     }
 
     setCombo(0);
     setScore((value) => Math.max(0, value - difficultyProfile.falsePenalty));
-    setBotMessage(`Quiet signal at ${providerLabel}. Stay focused on red pings.`);
+    setBotMessage(`Quiet signal at ${resolution.providerLabel}. Stay focused on red pings.`);
   };
 
   const handleShareScore = async () => {
@@ -756,7 +784,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
 
       <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] items-stretch">
         <div className="surface-card p-4 md:p-5">
-          <div className="relative mx-auto w-full max-w-[430px] aspect-square">
+          <div className="relative mx-auto w-full max-w-[430px] aspect-square overflow-hidden rounded-full">
             <div className="absolute inset-0 rounded-full border border-emerald-300/40 dark:border-emerald-500/25 bg-[radial-gradient(circle_at_center,_rgba(15,118,110,0.2),_rgba(2,6,23,0.02)_72%)] dark:bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.18),_rgba(15,23,42,0.55)_72%)]" />
             <div className="absolute inset-[9%] rounded-full border border-emerald-300/35 dark:border-emerald-500/20" />
             <div className="absolute inset-[22%] rounded-full border border-emerald-300/30 dark:border-emerald-500/15" />
@@ -817,21 +845,21 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
           </div>
 
           <div className="surface-card p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+            <div className="grid grid-cols-2 gap-2 text-center">
               <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/75 dark:bg-slate-900/65 p-2 md:col-span-1">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Score</p>
+                <p className="text-[10px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Score</p>
                 <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white tabular-nums">{score}</p>
               </div>
               <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/75 dark:bg-slate-900/65 p-2">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Combo</p>
+                <p className="text-[10px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Combo</p>
                 <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white tabular-nums">{combo}</p>
               </div>
               <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/75 dark:bg-slate-900/65 p-2">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Integrity</p>
+                <p className="text-[10px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Integrity</p>
                 <p className={`mt-1 text-lg font-semibold tabular-nums ${integrityTone}`}>{integrity}%</p>
               </div>
               <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/75 dark:bg-slate-900/65 p-2">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Best</p>
+                <p className="text-[10px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Best</p>
                 <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white tabular-nums">{highScore}</p>
               </div>
             </div>
