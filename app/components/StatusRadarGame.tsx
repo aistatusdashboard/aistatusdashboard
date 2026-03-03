@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { trackEvent } from '@/lib/utils/analytics-client';
 
 type StatusTone = 'operational' | 'degraded' | 'down' | 'maintenance' | 'unknown';
@@ -69,6 +69,20 @@ type BadgeTier = {
   minCombo: number;
   label: string;
   toneClass: string;
+};
+
+type ConfettiPiece = {
+  id: string;
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  size: number;
+  hue: number;
+  delay: number;
+  duration: number;
+  spin: number;
+  shape: 'dot' | 'chip';
 };
 
 const SCORE_STORAGE_KEY = 'status-radar-high-score-v1';
@@ -156,6 +170,7 @@ const STATUS_DOT: Record<StatusTone, string> = {
   maintenance: 'bg-sky-400 border-sky-200/90',
   unknown: 'bg-slate-400 border-slate-200/90',
 };
+const CONFETTI_HUES = [12, 26, 44, 58, 148, 182, 212, 332];
 
 function createPrng(seed: number) {
   let value = Math.floor(seed) % 2147483647;
@@ -242,6 +257,38 @@ function resolveTargetClick(
   };
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function buildConfettiBurst(
+  seed: number,
+  burstId: string,
+  originX: number,
+  originY: number,
+  count: number
+): ConfettiPiece[] {
+  const random = createPrng(seed);
+  return Array.from({ length: count }, (_, index) => {
+    const spreadAngle = random() * Math.PI * 2;
+    const spreadDistance = 28 + random() * 120;
+    const hue = CONFETTI_HUES[Math.floor(random() * CONFETTI_HUES.length)] || 160;
+    return {
+      id: `${burstId}-${index}`,
+      x: clamp(originX + (random() - 0.5) * 8, 6, 94),
+      y: clamp(originY + (random() - 0.5) * 7, 8, 82),
+      dx: Math.cos(spreadAngle) * spreadDistance,
+      dy: Math.sin(spreadAngle) * (spreadDistance * 0.5) + 58 + random() * 72,
+      size: 4 + random() * 7,
+      hue: hue + Math.floor(random() * 8 - 4),
+      delay: Math.floor(random() * 140),
+      duration: 900 + Math.floor(random() * 700),
+      spin: -220 + random() * 440,
+      shape: random() > 0.58 ? 'chip' : 'dot',
+    };
+  });
+}
+
 function buildTargets(
   providers: RadarProvider[],
   pulse: StatusRadarGameProps['pulse'],
@@ -322,6 +369,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
   const [difficulty, setDifficulty] = useState<DifficultyKey>(recommendedDifficulty);
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const [shareFeedback, setShareFeedback] = useState('');
+  const [confettiPieces, setConfettiPieces] = useState<ConfettiPiece[]>([]);
   const [botMessage, setBotMessage] = useState(
     pulse.status === 'operational'
       ? 'No critical anomalies. Keep a light scan running.'
@@ -336,7 +384,32 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
   const difficultyTouchedRef = useRef(false);
   const unlockedBadgeRef = useRef('');
   const missionCompletedRef = useRef(false);
+  const confettiTimersRef = useRef<number[]>([]);
   const difficultyProfile = DIFFICULTY_PROFILES[difficulty];
+
+  const clearConfetti = useCallback(() => {
+    confettiTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+    confettiTimersRef.current = [];
+    setConfettiPieces([]);
+  }, []);
+
+  const triggerConfetti = useCallback(
+    (originX: number, originY: number, intensity: 'badge' | 'mission') => {
+      if (reducedMotion) return;
+      const seed = Date.now() + Math.floor(Math.random() * 1000);
+      const burstId = `${seed}-${Math.floor(Math.random() * 10000)}`;
+      const pieceCount = intensity === 'mission' ? 34 : 20;
+      const burstTtlMs = intensity === 'mission' ? 2200 : 1700;
+      const pieces = buildConfettiBurst(seed, burstId, originX, originY, pieceCount);
+      setConfettiPieces((prev) => [...prev, ...pieces]);
+
+      const timerId = window.setTimeout(() => {
+        setConfettiPieces((prev) => prev.filter((piece) => !piece.id.startsWith(`${burstId}-`)));
+      }, burstTtlMs);
+      confettiTimersRef.current.push(timerId);
+    },
+    [reducedMotion]
+  );
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -345,6 +418,15 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     mediaQuery.addEventListener('change', updateMotion);
     return () => mediaQuery.removeEventListener('change', updateMotion);
   }, []);
+
+  useEffect(() => () => {
+    confettiTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+  }, []);
+
+  useEffect(() => {
+    if (!reducedMotion || confettiPieces.length === 0) return;
+    clearConfetti();
+  }, [clearConfetti, confettiPieces.length, reducedMotion]);
 
   useEffect(() => {
     try {
@@ -381,6 +463,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     if (badge.id !== unlockedBadgeRef.current && badge.minCombo > 0) {
       unlockedBadgeRef.current = badge.id;
       setBotMessage(`${badge.label} unlocked at ${combo}x streak.`);
+      triggerConfetti(81, 58, 'badge');
       trackEvent('status_radar_badge_unlock', {
         metadata: { badge: badge.id, combo, difficulty },
       });
@@ -388,12 +471,13 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     if (combo === 0) {
       unlockedBadgeRef.current = '';
     }
-  }, [combo, difficulty]);
+  }, [combo, difficulty, triggerConfetti]);
 
   useEffect(() => {
     if (score >= difficultyProfile.missionTarget && !missionCompletedRef.current) {
       missionCompletedRef.current = true;
       setBotMessage(`Objective complete. ${difficultyProfile.label} mission cleared at ${score} points.`);
+      triggerConfetti(49, 24, 'mission');
       trackEvent('status_radar_mission_complete', {
         metadata: {
           difficulty,
@@ -403,7 +487,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
         },
       });
     }
-  }, [bestCombo, difficulty, difficultyProfile.label, difficultyProfile.missionTarget, score]);
+  }, [bestCombo, difficulty, difficultyProfile.label, difficultyProfile.missionTarget, score, triggerConfetti]);
 
   useEffect(() => {
     if (score <= highScore) return;
@@ -435,11 +519,12 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
 
   useEffect(() => {
     const seed = Date.now() + Math.floor(Math.random() * 1000);
+    clearConfetti();
     setTargets(buildTargets(providers, pulse, seed));
     setNowMs(seed);
     lastSpawnRef.current = seed;
     unlockedBadgeRef.current = '';
-  }, [providers, pulse]);
+  }, [clearConfetti, providers, pulse]);
 
   const spawnDelayMs = useMemo(() => {
     const base =
@@ -559,6 +644,8 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     100,
     Math.round((Math.max(0, score) / difficultyProfile.missionTarget) * 100)
   );
+  const missionDisplayScore = Math.min(score, difficultyProfile.missionTarget);
+  const missionOverflow = Math.max(0, score - difficultyProfile.missionTarget);
 
   const eyeTone = activeTargets.length > 0 || integrity < 45 ? 'bg-rose-400' : 'bg-emerald-400';
   const integrityTone =
@@ -665,6 +752,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     setPaused(false);
     setSelectedTargetId(null);
     setShareFeedback('');
+    clearConfetti();
     unlockedBadgeRef.current = '';
     missionCompletedRef.current = false;
   };
@@ -684,6 +772,7 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
     setNowMs(seed);
     lastSpawnRef.current = seed;
     setShareFeedback('');
+    clearConfetti();
     unlockedBadgeRef.current = '';
     missionCompletedRef.current = false;
   };
@@ -697,6 +786,32 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
   return (
     <section className="surface-card-strong relative overflow-hidden p-5 md:p-6 space-y-4">
       <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,_rgba(45,212,191,0.2),_transparent_70%)] pointer-events-none" />
+      {confettiPieces.length > 0 ? (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+          {confettiPieces.map((piece) => {
+            const confettiStyle = {
+              left: `${piece.x}%`,
+              top: `${piece.y}%`,
+              width: `${piece.size}px`,
+              height: `${piece.shape === 'dot' ? piece.size : Math.max(3, piece.size * 0.66)}px`,
+              backgroundColor: `hsl(${piece.hue} 90% 58%)`,
+              animationDelay: `${piece.delay}ms`,
+              animationDuration: `${piece.duration}ms`,
+              '--confetti-tx': `${piece.dx}px`,
+              '--confetti-ty': `${piece.dy}px`,
+              '--confetti-rot': `${piece.spin}deg`,
+            } as CSSProperties;
+
+            return (
+              <span
+                key={piece.id}
+                className={`status-radar-confetti ${piece.shape === 'dot' ? 'rounded-full' : 'rounded-[2px]'}`}
+                style={confettiStyle}
+              />
+            );
+          })}
+        </div>
+      ) : null}
       <div className="relative flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
@@ -769,9 +884,14 @@ export default function StatusRadarGame({ providers, pulse }: StatusRadarGamePro
             Mission progress ({difficultyProfile.label})
           </span>
           <span className="tabular-nums">
-            {score}/{difficultyProfile.missionTarget}
+            {missionDisplayScore}/{difficultyProfile.missionTarget}
           </span>
         </div>
+        {missionOverflow > 0 ? (
+          <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-300 tabular-nums">
+            +{missionOverflow} bonus after objective reached
+          </p>
+        ) : null}
         <div className="mt-2 h-2 rounded-full bg-slate-200/70 dark:bg-slate-800/80 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-300 ${

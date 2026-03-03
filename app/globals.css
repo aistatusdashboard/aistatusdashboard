@@ -211,6 +211,35 @@ body {
   }
 }
 
+.status-radar-confetti {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation-name: status-radar-confetti;
+  animation-timing-function: cubic-bezier(0.2, 0.82, 0.22, 1);
+  animation-fill-mode: forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes status-radar-confetti {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate3d(0, 0, 0) rotate(0deg) scale(0.7);
+  }
+  12% {
+    opacity: 0.95;
+  }
+  82% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate3d(var(--confetti-tx, 0px), var(--confetti-ty, 120px), 0)
+      rotate(var(--confetti-rot, 180deg)) scale(1);
+  }
+}
+
 /* Print styles */
 @media print {
   * {
