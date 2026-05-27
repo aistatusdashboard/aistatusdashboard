@@ -4,10 +4,24 @@ import { jsonResponse, buildResponseMeta } from '@/lib/utils/public-api';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest, { params }: { params: { incident_id: string } }) {
+function safeDecode(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { incident_id: string } | Promise<{ incident_id: string }> }
+) {
+  const resolvedParams = await Promise.resolve(params as { incident_id: string });
+  const incidentId = safeDecode(resolvedParams?.incident_id || '');
+
   let incident;
   try {
-    incident = await getIncidentById(params.incident_id);
+    incident = incidentId ? await getIncidentById(incidentId) : null;
   } catch {
     incident = null;
   }

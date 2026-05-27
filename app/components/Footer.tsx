@@ -62,7 +62,7 @@ export default function Footer() {
           {siblings.map((sibling, index) => (
             <span key={sibling.key}>
               <a
-                href={sibling.url}
+                href={sibling.statsUrl}
                 className="text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white underline"
               >
                 {sibling.name}
