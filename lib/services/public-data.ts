@@ -319,9 +319,27 @@ export async function getIncidentById(incidentId: string) {
   const [providerId, ...rest] = incidentId.split(':');
   const innerIncidentId = rest.join(':');
 
+  // The list endpoint is sourced from intelligenceService; consult it first so
+  // detail lookups work even before persistence catches up.
+  try {
+    const memoryIncidents = await intelligenceService.getIncidents({
+      providerId: providerId && innerIncidentId ? providerId : undefined,
+      limit: 500,
+    });
+    const memoryMatch = memoryIncidents.find((row) => {
+      if (`${row.providerId}:${row.id}` === incidentId) return true;
+      return row.id === incidentId;
+    });
+    if (memoryMatch) {
+      incident = memoryMatch as NormalizedIncident;
+    }
+  } catch {
+    incident = null;
+  }
+
   // Firestore document IDs cannot contain "/" path separators. For encoded route
   // params that decode to slash-containing IDs, skip direct doc lookup and query by fields.
-  if (!incidentId.includes('/')) {
+  if (!incident && !incidentId.includes('/')) {
     const doc = await db.collection('incidents').doc(incidentId).get();
     if (doc.exists) {
       incident = doc.data() as NormalizedIncident;
