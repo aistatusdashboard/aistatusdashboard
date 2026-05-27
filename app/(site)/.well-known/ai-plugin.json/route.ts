@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
     },
     logo_url: `${ORIGIN}/logo.png`,
     contact_email: 'support@aistatusdashboard.com',
-    legal_info_url: `${ORIGIN}/`,
+    legal_info_url: `${ORIGIN}/terms`,
+    privacy_policy_url: `${ORIGIN}/privacy`,
   };
   return jsonResponse(request, payload, { cacheSeconds: 600 });
 }
