@@ -1,13 +1,12 @@
 import crypto from 'crypto';
+import { readFile } from 'fs/promises';
+import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
-import { buildOpenApiSpec } from '@/lib/openapi';
-import { toYaml } from '@/lib/utils/yaml';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const spec = buildOpenApiSpec('3.1.0');
-  const yaml = toYaml(spec);
+  const yaml = await readFile(path.join(process.cwd(), 'public', 'openapi.yaml'), 'utf8');
   const etag = `"${crypto.createHash('sha256').update(yaml).digest('hex')}"`;
 
   if (request.headers.get('if-none-match') === etag) {
