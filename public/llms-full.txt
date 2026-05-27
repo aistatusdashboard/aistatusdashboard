@@ -59,3 +59,11 @@ See https://aistatusdashboard.com/docs/citations.md and /incidents/{id}/cite for
 ## Notes
 - Plain text / markdown only
 - Updated regularly
+
+## Related projects
+- A2ABench: https://a2abench-api.web.app (Public benchmark for agent Q&A performance.)
+- Ragmap: https://ragmap-api.web.app (MCP search and RAG-focused server discovery.)
+- Rootfetch: https://rootfetch.com (DNS delegation intelligence with MCP telemetry.)
+- Agentability: https://agentability.org (Agent-readiness audit and evidence-backed report publishing.)
+- RelayOrb: https://relayorb.com (Tool control plane for AI agents with contract-first routing.)
+

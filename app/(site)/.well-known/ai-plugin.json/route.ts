@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server';
-import { getRequestOrigin } from '@/lib/utils/request';
 import { jsonResponse } from '@/lib/utils/public-api';
 
 export const dynamic = 'force-dynamic';
+const ORIGIN = 'https://aistatusdashboard.com';
 
 export async function GET(request: NextRequest) {
-  const origin = getRequestOrigin(request);
   const payload = {
     schema_version: 'v1',
     name_for_human: 'AIStatusDashboard',
@@ -18,12 +17,12 @@ export async function GET(request: NextRequest) {
     },
     api: {
       type: 'openapi',
-      url: `${origin}/openapi.json`,
+      url: `${ORIGIN}/openapi.json`,
       is_user_authenticated: false,
     },
-    logo_url: `${origin}/logo.png`,
+    logo_url: `${ORIGIN}/logo.png`,
     contact_email: 'support@aistatusdashboard.com',
-    legal_info_url: `${origin}/`,
+    legal_info_url: `${ORIGIN}/`,
   };
   return jsonResponse(request, payload, { cacheSeconds: 600 });
 }

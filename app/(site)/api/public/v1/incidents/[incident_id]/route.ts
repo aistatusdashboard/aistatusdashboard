@@ -5,7 +5,12 @@ import { jsonResponse, buildResponseMeta } from '@/lib/utils/public-api';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest, { params }: { params: { incident_id: string } }) {
-  const incident = await getIncidentById(params.incident_id);
+  let incident;
+  try {
+    incident = await getIncidentById(params.incident_id);
+  } catch {
+    incident = null;
+  }
   if (!incident) {
     const meta = buildResponseMeta({ evidence: [], confidence: 0 });
     return jsonResponse(

@@ -316,13 +316,35 @@ export async function searchIncidents(options: {
 export async function getIncidentById(incidentId: string) {
   const db = getDb();
   let incident: NormalizedIncident | null = null;
+  const [providerId, ...rest] = incidentId.split(':');
+  const innerIncidentId = rest.join(':');
 
-  const doc = await db.collection('incidents').doc(incidentId).get();
-  if (doc.exists) {
-    incident = doc.data() as NormalizedIncident;
+  // Firestore document IDs cannot contain "/" path separators. For encoded route
+  // params that decode to slash-containing IDs, skip direct doc lookup and query by fields.
+  if (!incidentId.includes('/')) {
+    const doc = await db.collection('incidents').doc(incidentId).get();
+    if (doc.exists) {
+      incident = doc.data() as NormalizedIncident;
+    }
   }
 
-  if (!incident && !incidentId.includes(':')) {
+  if (!incident && providerId && innerIncidentId) {
+    try {
+      const querySnap = await db
+        .collection('incidents')
+        .where('providerId', '==', providerId)
+        .where('id', '==', innerIncidentId)
+        .limit(1)
+        .get();
+      if (!querySnap.empty) {
+        incident = querySnap.docs[0].data() as NormalizedIncident;
+      }
+    } catch {
+      incident = null;
+    }
+  }
+
+  if (!incident) {
     const querySnap = await db
       .collection('incidents')
       .where('id', '==', incidentId)

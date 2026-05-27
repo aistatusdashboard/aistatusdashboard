@@ -5,9 +5,6 @@ const DEFAULT_CANONICAL_HOST = 'aistatusdashboard.com';
 const DISCOVERY_EXTENSIONS = ['.xml', '.yaml', '.md', '.ndjson', '.csv'];
 const DISCOVERY_BUILD_ID =
   process.env.APP_BUILD_ID || process.env.GITHUB_SHA || process.env.COMMIT_SHA || 'unknown';
-const DISCOVERY_PROXY_ORIGIN =
-  process.env.DISCOVERY_PROXY_ORIGIN ||
-  'https://raw.githubusercontent.com/aistatusdashboard/aistatusdashboard/main/public';
 
 function shouldBypassCache(request: NextRequest): boolean {
   const accept = request.headers.get('accept') || '';
@@ -29,12 +26,20 @@ function getCanonicalHost(): string | null {
 function isDiscoveryAsset(pathname: string): boolean {
   if (pathname === '/robots.txt') return true;
   if (pathname === '/rss.xml' || pathname === '/sitemap.xml') return true;
+  if (pathname === '/stats.json') return true;
+  if (pathname === '/agent.json' || pathname === '/air.json') return true;
+  if (pathname === '/ai-plugin.json') return true;
   if (pathname === '/llms.txt' || pathname === '/llms-full.txt') return true;
   if (pathname === '/openapi.json' || pathname === '/openapi-3.0.json') return true;
+  if (pathname === '/.well-known/agent.json') return true;
+  if (pathname === '/.well-known/air.json') return true;
+  if (pathname === '/.well-known/openapi.json' || pathname === '/.well-known/openapi.yaml') return true;
+  if (pathname === '/.well-known/ai-plugin.json') return true;
   if (pathname.startsWith('/datasets/')) return true;
   if (pathname.startsWith('/discovery/audit')) return true;
   if (pathname.startsWith('/docs/') && pathname.endsWith('.md')) return true;
   if (pathname === '/docs.md' || pathname === '/status.md' || pathname === '/providers.md') return true;
+  if (pathname === '/terms.md' || pathname === '/privacy.md' || pathname === '/cookies.md') return true;
   if (pathname === '/openapi.yaml' || pathname === '/openapi-3.0.yaml') return true;
   return DISCOVERY_EXTENSIONS.some((ext) => pathname.endsWith(ext));
 }
@@ -46,12 +51,6 @@ function isPublicIndexable(pathname: string): boolean {
   if (pathname.startsWith('/incidents')) return true;
   if (pathname.startsWith('/status')) return true;
   return false;
-}
-
-function getProxyPath(pathname: string): string {
-  if (pathname === '/discovery/audit') return '/discovery/audit/index.html';
-  if (pathname === '/discovery/audit/') return '/discovery/audit/index.html';
-  return pathname;
 }
 
 function applyDiscoveryHeaders(response: NextResponse, pathname: string) {
@@ -114,7 +113,19 @@ function applyDiscoveryHeaders(response: NextResponse, pathname: string) {
     return;
   }
 
+  if (pathname === '/agent.json' || pathname === '/air.json' || pathname === '/ai-plugin.json' || pathname.startsWith('/.well-known/')) {
+    response.headers.set('Content-Type', 'application/json; charset=utf-8');
+    response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+    return;
+  }
+
   if (pathname === '/discovery/audit/latest.json') {
+    response.headers.set('Content-Type', 'application/json; charset=utf-8');
+    response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300');
+    return;
+  }
+
+  if (pathname === '/discovery/audit/latest.pretty.json') {
     response.headers.set('Content-Type', 'application/json; charset=utf-8');
     response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300');
     return;
@@ -144,25 +155,6 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isDiscoveryAsset(pathname)) {
-    try {
-      const proxyPath = getProxyPath(pathname);
-      const proxyUrl = `${DISCOVERY_PROXY_ORIGIN}${proxyPath}`;
-      const upstream = await fetch(proxyUrl, {
-        headers: {
-          'User-Agent': 'aistatusdashboard-discovery-proxy',
-        },
-      });
-      if (upstream.ok) {
-        const body = await upstream.arrayBuffer();
-        const response = new NextResponse(body, { status: 200 });
-        applyDiscoveryHeaders(response, pathname);
-        response.headers.set('X-Discovery-Source', 'proxy');
-        return response;
-      }
-    } catch {
-      // fall through to origin
-    }
-
     const response = NextResponse.next();
     applyDiscoveryHeaders(response, pathname);
     return response;

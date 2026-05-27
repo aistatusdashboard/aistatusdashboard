@@ -4,207 +4,207 @@
     <title>AI Status Dashboard Incidents</title>
     <link>https://aistatusdashboard.com/</link>
     <description>Incidents and maintenances</description>
-    <lastBuildDate>Sat, 24 Jan 2026 02:10:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 27 May 2026 19:07:14 GMT</lastBuildDate>
     <ttl>60</ttl>
     <item>
-      <title>anthropic: Elevated errors: Invalid `signature` in `thinking` block</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:5dvcj03m4d57</link>
-      <guid>incident-anthropic:5dvcj03m4d57</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated errors: Invalid `signature` in `thinking` block</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>anthropic: Elevated error rates on claude.ai and API</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:713v1h3z2j5k</link>
-      <guid>incident-anthropic:713v1h3z2j5k</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated error rates on claude.ai and API</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>anthropic: Claude Code Authentication Issues</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:58sxy43h7kvf</link>
-      <guid>incident-anthropic:58sxy43h7kvf</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Claude Code Authentication Issues</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>anthropic: Elevated errors on claude.ai</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:ct82mw4kc0kt</link>
-      <guid>incident-anthropic:ct82mw4kc0kt</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated errors on claude.ai</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>openai: Codex Github Issues</title>
-      <link>https://aistatusdashboard.com/incidents/openai:01KFK1A9AAJ246K5G966PSQQJK</link>
-      <guid>incident-openai:01KFK1A9AAJ246K5G966PSQQJK</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Codex Github Issues</description>
+      <title>openai: Codex Context Compaction Latency</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KSN9ATSF1WCJ5ZTQSR1H9CC7</link>
+      <guid>incident-openai:01KSN9ATSF1WCJ5ZTQSR1H9CC7</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Codex Context Compaction Latency</description>
       <category>openai</category>
     </item>
     <item>
-      <title>runway: Issues with Gemini 3 Pro image generations</title>
-      <link>https://aistatusdashboard.com/incidents/runway:k6prdnkp0hsg</link>
-      <guid>incident-runway:k6prdnkp0hsg</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Issues with Gemini 3 Pro image generations</description>
+      <title>openai: Elevated Latency and Errors on API</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KSMYEEWP0BZYANSMAXWJ3K59</link>
+      <guid>incident-openai:01KSMYEEWP0BZYANSMAXWJ3K59</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated Latency and Errors on API</description>
+      <category>openai</category>
+    </item>
+    <item>
+      <title>openai: Android ChatGPT Business users having trouble switching workspaces</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KSN40TAYQYGAKFA50HNH22YG</link>
+      <guid>incident-openai:01KSN40TAYQYGAKFA50HNH22YG</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Android ChatGPT Business users having trouble switching workspaces</description>
+      <category>openai</category>
+    </item>
+    <item>
+      <title>openai: Login issues for FedRAMP users who recently logged out</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KSJKR3EXTMKY0C287HS1BR8P</link>
+      <guid>incident-openai:01KSJKR3EXTMKY0C287HS1BR8P</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Login issues for FedRAMP users who recently logged out</description>
+      <category>openai</category>
+    </item>
+    <item>
+      <title>runway: We&apos;ve identified a problem with Seedance and working on a fix</title>
+      <link>https://aistatusdashboard.com/incidents/runway:5flxznwwnj93</link>
+      <guid>incident-runway:5flxznwwnj93</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>We&apos;ve identified a problem with Seedance and working on a fix</description>
       <category>runway</category>
     </item>
     <item>
-      <title>anthropic: Elevated errors on Claude Sonnet 4.5</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:yrxt885v63jw</link>
-      <guid>incident-anthropic:yrxt885v63jw</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated errors on Claude Sonnet 4.5</description>
+      <title>anthropic: Elevated errors on Claude Opus 4.7</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:rtr7z82cqmp9</link>
+      <guid>incident-anthropic:rtr7z82cqmp9</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated errors on Claude Opus 4.7</description>
       <category>anthropic</category>
     </item>
     <item>
-      <title>replicate: Predictions and training unavailable for multiple models</title>
-      <link>https://aistatusdashboard.com/incidents/replicate:01KFESSJ2K93ZTF97QM1BH077D</link>
-      <guid>incident-replicate:01KFESSJ2K93ZTF97QM1BH077D</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Predictions and training unavailable for multiple models</description>
-      <category>replicate</category>
-    </item>
-    <item>
-      <title>replicate: Flux Schnell unavailable</title>
-      <link>https://aistatusdashboard.com/incidents/replicate:01KFEK731W8VHXNT0Y6DDGH1SW</link>
-      <guid>incident-replicate:01KFEK731W8VHXNT0Y6DDGH1SW</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Flux Schnell unavailable</description>
-      <category>replicate</category>
-    </item>
-    <item>
-      <title>anthropic: Elevated errors on Claude Opus 4.5 and Sonnet 4.5</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:l3q16xnl4t2f</link>
-      <guid>incident-anthropic:l3q16xnl4t2f</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated errors on Claude Opus 4.5 and Sonnet 4.5</description>
+      <title>anthropic: Elevated errors on Claude Opus 4.7</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:fw96fnc5bw45</link>
+      <guid>incident-anthropic:fw96fnc5bw45</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated errors on Claude Opus 4.7</description>
       <category>anthropic</category>
     </item>
     <item>
-      <title>cerebras: Llama 3.3 70B Service Unavailable</title>
-      <link>https://aistatusdashboard.com/incidents/cerebras:3k88y08my27d</link>
-      <guid>incident-cerebras:3k88y08my27d</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Llama 3.3 70B Service Unavailable</description>
-      <category>cerebras</category>
-    </item>
-    <item>
-      <title>runway: Increased Gen 4.5 wait times</title>
-      <link>https://aistatusdashboard.com/incidents/runway:f0kq73q1fhnz</link>
-      <guid>incident-runway:f0kq73q1fhnz</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Increased Gen 4.5 wait times</description>
+      <title>runway: Issues affecting Aleph 2.0 generations</title>
+      <link>https://aistatusdashboard.com/incidents/runway:m29f445kq2k1</link>
+      <guid>incident-runway:m29f445kq2k1</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Issues affecting Aleph 2.0 generations</description>
       <category>runway</category>
     </item>
     <item>
-      <title>cerebras: Partial Service Disruption- API Key Error</title>
-      <link>https://aistatusdashboard.com/incidents/cerebras:6rbx7nr1ljmw</link>
-      <guid>incident-cerebras:6rbx7nr1ljmw</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Partial Service Disruption- API Key Error</description>
-      <category>cerebras</category>
+      <title>runway: We&apos;ve identified a problem and are working on a fix</title>
+      <link>https://aistatusdashboard.com/incidents/runway:w12v5s09sr0q</link>
+      <guid>incident-runway:w12v5s09sr0q</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>We&apos;ve identified a problem and are working on a fix</description>
+      <category>runway</category>
     </item>
     <item>
-      <title>anthropic: Compaction is having issues</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:6ykk5hyrg95v</link>
-      <guid>incident-anthropic:6ykk5hyrg95v</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Compaction is having issues</description>
+      <title>openai: Users unable to access chat support on help center</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KSJZHDY7E780KF9J2ZZ8M0GE</link>
+      <guid>incident-openai:01KSJZHDY7E780KF9J2ZZ8M0GE</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Users unable to access chat support on help center</description>
+      <category>openai</category>
+    </item>
+    <item>
+      <title>anthropic: Elevated errors for Claude Code in Slack</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:fl8sx824x72r</link>
+      <guid>incident-anthropic:fl8sx824x72r</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated errors for Claude Code in Slack</description>
       <category>anthropic</category>
     </item>
     <item>
-      <title>replicate: Prediction Errors</title>
-      <link>https://aistatusdashboard.com/incidents/replicate:01KF09F8PY0Y7BGZ055S3ZW0WE</link>
-      <guid>incident-replicate:01KF09F8PY0Y7BGZ055S3ZW0WE</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Prediction Errors</description>
+      <title>runway: We are aware of issues affecting video generation with Veo 3.1</title>
+      <link>https://aistatusdashboard.com/incidents/runway:llt0t4v1fw4q</link>
+      <guid>incident-runway:llt0t4v1fw4q</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>We are aware of issues affecting video generation with Veo 3.1</description>
+      <category>runway</category>
+    </item>
+    <item>
+      <title>runway: Issues with GPT Image 2 image generation</title>
+      <link>https://aistatusdashboard.com/incidents/runway:nyjtm3ctdfzk</link>
+      <guid>incident-runway:nyjtm3ctdfzk</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Issues with GPT Image 2 image generation</description>
+      <category>runway</category>
+    </item>
+    <item>
+      <title>anthropic: Elevated error rates on Opus 4.7</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:44pgyz54d48z</link>
+      <guid>incident-anthropic:44pgyz54d48z</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated error rates on Opus 4.7</description>
+      <category>anthropic</category>
+    </item>
+    <item>
+      <title>openai: Increase in users hitting Codex rate limits</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KS88SRADTWQW27NYRAXMBAQN</link>
+      <guid>incident-openai:01KS88SRADTWQW27NYRAXMBAQN</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Increase in users hitting Codex rate limits</description>
+      <category>openai</category>
+    </item>
+    <item>
+      <title>anthropic: Elevated errors on Claude Opus 4.7</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:r1prbh7v5gcn</link>
+      <guid>incident-anthropic:r1prbh7v5gcn</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated errors on Claude Opus 4.7</description>
+      <category>anthropic</category>
+    </item>
+    <item>
+      <title>anthropic: Elevated error rate on multiple models</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:p0mgnjv3bj97</link>
+      <guid>incident-anthropic:p0mgnjv3bj97</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated error rate on multiple models</description>
+      <category>anthropic</category>
+    </item>
+    <item>
+      <title>replicate: Prediction and Training status updates delayed</title>
+      <link>https://aistatusdashboard.com/incidents/replicate:01KS67KCNDDR9BH7MTX9X5PQ90</link>
+      <guid>incident-replicate:01KS67KCNDDR9BH7MTX9X5PQ90</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Prediction and Training status updates delayed</description>
       <category>replicate</category>
     </item>
     <item>
-      <title>anthropic: Elevated error rates on Opus 4.5 and Sonnet 4.5</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:tgzm3mf45wzc</link>
-      <guid>incident-anthropic:tgzm3mf45wzc</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated error rates on Opus 4.5 and Sonnet 4.5</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>openai: Elevated error rates for ChatGPT users</title>
-      <link>https://aistatusdashboard.com/incidents/openai:01KEWWZ8Y87E1WFFQQJZAM0GMK</link>
-      <guid>incident-openai:01KEWWZ8Y87E1WFFQQJZAM0GMK</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated error rates for ChatGPT users</description>
+      <title>openai: Elevated latency and error rates for ChatGPT 5.5 Thinking</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KS695P8GHC0NCMFE96C34KJ1</link>
+      <guid>incident-openai:01KS695P8GHC0NCMFE96C34KJ1</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated latency and error rates for ChatGPT 5.5 Thinking</description>
       <category>openai</category>
     </item>
     <item>
-      <title>anthropic: Increased rate of errors for Opus 4.5</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:09v917vcc8kg</link>
-      <guid>incident-anthropic:09v917vcc8kg</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Increased rate of errors for Opus 4.5</description>
-      <category>anthropic</category>
+      <title>replicate: Constrained H100 capacity</title>
+      <link>https://aistatusdashboard.com/incidents/replicate:01KS5HAZ81FTKBNB9KT3GFXHEC</link>
+      <guid>incident-replicate:01KS5HAZ81FTKBNB9KT3GFXHEC</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Constrained H100 capacity</description>
+      <category>replicate</category>
     </item>
     <item>
-      <title>anthropic: Elevated rate of errors for multiple models</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:zt2q0ltqcvbx</link>
-      <guid>incident-anthropic:zt2q0ltqcvbx</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated rate of errors for multiple models</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>anthropic: Increased rate of errors for Opus 4.5</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:s2g3slcdq9jk</link>
-      <guid>incident-anthropic:s2g3slcdq9jk</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Increased rate of errors for Opus 4.5</description>
-      <category>anthropic</category>
-    </item>
-    <item>
-      <title>openai: Connectors/Apps unselectable in ChatGPT Input Menu</title>
-      <link>https://aistatusdashboard.com/incidents/openai:01KESV314P64MK8XSV6Q5DCDJ2</link>
-      <guid>incident-openai:01KESV314P64MK8XSV6Q5DCDJ2</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Connectors/Apps unselectable in ChatGPT Input Menu</description>
+      <title>openai: Elevated error rates on ChatGPT paid plans</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KS5CYS472SA003BQSXSBM8EW</link>
+      <guid>incident-openai:01KS5CYS472SA003BQSXSBM8EW</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated error rates on ChatGPT paid plans</description>
       <category>openai</category>
     </item>
     <item>
-      <title>anthropic: Elevated error rates on Sonnet 4.5 1M context</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:cns634h0tfmv</link>
-      <guid>incident-anthropic:cns634h0tfmv</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Elevated error rates on Sonnet 4.5 1M context</description>
+      <title>anthropic: Elevated errors on Claude.ai</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:zvlgr3k8lny0</link>
+      <guid>incident-anthropic:zvlgr3k8lny0</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated errors on Claude.ai</description>
       <category>anthropic</category>
     </item>
     <item>
-      <title>anthropic: Degraded performance for API requests involving structured outputs.</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:846yxgg3v8nr</link>
-      <guid>incident-anthropic:846yxgg3v8nr</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Degraded performance for API requests involving structured outputs.</description>
+      <title>anthropic: Elevated errors on Claude Opus 4.7</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:4znk51f63g93</link>
+      <guid>incident-anthropic:4znk51f63g93</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated errors on Claude Opus 4.7</description>
       <category>anthropic</category>
     </item>
     <item>
-      <title>anthropic: New Subscription Activation &amp; Payment Issues</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:pttlfp1vg4g3</link>
-      <guid>incident-anthropic:pttlfp1vg4g3</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>New Subscription Activation &amp; Payment Issues</description>
+      <title>anthropic: Elevated errors on Claude Haiku 4.5</title>
+      <link>https://aistatusdashboard.com/incidents/anthropic:vpwz6hxsvgs3</link>
+      <guid>incident-anthropic:vpwz6hxsvgs3</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>Elevated errors on Claude Haiku 4.5</description>
       <category>anthropic</category>
     </item>
     <item>
-      <title>anthropic: Increased latency on Sonnet 4.5</title>
-      <link>https://aistatusdashboard.com/incidents/anthropic:jlg58yl731jj</link>
-      <guid>incident-anthropic:jlg58yl731jj</guid>
-      <pubDate>Sat, 24 Jan 2026 02:09:59 GMT</pubDate>
-      <description>Increased latency on Sonnet 4.5</description>
-      <category>anthropic</category>
+      <title>openai: API users may see increased error rates for GPT-5.4 and GPT-5.5</title>
+      <link>https://aistatusdashboard.com/incidents/openai:01KS19AHSEE3DAX1HHKNQB166F</link>
+      <guid>incident-openai:01KS19AHSEE3DAX1HHKNQB166F</guid>
+      <pubDate>Wed, 27 May 2026 19:07:13 GMT</pubDate>
+      <description>API users may see increased error rates for GPT-5.4 and GPT-5.5</description>
+      <category>openai</category>
     </item>
   </channel>
 </rss>

@@ -4,6 +4,73 @@ const crypto = require('crypto');
 
 const SITE_URL = process.env.SITE_URL || 'https://aistatusdashboard.com';
 const now = new Date().toISOString();
+const RELATED_PROJECTS = [
+  {
+    key: 'a2abench',
+    name: 'A2ABench',
+    url: 'https://a2abench-api.web.app',
+    stats_url: 'https://a2abench-api.web.app/stats',
+    stats_json_url: 'https://a2abench-api.web.app/stats.json',
+    agent_card_url: 'https://a2abench-api.web.app/.well-known/agent.json',
+    description: 'Public benchmark for agent Q&A performance.',
+  },
+  {
+    key: 'ragmap',
+    name: 'Ragmap',
+    url: 'https://ragmap-api.web.app',
+    stats_url: 'https://ragmap-api.web.app/stats',
+    stats_json_url: 'https://ragmap-api.web.app/stats.json',
+    agent_card_url: 'https://ragmap-api.web.app/.well-known/agent.json',
+    description: 'MCP search and RAG-focused server discovery.',
+  },
+  {
+    key: 'rootfetch',
+    name: 'Rootfetch',
+    url: 'https://rootfetch.com',
+    stats_url: 'https://rootfetch.com/stats',
+    stats_json_url: 'https://rootfetch.com/stats.json',
+    agent_card_url: 'https://rootfetch.com/.well-known/agent.json',
+    description: 'DNS delegation intelligence with MCP telemetry.',
+  },
+  {
+    key: 'agentability',
+    name: 'Agentability',
+    url: 'https://agentability.org',
+    stats_url: 'https://agentability.org/stats',
+    stats_json_url: 'https://agentability.org/stats.json',
+    agent_card_url: 'https://agentability.org/.well-known/agent.json',
+    description: 'Agent-readiness audit and evidence-backed report publishing.',
+  },
+  {
+    key: 'relayorb',
+    name: 'RelayOrb',
+    url: 'https://relayorb.com',
+    stats_url: 'https://relayorb.com/stats',
+    stats_json_url: 'https://relayorb.com/stats.json',
+    agent_card_url: 'https://relayorb.com/.well-known/agent.json',
+    description: 'Tool control plane for AI agents with contract-first routing.',
+  },
+];
+
+function relatedProjectsSection() {
+  return `## Related projects\n` +
+    RELATED_PROJECTS.map((project) => `- ${project.name}: ${project.url} (${project.description})`).join('\n') +
+    `\n`;
+}
+
+function siblingsObject() {
+  const out = {};
+  for (const project of RELATED_PROJECTS) {
+    out[project.key] = {
+      name: project.name,
+      url: project.url,
+      stats_url: project.stats_url,
+      stats_json_url: project.stats_json_url,
+      agent_card_url: project.agent_card_url,
+    };
+  }
+  return out;
+}
 
 async function ensureDir(filePath) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
@@ -102,6 +169,17 @@ async function buildSitemap(incidents, providers) {
   addUrl(`${SITE_URL}/terms`, '0.5', 'monthly');
   addUrl(`${SITE_URL}/privacy`, '0.5', 'monthly');
   addUrl(`${SITE_URL}/air.json`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/agent.json`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/.well-known/agent.json`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/.well-known/air.json`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/.well-known/openapi.json`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/.well-known/openapi.yaml`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/.well-known/ai-plugin.json`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/ai-plugin.json`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/llms.txt`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/llms-full.txt`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/stats`, '0.7', 'hourly');
+  addUrl(`${SITE_URL}/stats.json`, '0.7', 'hourly');
   addUrl(`${SITE_URL}/reports/weekly-ai-reliability`, '0.6', 'weekly');
   addUrl(`${SITE_URL}/reports/monthly-provider-scorecards`, '0.6', 'monthly');
   addUrl(`${SITE_URL}/docs/discoverability-audit`, '0.5', 'weekly');
@@ -146,6 +224,9 @@ function buildDocs() {
     'docs/citations.md': `# Citing AI Status Dashboard\n\nUse these references when citing incidents, metrics, or datasets.\n\n- Homepage: ${SITE_URL}/\n- AI landing: ${SITE_URL}/ai\n- OpenAPI: ${SITE_URL}/openapi.json\n- MCP: ${SITE_URL}/mcp\n- Datasets: ${SITE_URL}/datasets\n- Incident citation endpoint: ${SITE_URL}/incidents/{id}/cite\n\n## How to cite incidents\n1. Use the /incidents/{id}/cite endpoint for a JSON evidence bundle.\n2. Include the permalink and generated_at timestamp.\n3. Include source_urls (official status pages) from the cite payload.\n\n## How to cite datasets\n- Incidents NDJSON: ${SITE_URL}/datasets/incidents.ndjson\n- Metrics CSV: ${SITE_URL}/datasets/metrics.csv\n\nInclude temporal coverage and the retrieval date in your citation.\n`,
     'status.md': `# Status\n\nThis page mirrors public status data and links to the JSON endpoints.\n\n- Summary: ${SITE_URL}/api/public/v1/status/summary\n- Incidents: ${SITE_URL}/api/public/v1/incidents\n- RSS: ${SITE_URL}/rss.xml\n`,
     'docs/agent/mcp-quickstart.md': `# MCP Quickstart\n\nEndpoint: ${SITE_URL}/mcp\nRegistry: https://registry.modelcontextprotocol.io/v0.1/servers/io.github.aistatusdashboard%2Faistatusdashboard/versions/latest\nOpenAPI: ${SITE_URL}/openapi.json\n\n## Example call\n\n\`\`\`json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"status.get_summary\",\n    \"arguments\": { \"provider\": \"openai\", \"window_seconds\": 1800 }\n  }\n}\n\`\`\`\n`,
+    'terms.md': `# Terms of Service\n\nBy using AI Status Dashboard, you agree to these terms.\n\nAI Status Dashboard provides public status, incident, and telemetry summaries for AI providers. Information is provided "as is" for reference only and may be delayed or incomplete.\n\nYou are responsible for verifying any critical decisions. We do not guarantee uptime, accuracy, or availability of the service.\n\nYou may not abuse or overload the public APIs. Automated access must respect published rate limits and robots.txt policies.\n\nWe may update these terms over time. Continued use of the service constitutes acceptance of the latest terms.\n\nContact: hello@aistatusdashboard.com\n`,
+    'privacy.md': `# Privacy Policy\n\nHow AI Status Dashboard handles data and telemetry.\n\nWe collect minimal operational data needed to power status summaries, incidents, and reliability insights. We do not collect prompts or response content by default.\n\nAnonymous telemetry may include latency, error codes, provider identifiers, and coarse region. IP addresses are used transiently for rate limiting and abuse prevention.\n\nWe do not sell personal data. Data is retained only as long as needed for reliability reporting and auditing.\n\nIf you opt in to account-specific telemetry, data is hashed and stored without personal identifiers. You can request removal at any time.\n\n## Cookies and local storage\n\nWe use essential browser storage for core product features such as accessibility settings and session continuity.\n\nOptional analytics and telemetry storage is only enabled when you accept it in the cookie banner.\n\nContact: hello@aistatusdashboard.com\n`,
+    'cookies.md': `# Cookies and local storage\n\nAI Status Dashboard uses essential browser storage for core product features such as accessibility settings and session continuity.\n\nOptional analytics and telemetry storage is only enabled when you accept it in the cookie banner.\n\nYou can update your choice using Cookie preferences in the footer.\n`,
   };
 }
 
@@ -188,6 +269,8 @@ Sitemap: ${SITE_URL}/sitemap.xml
 Verification:
 - ${SITE_URL}/discovery/audit/latest.json
 - ${SITE_URL}/discovery/audit
+
+${relatedProjectsSection()}
 `;
 }
 
@@ -253,6 +336,8 @@ See ${SITE_URL}/docs/citations.md and /incidents/{id}/cite for evidence bundles.
 ## Notes
 - Plain text / markdown only
 - Updated regularly
+
+${relatedProjectsSection()}
 `;
 }
 
@@ -346,11 +431,13 @@ async function run() {
     await writeFile('openapi.json', openapiJson);
     await writeFile('openapi.yaml', openapiJson);
     await writeFile('.well-known/openapi.json', openapiJson);
+    await writeFile('.well-known/openapi.yaml', openapiJson);
   } catch (err) {
     const fallback = 'openapi: 3.1.0\ninfo:\n  title: AIStatusDashboard Public API\n  version: 1.0.0\npaths: {}\n';
     await writeFile('openapi.json', '{}\n');
     await writeFile('openapi.yaml', fallback);
     await writeFile('.well-known/openapi.json', '{}\n');
+    await writeFile('.well-known/openapi.yaml', fallback);
   }
 
   try {
@@ -388,6 +475,7 @@ async function run() {
       llms_txt: `${SITE_URL}/llms.txt`,
       llms_full_txt: `${SITE_URL}/llms-full.txt`,
     },
+    siblings: siblingsObject(),
   };
 
   const pluginManifest = {
@@ -408,9 +496,45 @@ async function run() {
     legal_info_url: `${SITE_URL}/terms`,
   };
 
+  const agentCard = {
+    name: 'AIStatusDashboard',
+    description: 'Real-time status monitoring and incident intelligence for 18 AI provider APIs with evidence-backed metrics, casual mode, public datasets, and fallback-plan generation.',
+    url: SITE_URL,
+    version: '1.0.0',
+    documentationUrl: `${SITE_URL}/llms-full.txt`,
+    apiEndpoints: {
+      openapi: `${SITE_URL}/.well-known/openapi.json`,
+      air: `${SITE_URL}/.well-known/air.json`,
+      plugin: `${SITE_URL}/.well-known/ai-plugin.json`,
+      providers: `${SITE_URL}/api/public/v1/providers`,
+      status_summary: `${SITE_URL}/api/public/v1/status/summary`,
+      health_matrix: `${SITE_URL}/api/public/v1/status/health-matrix`,
+      incidents: `${SITE_URL}/api/public/v1/incidents`,
+      metrics: `${SITE_URL}/api/public/v1/metrics`,
+      fallback_plan: `${SITE_URL}/api/public/v1/recommendations/fallback_plan`,
+      policy_generate: `${SITE_URL}/api/public/v1/policy/generate`,
+      casual_status: `${SITE_URL}/api/public/v1/casual/status`,
+      casual_reports: `${SITE_URL}/api/public/v1/casual/reports`,
+    },
+    mcpServers: [{ name: 'aistatusdashboard', transport: 'streamable-http', url: `${SITE_URL}/mcp` }],
+    datasets: [
+      { name: 'incidents', url: `${SITE_URL}/datasets/incidents.ndjson`, format: 'ndjson' },
+      { name: 'metrics', url: `${SITE_URL}/datasets/metrics.csv`, format: 'csv' },
+    ],
+    related: RELATED_PROJECTS.map((project) => ({
+      name: project.name,
+      url: project.url,
+      agent_card_url: project.agent_card_url,
+      description: project.description,
+    })),
+  };
+
   await writeFile('air.json', JSON.stringify(airJson, null, 2));
   await writeFile('.well-known/air.json', JSON.stringify(airJson, null, 2));
   await writeFile('.well-known/ai-plugin.json', JSON.stringify(pluginManifest, null, 2));
+  await writeFile('ai-plugin.json', JSON.stringify(pluginManifest, null, 2));
+  await writeFile('.well-known/agent.json', JSON.stringify(agentCard, null, 2));
+  await writeFile('agent.json', JSON.stringify(agentCard, null, 2));
 
   // Markdown mirrors
   const docsMap = buildDocs();
@@ -462,12 +586,16 @@ async function run() {
   const auditFiles = await Promise.all([
     fileInfo('sitemap.xml', 'application/xml; charset=utf-8'),
     fileInfo('rss.xml', 'application/rss+xml; charset=utf-8'),
+    fileInfo('agent.json', 'application/json; charset=utf-8'),
+    fileInfo('.well-known/agent.json', 'application/json; charset=utf-8'),
     fileInfo('openapi.yaml', 'application/yaml; charset=utf-8'),
     fileInfo('openapi-3.0.yaml', 'application/yaml; charset=utf-8'),
     fileInfo('air.json', 'application/json; charset=utf-8'),
     fileInfo('.well-known/air.json', 'application/json; charset=utf-8'),
     fileInfo('.well-known/ai-plugin.json', 'application/json; charset=utf-8'),
+    fileInfo('ai-plugin.json', 'application/json; charset=utf-8'),
     fileInfo('.well-known/openapi.json', 'application/json; charset=utf-8'),
+    fileInfo('.well-known/openapi.yaml', 'application/yaml; charset=utf-8'),
     fileInfo('datasets/incidents.ndjson', 'application/x-ndjson; charset=utf-8'),
     fileInfo('datasets/metrics.csv', 'text/csv; charset=utf-8'),
     fileInfo('docs.md', 'text/markdown; charset=utf-8'),
@@ -477,6 +605,9 @@ async function run() {
     fileInfo('providers.md', 'text/markdown; charset=utf-8'),
     fileInfo('docs/agent/mcp-quickstart.md', 'text/markdown; charset=utf-8'),
     fileInfo('docs/discoverability-audit.md', 'text/markdown; charset=utf-8'),
+    fileInfo('terms.md', 'text/markdown; charset=utf-8'),
+    fileInfo('privacy.md', 'text/markdown; charset=utf-8'),
+    fileInfo('cookies.md', 'text/markdown; charset=utf-8'),
   ]);
 
   // ---- Policy checks ----
@@ -579,6 +710,11 @@ async function run() {
     !cacheControlPrivateDetected;
 
   // Score = 100 if all required files exist (we’d have thrown if missing)
+  const incidentsInfo = await fileInfo('datasets/incidents.ndjson', 'application/x-ndjson; charset=utf-8');
+  const metricsInfo = await fileInfo('datasets/metrics.csv', 'text/csv; charset=utf-8');
+  const incidentsBody = await fs.readFile(path.join(process.cwd(), 'public', 'datasets', 'incidents.ndjson'), 'utf8');
+  const metricsBody = await fs.readFile(path.join(process.cwd(), 'public', 'datasets', 'metrics.csv'), 'utf8');
+
   const audit = {
     generated_at: now,
     site_url: SITE_URL,
@@ -600,9 +736,26 @@ async function run() {
       plugin_manifest: `${SITE_URL}/.well-known/ai-plugin.json`,
       mcp: `${SITE_URL}/mcp`,
     },
+    datasets: {
+      incidents_ndjson: {
+        url: `${SITE_URL}/datasets/incidents.ndjson`,
+        bytes: incidentsInfo.bytes,
+        sha256: incidentsInfo.sha256,
+        line_count: incidentsBody.trim() ? incidentsBody.trim().split(/\r?\n/).length : 0,
+        generated_at: now,
+      },
+      metrics_csv: {
+        url: `${SITE_URL}/datasets/metrics.csv`,
+        bytes: metricsInfo.bytes,
+        sha256: metricsInfo.sha256,
+        row_count: Math.max(0, (metricsBody.trim() ? metricsBody.trim().split(/\r?\n/).length : 0) - 1),
+        generated_at: now,
+      },
+    },
   };
 
   await writeFile('discovery/audit/latest.json', JSON.stringify(audit, null, 2));
+  await writeFile('discovery/audit/latest.pretty.json', `${JSON.stringify(audit, null, 2)}\n`);
 
   const auditHtml = `<!doctype html>
 <html lang="en">
