@@ -2,20 +2,21 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { MCP_REGISTRY_URL } from '@/lib/config/links';
 
-export const metadata: Metadata = {
-  title: 'Developer hub',
-  description:
-    'API, OpenAPI, MCP, datasets, embed widget, and reliability lab for AIStatusDashboard.',
-  alternates: { canonical: '/developer' },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return {
     title: 'Developer hub | AI Status Dashboard',
     description: 'API, OpenAPI spec, MCP server, datasets, and embed widgets for AI provider status.',
-  },
-  twitter: {
-    title: 'Developer hub | AI Status Dashboard',
-    description: 'API, OpenAPI spec, MCP server, datasets, and embed widgets for AI provider status.',
-  },
-};
+    alternates: { canonical: '/developer' },
+    openGraph: {
+      title: 'Developer hub | AI Status Dashboard',
+      description: 'API, OpenAPI spec, MCP server, datasets, and embed widgets for AI provider status.',
+    },
+    twitter: {
+      title: 'Developer hub | AI Status Dashboard',
+      description: 'API, OpenAPI spec, MCP server, datasets, and embed widgets for AI provider status.',
+    },
+  };
+}
 
 export default function DeveloperPage() {
   return (

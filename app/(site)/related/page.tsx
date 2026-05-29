@@ -2,20 +2,21 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { footerProjectsFor } from '@/lib/cross-project';
 
-export const metadata: Metadata = {
-  title: 'Related Projects',
-  description:
-    'Context on the related agent-readiness projects in the same portfolio as AIStatusDashboard.',
-  alternates: { canonical: '/related' },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return {
     title: 'Related projects | AI Status Dashboard',
     description: 'Portfolio of agent-readiness tools alongside AI Status Dashboard.',
-  },
-  twitter: {
-    title: 'Related projects | AI Status Dashboard',
-    description: 'Portfolio of agent-readiness tools alongside AI Status Dashboard.',
-  },
-};
+    alternates: { canonical: '/related' },
+    openGraph: {
+      title: 'Related projects | AI Status Dashboard',
+      description: 'Portfolio of agent-readiness tools alongside AI Status Dashboard.',
+    },
+    twitter: {
+      title: 'Related projects | AI Status Dashboard',
+      description: 'Portfolio of agent-readiness tools alongside AI Status Dashboard.',
+    },
+  };
+}
 
 export default function RelatedPage() {
   const siblings = footerProjectsFor('aistatusdashboard');

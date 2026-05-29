@@ -101,3 +101,8 @@ jobs:
         run: |
           chmod +x scripts/smoke-site.sh
           scripts/smoke-site.sh
+
+      - name: Verify route metadata (production)
+        env:
+          BASE_URL: ${{ secrets.SITE_URL }}
+        run: npm run test:metadata:prod

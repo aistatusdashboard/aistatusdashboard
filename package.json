@@ -11,6 +11,7 @@
     "test": "jest",
     "test:unit": "jest --testPathPattern=__tests__/unit",
     "test:e2e": "playwright test",
+    "test:metadata:prod": "node scripts/verify-route-metadata.mjs",
     "test:status": "node scripts/status-accuracy-check.js",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

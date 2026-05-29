@@ -1,19 +1,20 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Embed Status Widget',
-  description:
-    'Embed ChatGPT, Claude, Gemini, and provider status badges as JS, SVG, or JSON.',
-  alternates: { canonical: '/embed' },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return {
     title: 'Embed Status Widget | AI Status Dashboard',
     description: 'Embed ChatGPT, Claude, Gemini, and provider status badges as JS, SVG, or JSON.',
-  },
-  twitter: {
-    title: 'Embed Status Widget | AI Status Dashboard',
-    description: 'Embed ChatGPT, Claude, Gemini, and provider status badges as JS, SVG, or JSON.',
-  },
-};
+    alternates: { canonical: '/embed' },
+    openGraph: {
+      title: 'Embed Status Widget | AI Status Dashboard',
+      description: 'Embed ChatGPT, Claude, Gemini, and provider status badges as JS, SVG, or JSON.',
+    },
+    twitter: {
+      title: 'Embed Status Widget | AI Status Dashboard',
+      description: 'Embed ChatGPT, Claude, Gemini, and provider status badges as JS, SVG, or JSON.',
+    },
+  };
+}
 
 export default function EmbedPage() {
   const scriptSnippet =

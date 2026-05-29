@@ -4,19 +4,21 @@ import { formatDateLabel } from '@/lib/utils/time';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Changelog',
-  description: 'Recent releases and updates for AI Status Dashboard.',
-  alternates: { canonical: '/changelog' },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return {
     title: 'Changelog | AI Status Dashboard',
     description: 'Recent releases and updates for AI Status Dashboard.',
-  },
-  twitter: {
-    title: 'Changelog | AI Status Dashboard',
-    description: 'Recent releases and updates for AI Status Dashboard.',
-  },
-};
+    alternates: { canonical: '/changelog' },
+    openGraph: {
+      title: 'Changelog | AI Status Dashboard',
+      description: 'Recent releases and updates for AI Status Dashboard.',
+    },
+    twitter: {
+      title: 'Changelog | AI Status Dashboard',
+      description: 'Recent releases and updates for AI Status Dashboard.',
+    },
+  };
+}
 
 export default async function ChangelogPage() {
   const changelog = await getChangelogEntries(20);
