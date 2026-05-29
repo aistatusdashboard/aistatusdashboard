@@ -27,9 +27,35 @@ const nextConfig = {
       { key: 'X-Discovery-Build', value: buildId },
       { key: 'X-Discovery-Runtime', value: 'static' },
     ];
+    const robotsIndexHeader = { key: 'X-Robots-Tag', value: 'index, follow' };
     const cacheHeader = { key: 'Cache-Control', value: 'public, max-age=300, s-maxage=600' };
 
     return [
+      {
+        source: '/.well-known/:path*',
+        headers: [robotsIndexHeader],
+      },
+      {
+        source: '/discovery/audit',
+        headers: [robotsIndexHeader],
+      },
+      {
+        source: '/discovery/audit/:path*',
+        headers: [robotsIndexHeader],
+      },
+      {
+        source: '/datasets/:path*',
+        headers: [robotsIndexHeader],
+      },
+      {
+        source: '/docs/:path*',
+        headers: [robotsIndexHeader],
+      },
+      {
+        source:
+          '/:path(air\\.json|agent\\.json|ai-plugin\\.json|llms\\.txt|llms-full\\.txt|openapi\\.json|openapi\\.yaml|openapi-3\\.0\\.json|openapi-3\\.0\\.yaml|robots\\.txt|sitemap\\.xml|rss\\.xml|docs\\.md|status\\.md|providers\\.md|terms\\.md|privacy\\.md|cookies\\.md)',
+        headers: [robotsIndexHeader],
+      },
       {
         source: '/sitemap.xml',
         headers: [

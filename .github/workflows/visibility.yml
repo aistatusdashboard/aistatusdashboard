@@ -13,23 +13,16 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - name: Install curl jq python deps
         run: sudo apt-get update && sudo apt-get install -y jq python3-pip
       - name: Run visibility audit
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
         run: |
           chmod +x scripts/visibility_audit.sh
-          BASE_URL=${{ secrets.SITE_URL || 'https://aistatusdashboard.com' }} OUT_DIR=artifacts ./scripts/visibility_audit.sh
+          BASE_URL="${SITE_URL:-https://aistatusdashboard.com}" OUT_DIR=artifacts ./scripts/visibility_audit.sh
       - name: Score
         run: python3 scripts/visibility_score.py
       - name: Fail if low score
-        run: |
-          python3 - <<'PY'
-import json
-data=json.load(open('artifacts/visibility_score.txt'))
-if isinstance(data, str):
-    data=json.loads(data.replace("'",'"'))
-score=data.get('total',0)
-if score < 90:
-    raise SystemExit(f"Score too low: {score}")
-PY
+        run: python3 scripts/visibility_check.py
