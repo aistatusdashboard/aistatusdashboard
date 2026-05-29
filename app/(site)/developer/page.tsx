@@ -33,9 +33,9 @@ export default function DeveloperPage() {
             Full public API schema with examples and envelope fields.
           </p>
           <div className="text-sm space-x-4">
-            <a href="/openapi.json" className="underline">/openapi.json</a>
-            <a href="/openapi.yaml" className="underline">/openapi.yaml</a>
-            <a href="/.well-known/openapi.json" className="underline">/.well-known/openapi.json</a>
+            <Link href="/openapi.json" className="underline">/openapi.json</Link>
+            <Link href="/openapi.yaml" className="underline">/openapi.yaml</Link>
+            <Link href="/.well-known/openapi.json" className="underline">/.well-known/openapi.json</Link>
           </div>
           <iframe
             title="OpenAPI viewer"
@@ -50,7 +50,7 @@ export default function DeveloperPage() {
             Use the streamable HTTP MCP endpoint to query status and incidents from agent workflows.
           </p>
           <div className="text-sm">
-            <a href="/mcp" className="underline">https://aistatusdashboard.com/mcp</a>
+            <Link href="/mcp" className="underline">https://aistatusdashboard.com/mcp</Link>
           </div>
           <pre className="rounded-xl bg-slate-900 text-slate-100 p-4 overflow-x-auto text-xs">
 {`npx @modelcontextprotocol/inspector https://aistatusdashboard.com/mcp`}
@@ -63,9 +63,9 @@ export default function DeveloperPage() {
         <section className="surface-card p-6 space-y-3">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Datasets</h2>
           <div className="text-sm space-x-4">
-            <a href="/datasets" className="underline">/datasets</a>
-            <a href="/datasets/incidents.ndjson" className="underline">/datasets/incidents.ndjson</a>
-            <a href="/datasets/metrics.csv" className="underline">/datasets/metrics.csv</a>
+            <Link href="/datasets" className="underline">/datasets</Link>
+            <Link href="/datasets/incidents.ndjson" className="underline">/datasets/incidents.ndjson</Link>
+            <Link href="/datasets/metrics.csv" className="underline">/datasets/metrics.csv</Link>
           </div>
         </section>
 

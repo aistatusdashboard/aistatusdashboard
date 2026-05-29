@@ -63,10 +63,11 @@ function summarizeStatus(status: string) {
 }
 
 export default async function LandingPage() {
+  const sevenDaysAgoIso = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const [livePulse, statusSummary, incidentPayload] = await Promise.all([
     getLivePulseSnapshot(),
     getStatusSummary({ windowSeconds: 1800, lens: 'observed' }),
-    searchIncidents({ since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), limit: 8 }),
+    searchIncidents({ since: sevenDaysAgoIso, limit: 8 }),
   ]);
 
   const appStatuses = await Promise.all(
@@ -193,9 +194,9 @@ export default async function LandingPage() {
         </section>
 
         <section className="surface-card p-5">
-          <a className="text-sm underline" href="/developer">
+          <Link className="text-sm underline" href="/developer">
             Developer? Use the API / MCP / Datasets →
-          </a>
+          </Link>
         </section>
 
         <section className="surface-card p-6 space-y-3">
@@ -219,9 +220,9 @@ export default async function LandingPage() {
           <div className="surface-card p-4 text-sm">
             Open the full interactive report:
             {' '}
-            <a className="underline" href="/casual/chatgpt">
+            <Link className="underline" href="/casual/chatgpt">
               /casual/chatgpt
-            </a>
+            </Link>
           </div>
         </noscript>
       </div>

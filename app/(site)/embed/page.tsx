@@ -30,10 +30,10 @@ export default function EmbedPage() {
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">JavaScript</h2>
           <pre className="rounded-xl bg-slate-900 text-slate-100 p-4 overflow-x-auto text-xs">{scriptSnippet}</pre>
           <div className="border rounded-xl border-slate-200/70 dark:border-slate-700/70 p-4">
-            <script
-              src="https://aistatusdashboard.com/embed/chatgpt.js"
-              data-size="small"
-              data-theme="auto"
+            <iframe
+              title="JavaScript embed preview"
+              src="/embed/chatgpt.svg"
+              className="h-10 w-full border-0"
             />
           </div>
         </section>
@@ -41,10 +41,10 @@ export default function EmbedPage() {
         <section className="surface-card p-6 space-y-3">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">SVG badge</h2>
           <pre className="rounded-xl bg-slate-900 text-slate-100 p-4 overflow-x-auto text-xs">{svgSnippet}</pre>
-          <img
-            src="https://aistatusdashboard.com/embed/chatgpt.svg"
-            alt="ChatGPT embed status"
-            className="h-8 w-auto"
+          <iframe
+            title="SVG embed preview"
+            src="/embed/chatgpt.svg"
+            className="h-10 w-80 max-w-full border-0"
           />
         </section>
 
