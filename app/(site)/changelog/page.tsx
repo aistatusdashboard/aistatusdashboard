@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'Changelog | AI Status Dashboard',
+    title: 'Changelog',
     description: 'Recent releases and updates for AI Status Dashboard.',
     alternates: { canonical: '/changelog' },
     openGraph: {

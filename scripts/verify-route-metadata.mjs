@@ -2,6 +2,10 @@
 
 const BASE_URL = (process.env.BASE_URL || 'https://aistatusdashboard.com').replace(/\/$/, '');
 const BAD_GENERIC_TITLE = 'AI Status Dashboard - Real-time AI Provider Monitoring';
+const BAD_DOUBLE_TITLES = [
+  'AI Status Dashboard | AI Status Dashboard',
+  'AIStatusDashboard | AI Status Dashboard',
+];
 
 function buildUrl(path) {
   const cb = Date.now().toString();
@@ -49,6 +53,11 @@ function extractMetaContent(html, key) {
   return null;
 }
 
+function extractTitle(html) {
+  const match = html.match(/<title>([^<]+)<\/title>/i);
+  return match?.[1]?.trim() || null;
+}
+
 function assertEqual(route, field, actual, expected) {
   if (!actual) {
     throw new Error(`[metadata] ${route} missing ${field}`);
@@ -61,16 +70,25 @@ function assertEqual(route, field, actual, expected) {
   }
 }
 
+function assertNoDoubleBrand(route, title) {
+  for (const bad of BAD_DOUBLE_TITLES) {
+    if (title.includes(bad)) {
+      throw new Error(`[metadata] ${route} visible <title> contains doubled brand: "${title}"`);
+    }
+  }
+}
+
 async function resolveIncidentExpectation() {
   const incidentList = await fetchJson('/api/public/v1/incidents');
   const first = incidentList?.data?.incidents?.[0];
   if (!first?.id || !first?.title) {
     throw new Error('[metadata] could not resolve incident id/title from /api/public/v1/incidents');
   }
-  const title = `${first.title} — AIStatusDashboard`;
+  const visibleTitle = `${first.title} | AI Status Dashboard`;
   return {
     route: `/incidents/${encodeURIComponent(first.id)}`,
-    expectedTitle: title,
+    expectedShareTitle: visibleTitle,
+    expectedVisibleTitle: visibleTitle,
   };
 }
 
@@ -78,40 +96,54 @@ async function run() {
   const incident = await resolveIncidentExpectation();
   const routes = [
     {
+      route: '/',
+      expectedShareTitle: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
+      expectedVisibleTitle: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
+    },
+    {
       route: '/embed',
-      expectedTitle: 'Embed Status Widget | AI Status Dashboard',
+      expectedShareTitle: 'Embed Status Widget | AI Status Dashboard',
+      expectedVisibleTitle: 'Embed Status Widget | AI Status Dashboard',
     },
     {
       route: '/developer',
-      expectedTitle: 'Developer hub | AI Status Dashboard',
+      expectedShareTitle: 'Developer hub | AI Status Dashboard',
+      expectedVisibleTitle: 'Developer hub | AI Status Dashboard',
     },
     {
       route: '/about',
-      expectedTitle: 'About | AI Status Dashboard',
+      expectedShareTitle: 'About | AI Status Dashboard',
+      expectedVisibleTitle: 'About | AI Status Dashboard',
     },
     {
       route: '/changelog',
-      expectedTitle: 'Changelog | AI Status Dashboard',
+      expectedShareTitle: 'Changelog | AI Status Dashboard',
+      expectedVisibleTitle: 'Changelog | AI Status Dashboard',
     },
     {
       route: '/related',
-      expectedTitle: 'Related projects | AI Status Dashboard',
+      expectedShareTitle: 'Related projects | AI Status Dashboard',
+      expectedVisibleTitle: 'Related projects | AI Status Dashboard',
     },
     {
       route: '/casual/chatgpt',
-      expectedTitle: 'Is ChatGPT down? Live status — AIStatusDashboard',
+      expectedShareTitle: 'Is ChatGPT down? Live status | AI Status Dashboard',
+      expectedVisibleTitle: 'Is ChatGPT down? Live status | AI Status Dashboard',
     },
     {
       route: '/casual/claude',
-      expectedTitle: 'Is Claude down? Live status — AIStatusDashboard',
+      expectedShareTitle: 'Is Claude down? Live status | AI Status Dashboard',
+      expectedVisibleTitle: 'Is Claude down? Live status | AI Status Dashboard',
     },
     {
       route: '/casual/gemini',
-      expectedTitle: 'Is Gemini down? Live status — AIStatusDashboard',
+      expectedShareTitle: 'Is Gemini down? Live status | AI Status Dashboard',
+      expectedVisibleTitle: 'Is Gemini down? Live status | AI Status Dashboard',
     },
     {
       route: incident.route,
-      expectedTitle: incident.expectedTitle,
+      expectedShareTitle: incident.expectedShareTitle,
+      expectedVisibleTitle: incident.expectedVisibleTitle,
     },
   ];
 
@@ -119,9 +151,14 @@ async function run() {
     const html = await fetchText(item.route);
     const ogTitle = extractMetaContent(html, 'og:title');
     const twitterTitle = extractMetaContent(html, 'twitter:title');
-    assertEqual(item.route, 'og:title', ogTitle, item.expectedTitle);
-    assertEqual(item.route, 'twitter:title', twitterTitle, item.expectedTitle);
+    const visibleTitle = extractTitle(html);
+
+    assertEqual(item.route, 'og:title', ogTitle, item.expectedShareTitle);
+    assertEqual(item.route, 'twitter:title', twitterTitle, item.expectedShareTitle);
+    assertEqual(item.route, '<title>', visibleTitle, item.expectedVisibleTitle);
+    assertNoDoubleBrand(item.route, visibleTitle);
     console.log(`[metadata] PASS ${item.route}`);
+    console.log(`  <title>=${visibleTitle}`);
     console.log(`  og:title=${ogTitle}`);
     console.log(`  twitter:title=${twitterTitle}`);
   }

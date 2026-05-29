@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Privacy Policy | AI Status Dashboard',
+  title: 'Privacy Policy',
   description: 'Privacy Policy for AI Status Dashboard.',
 };
 

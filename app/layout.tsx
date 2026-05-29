@@ -36,7 +36,7 @@ const homeJsonLd = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'AI Status Dashboard - Real-time AI Provider Monitoring',
+    default: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
     template: '%s | AI Status Dashboard',
   },
   description:

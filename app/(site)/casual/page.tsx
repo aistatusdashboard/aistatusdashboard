@@ -4,7 +4,7 @@ import { listCasualApps } from '@/lib/services/casual';
 import CasualSearch from './ui/CasualSearch';
 
 export const metadata: Metadata = {
-  title: 'Casual Mode - AI Status Dashboard',
+  title: 'Casual Mode',
   description: 'Plain-English status for AI apps: what is happening, what you will feel, and what to do now.',
   alternates: { canonical: '/casual' },
 };

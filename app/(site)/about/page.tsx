@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'About | AI Status Dashboard',
+    title: 'About',
     description: 'AIStatusDashboard answers one immediate question: is the provider down for everyone, or only for me?',
     alternates: { canonical: '/about' },
     openGraph: {

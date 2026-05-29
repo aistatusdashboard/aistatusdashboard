@@ -11,19 +11,18 @@ import { formatTimeAgo } from '@/lib/utils/time';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: { absolute: 'AI Status - is ChatGPT, Claude, or Gemini down right now?' },
   description:
     'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'AI Status - is ChatGPT, Claude, or Gemini down right now?',
+    title: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
     description:
       'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
     images: ['https://aistatusdashboard.com/og/status-home.svg'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Status - is ChatGPT, Claude, or Gemini down right now?',
+    title: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
     description:
       'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
     images: ['https://aistatusdashboard.com/og/status-home.svg'],

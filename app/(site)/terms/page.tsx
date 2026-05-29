@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Terms of Service | AI Status Dashboard',
+  title: 'Terms of Service',
   description: 'Terms of Service for AI Status Dashboard.',
 };
 

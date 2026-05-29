@@ -61,9 +61,7 @@ export async function generateMetadata({
   const incidentId = await resolveIncidentId(params);
   const safeId = incidentId || 'unknown';
   const incident = incidentId ? await getIncidentById(incidentId) : null;
-  const title = incident?.title
-    ? `${incident.title} — AIStatusDashboard`
-    : `Incident ${safeId} — AIStatusDashboard`;
+  const title = incident?.title || `Incident ${safeId}`;
   const description = summarizeIncident(incident);
 
   return {
@@ -73,11 +71,11 @@ export async function generateMetadata({
       canonical: `/incidents/${safeId}`,
     },
     openGraph: {
-      title,
+      title: `${title} | AI Status Dashboard`,
       description,
     },
     twitter: {
-      title,
+      title: `${title} | AI Status Dashboard`,
       description,
     },
   };

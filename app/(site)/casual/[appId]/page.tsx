@@ -23,17 +23,17 @@ export async function generateMetadata({ params }: { params: Promise<CasualParam
   if (!app) return { title: 'Status' };
   const name = displayName(app.id, app.label);
   return {
-    title: { absolute: `Is ${name} down? Live status — AIStatusDashboard` },
+    title: `Is ${name} down? Live status`,
     description: `Live status for ${name}. Is your AI down? Check in 3 seconds.`,
     alternates: { canonical: `/casual/${app.id}` },
     openGraph: {
-      title: `Is ${name} down? Live status — AIStatusDashboard`,
+      title: `Is ${name} down? Live status | AI Status Dashboard`,
       description: `Live status for ${name}. Is your AI down? Check in 3 seconds.`,
       images: [`https://aistatusdashboard.com/og/casual/${app.id}.svg`],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Is ${name} down? Live status — AIStatusDashboard`,
+      title: `Is ${name} down? Live status | AI Status Dashboard`,
       description: `Live status for ${name}. Is your AI down? Check in 3 seconds.`,
       images: [`https://aistatusdashboard.com/og/casual/${app.id}.svg`],
     },

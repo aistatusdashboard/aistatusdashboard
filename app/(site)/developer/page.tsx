@@ -4,7 +4,7 @@ import { MCP_REGISTRY_URL } from '@/lib/config/links';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'Developer hub | AI Status Dashboard',
+    title: 'Developer hub',
     description: 'API, OpenAPI spec, MCP server, datasets, and embed widgets for AI provider status.',
     alternates: { canonical: '/developer' },
     openGraph: {

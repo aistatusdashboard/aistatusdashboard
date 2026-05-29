@@ -4,7 +4,7 @@ import { footerProjectsFor } from '@/lib/cross-project';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'Related projects | AI Status Dashboard',
+    title: 'Related projects',
     description: 'Portfolio of agent-readiness tools alongside AI Status Dashboard.',
     alternates: { canonical: '/related' },
     openGraph: {

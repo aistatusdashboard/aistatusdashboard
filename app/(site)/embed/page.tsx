@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'Embed Status Widget | AI Status Dashboard',
+    title: 'Embed Status Widget',
     description: 'Embed ChatGPT, Claude, Gemini, and provider status badges as JS, SVG, or JSON.',
     alternates: { canonical: '/embed' },
     openGraph: {
