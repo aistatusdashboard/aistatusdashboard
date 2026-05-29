@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<CasualParam
   if (!app) return { title: 'Status' };
   const name = displayName(app.id, app.label);
   return {
-    title: `Is ${name} down? Live status — AIStatusDashboard`,
+    title: { absolute: `Is ${name} down? Live status — AIStatusDashboard` },
     description: `Is ${name} down right now? Live status, incident context, and next actions.`,
     alternates: { canonical: `/casual/${app.id}` },
     openGraph: {

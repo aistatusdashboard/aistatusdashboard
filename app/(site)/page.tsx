@@ -11,7 +11,7 @@ import { formatTimeAgo } from '@/lib/utils/time';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'AI Status - is ChatGPT, Claude, or Gemini down right now?',
+  title: { absolute: 'AI Status - is ChatGPT, Claude, or Gemini down right now?' },
   description:
     'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
   alternates: { canonical: '/' },

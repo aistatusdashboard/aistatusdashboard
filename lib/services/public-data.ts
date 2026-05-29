@@ -92,7 +92,13 @@ export async function getStatusSummary(options: {
   const providers = listProviders().filter((provider) =>
     options.providerId ? provider.id === options.providerId : true
   );
-  const summaries = await intelligenceService.getProviderSummaries();
+  const [summaries, activeIncidents] = await Promise.all([
+    intelligenceService.getProviderSummaries(),
+    intelligenceService.getIncidents({
+      providerId: options.providerId,
+      limit: 300,
+    }),
+  ]);
   const summaryMap = new Map(summaries.map((summary) => [summary.providerId, summary]));
 
   const statusRows = await Promise.all(
@@ -132,9 +138,16 @@ export async function getStatusSummary(options: {
   );
 
   const filtered = statusRows.filter(Boolean) as Array<Record<string, any>>;
-  const activeIncidentCountTotal = filtered.reduce(
+  const activeIncidentCountTotalFromProviders = filtered.reduce(
     (acc, row) => acc + Number(row.active_incident_count || 0),
     0
+  );
+  const activeIncidentCountTotalFromFeed = activeIncidents.filter(
+    (incident) => !INACTIVE_INCIDENT_STATUSES.has(normalizeIncidentStatus(incident.status, incident.severity))
+  ).length;
+  const activeIncidentCountTotal = Math.max(
+    activeIncidentCountTotalFromProviders,
+    activeIncidentCountTotalFromFeed
   );
   const totals = filtered.reduce(
     (acc, row) => {
@@ -182,6 +195,7 @@ export async function getStatusSummary(options: {
       window_seconds: windowSeconds,
       lens: options.lens || 'official',
       all_systems_operational: activeIncidentCountTotal === 0,
+      active_incidents_total: activeIncidentCountTotal,
       totals,
       providers: filtered,
     },
