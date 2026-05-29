@@ -26,6 +26,13 @@ function extractIncidentId(path?: string | null) {
   return match ? safeDecode(match[1]) : undefined;
 }
 
+function summarizeIncident(incident: Awaited<ReturnType<typeof getIncidentById>>): string {
+  if (!incident) return 'Incident detail from AIStatusDashboard.';
+  const fromUpdate = incident.updates?.find((update) => update.body?.trim())?.body?.trim();
+  const candidate = fromUpdate || incident.title || 'Incident detail from AIStatusDashboard.';
+  return candidate.length > 140 ? `${candidate.slice(0, 137)}...` : candidate;
+}
+
 async function resolveIncidentId(params: IncidentParams | Promise<IncidentParams>) {
   const resolvedParams = await resolveParams(params);
   if (resolvedParams?.incident_id) return safeDecode(resolvedParams.incident_id);
@@ -53,11 +60,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const incidentId = await resolveIncidentId(params);
   const safeId = incidentId || 'unknown';
+  const incident = incidentId ? await getIncidentById(incidentId) : null;
+  const title = incident?.title
+    ? `${incident.title} — AIStatusDashboard`
+    : `Incident ${safeId} — AIStatusDashboard`;
+  const description = summarizeIncident(incident);
+
   return {
-    title: `Incident ${safeId}`,
-    description: 'Incident detail from AIStatusDashboard.',
+    title,
+    description,
     alternates: {
       canonical: `/incidents/${safeId}`,
+    },
+    openGraph: {
+      title,
+      description,
+    },
+    twitter: {
+      title,
+      description,
     },
   };
 }

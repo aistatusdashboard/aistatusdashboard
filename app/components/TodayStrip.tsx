@@ -1,10 +1,22 @@
 import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
 import { formatTimeAgo } from '@/lib/utils/time';
+import { shouldRenderStatusPill } from '@/lib/ui/status-chrome';
 
 export default async function TodayStrip() {
   const snapshot = await getLivePulseSnapshot();
+  if (
+    !shouldRenderStatusPill({
+      status: snapshot.status,
+      lastUpdated: snapshot.lastUpdated,
+      communityReports: snapshot.communityReports,
+    })
+  ) {
+    return null;
+  }
+
   const updatedAgo = formatTimeAgo(snapshot.lastUpdated);
-  const reports = snapshot.communityReports !== null ? snapshot.communityReports : '—';
+  if (updatedAgo === '—') return null;
+  const reports = snapshot.communityReports;
 
   return (
     <div className="today-strip w-full bg-slate-900/90 text-white text-xs" data-role="today-strip">

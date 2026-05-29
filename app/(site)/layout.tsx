@@ -1,8 +1,25 @@
 import Navbar from '@/app/components/Navbar';
 import TodayStrip from '@/app/components/TodayStrip';
 import Footer from '@/app/components/Footer';
+import { headers } from 'next/headers';
+import { shouldRenderLiveStatusStrip } from '@/lib/ui/status-chrome';
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+function resolvePathnameFromHeaders(input: Headers): string {
+  return (
+    input.get('x-forwarded-uri') ||
+    input.get('x-original-url') ||
+    input.get('x-url') ||
+    input.get('x-rewrite-url') ||
+    input.get('x-invoke-path') ||
+    '/'
+  );
+}
+
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const headerList = await headers();
+  const pathname = resolvePathnameFromHeaders(headerList);
+  const showLiveStatusStrip = shouldRenderLiveStatusStrip(pathname);
+
   return (
     <>
       <a
@@ -11,8 +28,8 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       >
         Skip to main content
       </a>
-      <Navbar />
-      <TodayStrip />
+      <Navbar showStatusChrome={showLiveStatusStrip} />
+      {showLiveStatusStrip ? <TodayStrip /> : null}
       <div id="main" className="flex-1">
         {children}
       </div>

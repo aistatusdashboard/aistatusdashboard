@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   description:
     'Context on the related agent-readiness projects in the same portfolio as AIStatusDashboard.',
   alternates: { canonical: '/related' },
+  openGraph: {
+    title: 'Related projects | AI Status Dashboard',
+    description: 'Portfolio of agent-readiness tools alongside AI Status Dashboard.',
+  },
+  twitter: {
+    title: 'Related projects | AI Status Dashboard',
+    description: 'Portfolio of agent-readiness tools alongside AI Status Dashboard.',
+  },
 };
 
 export default function RelatedPage() {

@@ -9,6 +9,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/incidents',
   },
+  openGraph: {
+    title: 'Incidents | AI Status Dashboard',
+    description: 'Recent AI provider incidents tracked by AIStatusDashboard.',
+  },
+  twitter: {
+    title: 'Incidents | AI Status Dashboard',
+    description: 'Recent AI provider incidents tracked by AIStatusDashboard.',
+  },
 };
 
 export const dynamic = 'force-dynamic';

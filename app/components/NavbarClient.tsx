@@ -9,9 +9,9 @@ import Logo from './Logo';
 type StatusTone = 'operational' | 'degraded' | 'down' | 'maintenance' | 'unknown';
 
 type NavbarClientProps = {
-  statusLabel: string;
-  updatedAgo: string;
-  reports: number | string;
+  statusLabel: string | null;
+  updatedAgo: string | null;
+  reports: number | null;
   statusTone: StatusTone;
 };
 
@@ -96,7 +96,7 @@ function StatusPill({
 }: {
   statusLabel: string;
   updatedAgo: string;
-  reports: number | string;
+  reports: number;
   statusTone: StatusTone;
 }) {
   const tone = statusToneStyles[statusTone];
@@ -141,6 +141,8 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
     { label: 'Reliability Lab', href: '/dashboard?tab=reliability' },
   ];
 
+  const showStatusPill = Boolean(statusLabel && updatedAgo && typeof reports === 'number');
+
   return (
     <header className="sticky top-0 z-50" data-role="site-header">
       <div className="bg-white/90 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/70 shadow-[0_6px_24px_-18px_rgba(15,23,42,0.4)]">
@@ -167,12 +169,14 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
 
           <div className="hidden md:flex items-center gap-3 ml-auto pl-3">
             <DarkModeToggle />
-            <StatusPill
-              statusLabel={statusLabel}
-              updatedAgo={updatedAgo}
-              reports={reports}
-              statusTone={statusTone}
-            />
+            {showStatusPill ? (
+              <StatusPill
+                statusLabel={statusLabel as string}
+                updatedAgo={updatedAgo as string}
+                reports={reports as number}
+                statusTone={statusTone}
+              />
+            ) : null}
             <Link
               href="/dashboard?tab=notifications"
               className="cta-primary text-sm font-semibold px-4 py-2 min-h-[40px] whitespace-nowrap leading-none"

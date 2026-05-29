@@ -3,9 +3,16 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About',
-  description:
-    'What AIStatusDashboard does, how it works, and current project status.',
+  description: 'AIStatusDashboard answers one immediate question: is the provider down for everyone, or only for me?',
   alternates: { canonical: '/about' },
+  openGraph: {
+    title: 'About | AI Status Dashboard',
+    description: 'AIStatusDashboard answers one immediate question: is the provider down for everyone, or only for me?',
+  },
+  twitter: {
+    title: 'About | AI Status Dashboard',
+    description: 'AIStatusDashboard answers one immediate question: is the provider down for everyone, or only for me?',
+  },
 };
 
 export default function AboutPage() {
