@@ -6,6 +6,8 @@ import { shouldRenderLiveStatusStrip } from '@/lib/ui/status-chrome';
 
 function resolvePathnameFromHeaders(input: Headers): string {
   return (
+    input.get('x-pathname') ||
+    input.get('x-matched-path') ||
     input.get('x-forwarded-uri') ||
     input.get('x-original-url') ||
     input.get('x-url') ||
