@@ -123,8 +123,9 @@ jobs:
         run: |
           set -e
           html=$(curl -sS "https://aistatusdashboard.com/")
-          echo "$html" | grep -q "Tracking" || (echo "Homepage missing Tracking" && exit 1)
+          echo "$html" | grep -q "Is your AI working?" || (echo "Homepage missing casual-mode heading" && exit 1)
           echo "$html" | grep -q "Updated" || (echo "Homepage missing Updated" && exit 1)
+          echo "$html" | grep -q "Developer? Use the API / MCP / Datasets" || (echo "Homepage missing developer link" && exit 1)
           urls=(
             "https://aistatusdashboard.com/changelog"
             "https://aistatusdashboard.com/og.png"
