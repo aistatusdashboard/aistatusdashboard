@@ -1,171 +1,230 @@
+import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
-import { providerService } from '@/lib/services/providers';
-import LandingSearch from '@/app/components/LandingSearch';
-import LivePulse from '@/app/components/LivePulse';
-import { getChangelogEntries } from '@/lib/services/changelog';
-import GuidedTourLink from '@/app/components/GuidedTourLink';
-import StatusRadarGame, { type RadarProvider, type StatusRadarPulse } from '@/app/components/StatusRadarGame';
+import NotifyInlineForm from '@/app/components/NotifyInlineForm';
+import { getCasualStatus, getCasualApp } from '@/lib/services/casual';
 import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
+import { getStatusSummary, searchIncidents } from '@/lib/services/public-data';
+import { providerService } from '@/lib/services/providers';
+import { formatTimeAgo } from '@/lib/utils/time';
 
 export const dynamic = 'force-dynamic';
 
-export default async function LandingPage() {
-  const providers = providerService.getProviders();
-  const changelog = await getChangelogEntries(5);
-  const livePulse = await getLivePulseSnapshot();
-  const incidentProviderIds = new Set(
-    livePulse.recentIncidents
-      .map((incident) => incident.provider_id || incident.providerId)
-      .filter((value): value is string => Boolean(value))
-  );
-  const radarProviders: RadarProvider[] = providers.map((provider) => ({
-    id: provider.id,
-    label: provider.displayName || provider.name,
-    status: incidentProviderIds.has(provider.id)
-      ? livePulse.status === 'down'
-        ? ('down' as const)
-        : ('degraded' as const)
-      : ('operational' as const),
-  }));
-  const radarPulse: StatusRadarPulse = {
-    status: livePulse.status,
-    incidents24h: livePulse.incidents24h,
-    tracking: livePulse.tracking,
-    recentIncidents: livePulse.recentIncidents.map((incident) => ({
-      incidentId: incident.incident_id,
-      title: incident.title,
-      providerId: incident.provider_id || incident.providerId,
-    })),
+export const metadata: Metadata = {
+  title: 'AI Status - is ChatGPT, Claude, or Gemini down right now?',
+  description:
+    'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'AI Status - is ChatGPT, Claude, or Gemini down right now?',
+    description:
+      'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
+    images: ['https://aistatusdashboard.com/og/status-home.svg'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Status - is ChatGPT, Claude, or Gemini down right now?',
+    description:
+      'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
+    images: ['https://aistatusdashboard.com/og/status-home.svg'],
+  },
+};
+
+const FOCUS_APPS = ['chatgpt', 'claude', 'gemini'] as const;
+const LOGOS: Record<string, string> = {
+  chatgpt: '/logos/openai-chatgpt.png',
+  claude: '/logos/claude.svg',
+  gemini: '/logos/google-ai.svg',
+};
+
+function summarizeStatus(status: string) {
+  if (status === 'down') {
+    return {
+      headline: 'is having problems',
+      tone: 'bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-100',
+      pill: 'bg-rose-500',
+      label: 'Down',
+    };
+  }
+  if (status === 'degraded') {
+    return {
+      headline: 'is partially affected',
+      tone: 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-100',
+      pill: 'bg-amber-500',
+      label: 'Degraded',
+    };
+  }
+  return {
+    headline: 'is working normally',
+    tone: 'bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-100',
+    pill: 'bg-emerald-500',
+    label: 'Operational',
   };
+}
+
+export default async function LandingPage() {
+  const [livePulse, statusSummary, incidentPayload] = await Promise.all([
+    getLivePulseSnapshot(),
+    getStatusSummary({ windowSeconds: 1800, lens: 'observed' }),
+    searchIncidents({ since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), limit: 8 }),
+  ]);
+
+  const appStatuses = await Promise.all(
+    FOCUS_APPS.map(async (appId) => {
+      const app = getCasualApp(appId);
+      if (!app) return null;
+      const status = await getCasualStatus({ appId: app.id });
+      return app && status ? { app, status } : null;
+    })
+  );
+
+  const providerRows = statusSummary.data.providers || [];
+  const focusProviderIds = new Set(
+    appStatuses
+      .filter(Boolean)
+      .map((item) => item!.app.providerId)
+  );
+  const providerLookup = new Map(providerRows.map((row: any) => [row.provider_id, row]));
+  const secondaryProviders = providerService
+    .getProviders()
+    .filter((provider) => !focusProviderIds.has(provider.id))
+    .map((provider) => ({
+      provider,
+      status: providerLookup.get(provider.id)?.status || 'unknown',
+      app: getCasualApp(provider.id),
+    }));
+
+  const caughtEarly = (incidentPayload.data?.incidents || [])
+    .map((incident: any) => {
+      const started = Date.parse(incident.startedAt || '');
+      const updated = Date.parse(incident.updatedAt || '');
+      if (!Number.isFinite(started) || !Number.isFinite(updated) || updated <= started) return null;
+      return {
+        id: incident.incident_id,
+        title: incident.title,
+        providerId: incident.providerId,
+        deltaMinutes: Math.round((updated - started) / 60000),
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 5) as Array<{ id: string; title: string; providerId: string; deltaMinutes: number }>;
 
   return (
-    <main className="flex-1">
-      <h1 className="sr-only">AI Status Dashboard</h1>
-      <section
-        id="landing-hero"
-        className="relative isolate px-4 sm:px-6 pt-12 md:pt-16 pb-20 md:pb-24"
-      >
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.22),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(30,64,175,0.18),_transparent_58%)]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/95 to-slate-50/80 dark:from-slate-950 dark:via-slate-950/95 dark:to-slate-900/85" />
-          <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-200/30 blur-[110px] dark:bg-emerald-500/10" />
-        </div>
-
-        <div className="max-w-6xl mx-auto w-full grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] items-start animate-[rise_0.6s_ease-out]">
-          <div className="order-2 lg:order-1 text-center lg:text-left space-y-6">
-            <div className="space-y-3">
-              <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
-                AI Status Dashboard
-              </p>
-              <p className="text-xl md:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white leading-snug">
-                Find the status of any AI provider in seconds.
+    <main className="flex-1 px-4 sm:px-6 py-10">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <header className="surface-card-strong p-6 md:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Live AI status</p>
+              <h1 className="mt-2 text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white">
+                Is your AI working?
+              </h1>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                Fast answers for ChatGPT, Claude, and Gemini. Then drill into details only when needed.
               </p>
             </div>
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs text-slate-600 dark:text-slate-300">
-              <span className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
-                Quick entry
-              </span>
-              <Link
-                href="/casual/chatgpt"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
-              >
-                ChatGPT status
-              </Link>
-              <Link
-                href="/casual/claude"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
-              >
-                Claude status
-              </Link>
-              <Link
-                href="/casual/gemini"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
-              >
-                Gemini status
-              </Link>
-              <Link
-                href="/providers"
-                className="px-3 py-1.5 rounded-full border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 font-medium hover:text-slate-900 dark:hover:text-white transition"
-              >
-                View all providers
-              </Link>
-            </div>
-            <div className="flex items-center justify-center lg:justify-start">
-              <GuidedTourLink className="underline underline-offset-4" />
-            </div>
-            <LandingSearch
-              variant="hero"
-              providers={providers.map((provider) => ({
-                id: provider.id,
-                name: provider.name,
-                displayName: provider.displayName,
-                aliases: provider.aliases,
-              }))}
-            />
-            <div className="pt-2 lg:pr-4">
-              <StatusRadarGame providers={radarProviders} pulse={radarPulse} />
+            <div className="text-xs text-slate-500 dark:text-slate-400 text-right">
+              <div>Updated {formatTimeAgo(livePulse.lastUpdated)}</div>
+              <div>Last check: {formatTimeAgo(livePulse.lastUpdated)}</div>
             </div>
           </div>
-          <div className="order-1 lg:order-2 w-full lg:max-w-[420px] lg:justify-self-end">
-            <LivePulse snapshot={livePulse} />
-          </div>
-        </div>
-      </section>
+        </header>
 
-      <section className="px-4 sm:px-6 pb-16">
-        <div className="max-w-5xl mx-auto space-y-10">
-          <div className="surface-card p-5 text-sm text-slate-600 dark:text-slate-300">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.28em] font-semibold text-slate-500 dark:text-slate-400">
-                  What&apos;s new
+        <section className="grid gap-4 md:grid-cols-3">
+          {appStatuses.filter(Boolean).map((item) => {
+            const app = item!.app;
+            const status = item!.status;
+            const tone = summarizeStatus(status.overall_status);
+            return (
+              <article
+                key={app.id}
+                className={`rounded-2xl border p-5 space-y-4 ${tone.tone}`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Image src={LOGOS[app.id] || '/logos/openai.svg'} alt={`${app.label} logo`} width={28} height={28} />
+                    <p className="text-lg font-semibold">{app.label.replace(' Status', '')}</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/80 dark:bg-slate-900/70 px-2 py-1 text-xs border border-current/20">
+                    <span className={`h-2 w-2 rounded-full ${tone.pill}`} aria-hidden="true" />
+                    {tone.label}
+                  </span>
+                </div>
+
+                <p className="text-base font-medium">
+                  {app.label.replace(' Status', '')} {tone.headline}.
                 </p>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mt-2">
-                  Latest updates
-                </h3>
-              </div>
-              <Link
-                href="/changelog"
-                className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-              >
-                View changelog →
-              </Link>
-            </div>
-            {changelog.entries.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-                No recent updates logged yet.
-              </p>
-            ) : (
-              <ul className="mt-3 space-y-2">
-                {changelog.entries.map((entry) => (
-                  <li
-                    key={`${entry.date}-${entry.title}`}
-                    className="flex flex-wrap items-center justify-between gap-2"
-                  >
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      {entry.title}
-                    </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {entry.date}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </section>
+                <p className="text-sm opacity-90">{status.is_it_just_me.note}</p>
+                {status.history.last_similar_event ? (
+                  <p className="text-xs opacity-80">
+                    Recent: {status.history.last_similar_event.title}
+                  </p>
+                ) : null}
 
-      <noscript>
-        <div className="px-4 sm:px-6 pb-10">
-          <div className="max-w-3xl mx-auto surface-card p-4 text-sm">
-            <p className="font-semibold">No JavaScript? Browse providers directly:</p>
-            <Link href="/providers" className="underline">
-              /providers
-            </Link>
+                <NotifyInlineForm providerIds={[app.providerId]} />
+                <Link
+                  href={`/casual/${app.id}`}
+                  className="inline-block text-sm underline"
+                >
+                  See details →
+                </Link>
+              </article>
+            );
+          })}
+        </section>
+
+        <section className="surface-card p-5">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Other providers</h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {secondaryProviders.map(({ provider, status, app }) => {
+              const tone = summarizeStatus(status);
+              return (
+                <Link
+                  key={provider.id}
+                  href={app ? `/casual/${app.id}` : `/provider/${provider.id}`}
+                  className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs bg-white/80 dark:bg-slate-900/60"
+                >
+                  <span className={`h-2 w-2 rounded-full ${tone.pill}`} aria-hidden="true" />
+                  {provider.displayName || provider.name}
+                </Link>
+              );
+            })}
           </div>
-        </div>
-      </noscript>
+        </section>
+
+        <section className="surface-card p-5">
+          <a className="text-sm underline" href="/developer">
+            Developer? Use the API / MCP / Datasets →
+          </a>
+        </section>
+
+        <section className="surface-card p-6 space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Caught early</h2>
+          {caughtEarly.length ? (
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+              {caughtEarly.map((item) => (
+                <li key={item.id}>
+                  {item.title} ({item.providerId}) · detected {item.deltaMinutes} min before full update window closed.
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              No verified pre-acknowledgement detections are published yet.
+            </p>
+          )}
+        </section>
+
+        <noscript>
+          <div className="surface-card p-4 text-sm">
+            Open the full interactive report:
+            {' '}
+            <a className="underline" href="/casual/chatgpt">
+              /casual/chatgpt
+            </a>
+          </div>
+        </noscript>
+      </div>
     </main>
   );
 }

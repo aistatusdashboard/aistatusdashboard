@@ -89,7 +89,6 @@ export const metadata: Metadata = {
     title: 'AI Status Dashboard - Real-time AI Provider Monitoring',
     description: 'Real-time monitoring of AI provider APIs',
     images: [`${SITE_URL}/og.png`],
-    creator: '@aistatusdash',
   },
   alternates: {
     canonical: SITE_URL,

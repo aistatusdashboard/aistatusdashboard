@@ -39,6 +39,9 @@ export default async function ChangelogPage() {
                         {entry.title}
                       </h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{entry.date}</p>
+                      {entry.summary ? (
+                        <p className="text-sm text-slate-600 dark:text-slate-300">{entry.summary}</p>
+                      ) : null}
                     </div>
                     {entry.link && (
                       <a

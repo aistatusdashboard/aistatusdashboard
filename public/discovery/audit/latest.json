@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T19:07:13.645Z",
+  "generated_at": "2026-05-29T17:41:26.398Z",
   "site_url": "https://aistatusdashboard.com",
   "generator": "scripts/generate-static-discovery-assets.cjs",
   "node": "v20.20.0",
@@ -12,15 +12,15 @@
       "path": "/sitemap.xml",
       "url": "https://aistatusdashboard.com/sitemap.xml",
       "expected_content_type": "application/xml; charset=utf-8",
-      "bytes": 14717,
-      "sha256": "452cd040e7ad0fed11b6f55b89b11005706f3e3df8167dfdd50762900f6c3bca"
+      "bytes": 16068,
+      "sha256": "5b152e6828de78fb2cc6adb16c1e7767fbfa2a38f9e9a505685b1ef7857fa940"
     },
     {
       "path": "/rss.xml",
       "url": "https://aistatusdashboard.com/rss.xml",
       "expected_content_type": "application/rss+xml; charset=utf-8",
-      "bytes": 10509,
-      "sha256": "2962ecf8d77093b4047b45ec0637e159f664e6932ebad7b1bf075b5b17f9661d"
+      "bytes": 10777,
+      "sha256": "70abe33c8f83dc4129d9596b4eab6ce2fe13ccadb9cdebed9e3cad62134549a2"
     },
     {
       "path": "/agent.json",
@@ -96,15 +96,15 @@
       "path": "/datasets/incidents.ndjson",
       "url": "https://aistatusdashboard.com/datasets/incidents.ndjson",
       "expected_content_type": "application/x-ndjson; charset=utf-8",
-      "bytes": 11002,
-      "sha256": "4359de20613f111387585775acf0dabb3db82c0ab937d59ae27dd114f847344b"
+      "bytes": 11182,
+      "sha256": "14a27ef6b75666a7cf4464b985ec2757368fa6f70e64e222f0cf3759afdff373"
     },
     {
       "path": "/datasets/metrics.csv",
       "url": "https://aistatusdashboard.com/datasets/metrics.csv",
       "expected_content_type": "text/csv; charset=utf-8",
       "bytes": 347,
-      "sha256": "cffdb52d9a4e35cffbc9d25c08069847cbd9f566c66eb5c82bfcc36a66c269d8"
+      "sha256": "45250c07e0518f3dad8efc2ef37ecfa2ae432e5e49de9f2d9874c5bd908a549b"
     },
     {
       "path": "/docs.md",
@@ -198,17 +198,17 @@
   "datasets": {
     "incidents_ndjson": {
       "url": "https://aistatusdashboard.com/datasets/incidents.ndjson",
-      "bytes": 11002,
-      "sha256": "4359de20613f111387585775acf0dabb3db82c0ab937d59ae27dd114f847344b",
+      "bytes": 11182,
+      "sha256": "14a27ef6b75666a7cf4464b985ec2757368fa6f70e64e222f0cf3759afdff373",
       "line_count": 25,
-      "generated_at": "2026-05-27T19:07:13.645Z"
+      "generated_at": "2026-05-29T17:41:26.398Z"
     },
     "metrics_csv": {
       "url": "https://aistatusdashboard.com/datasets/metrics.csv",
       "bytes": 347,
-      "sha256": "cffdb52d9a4e35cffbc9d25c08069847cbd9f566c66eb5c82bfcc36a66c269d8",
+      "sha256": "45250c07e0518f3dad8efc2ef37ecfa2ae432e5e49de9f2d9874c5bd908a549b",
       "row_count": 5,
-      "generated_at": "2026-05-27T19:07:13.645Z"
+      "generated_at": "2026-05-29T17:41:26.398Z"
     }
   }
 }

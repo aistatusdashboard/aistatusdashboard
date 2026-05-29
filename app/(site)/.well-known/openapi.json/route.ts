@@ -1,12 +1,11 @@
 import crypto from 'crypto';
-import { readFile } from 'fs/promises';
-import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
+import { buildOpenApiSpec } from '@/lib/openapi';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const body = await readFile(path.join(process.cwd(), 'public', 'openapi.json'), 'utf8');
+  const body = JSON.stringify(buildOpenApiSpec('3.1.0'));
   const etag = `"${crypto.createHash('sha256').update(body).digest('hex')}"`;
   if (request.headers.get('if-none-match') === etag) {
     return new NextResponse(null, {

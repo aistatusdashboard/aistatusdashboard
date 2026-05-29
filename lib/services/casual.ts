@@ -321,11 +321,30 @@ function pickLastSimilar(incidents: NormalizedIncident[]): NormalizedIncident | 
 }
 
 export function listCasualApps(): CasualAppConfig[] {
-  return appsConfig.apps as CasualAppConfig[];
+  const configured = appsConfig.apps as CasualAppConfig[];
+  const byProvider = new Set(configured.map((app) => app.providerId));
+  const providerDerived: CasualAppConfig[] = providerService
+    .getProviders()
+    .filter((provider) => !byProvider.has(provider.id))
+    .map((provider) => {
+      const label = `${provider.displayName || provider.name} Status`;
+      return {
+        id: provider.id,
+        label,
+        providerId: provider.id,
+        providerDisplay: provider.displayName || provider.name,
+        surfaces: ['text', 'tools', 'login', 'rate_limits'],
+      };
+    });
+  return [...configured, ...providerDerived];
 }
 
 export function getCasualApp(appId: string): CasualAppConfig | undefined {
-  return listCasualApps().find((app) => app.id === appId);
+  return listCasualApps().find(
+    (app) =>
+      app.id.toLowerCase() === appId.toLowerCase() ||
+      app.providerId.toLowerCase() === appId.toLowerCase()
+  );
 }
 
 export async function getCasualStatus(options: { appId: string; windowMinutes?: number }): Promise<ExperienceStatus | null> {

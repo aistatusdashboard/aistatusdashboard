@@ -1,5 +1,5 @@
 AI Status Dashboard - llms.txt
-Start here: https://aistatusdashboard.com/ai
+Start here: https://aistatusdashboard.com/
 
 MCP server: https://aistatusdashboard.com/mcp
 OpenAPI: https://aistatusdashboard.com/openapi.json
@@ -14,6 +14,9 @@ Datasets:
 - https://aistatusdashboard.com/datasets (index)
 - https://aistatusdashboard.com/datasets/incidents.ndjson
 - https://aistatusdashboard.com/datasets/metrics.csv
+- https://aistatusdashboard.com/embed/chatgpt.json
+- https://aistatusdashboard.com/embed/chatgpt.svg
+- https://aistatusdashboard.com/embed/chatgpt.js
 
 Docs (Markdown):
 - https://aistatusdashboard.com/docs.md
@@ -28,6 +31,10 @@ Casual mode:
 - https://aistatusdashboard.com/casual/claude
 - https://aistatusdashboard.com/casual/gemini
 - https://aistatusdashboard.com/api/public/v1/casual/status?app=chatgpt
+
+Developer surface:
+- https://aistatusdashboard.com/developer
+- https://aistatusdashboard.com/embed
 
 Citing: https://aistatusdashboard.com/docs/citations.md
 RSS: https://aistatusdashboard.com/rss.xml

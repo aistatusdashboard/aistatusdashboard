@@ -1,15 +1,80 @@
 {
-  "generated_at": "2026-05-27T19:07:13.645Z",
+  "generated_at": "2026-05-29T17:41:26.398Z",
   "entries": [
     {
-      "date": "2026-01-19",
-      "title": "Alive refresh: live pulse snapshot, changelog page, and brand kit integration.",
-      "link": "https://aistatusdashboard.com/changelog#2026-01-19"
+      "date": "2026-05-29",
+      "title": "Homepage repositioned around Casual Mode with three primary provider cards (ChatGPT, Claude, Gemini).",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-29"
     },
     {
-      "date": "2026-01-13",
-      "title": "Discoverability surfaces fixed (sitemap/rss/datasets/md/incidents).",
-      "link": "https://aistatusdashboard.com/changelog#2026-01-13"
+      "date": "2026-05-29",
+      "title": "Legacy mission game and anomaly queue removed from production homepage experience.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-29"
+    },
+    {
+      "date": "2026-05-29",
+      "title": "Developer surface consolidated at `/developer` with API, MCP, datasets, embed, and reliability links.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-29"
+    },
+    {
+      "date": "2026-05-29",
+      "title": "Embed widget launched at `/embed` with JS/SVG/JSON variants.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-29"
+    },
+    {
+      "date": "2026-05-29",
+      "title": "Active incident normalization guard shipped to prevent `status: unknown` on active incidents.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-29"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Six-way cross-project mesh references aligned across machine-readable surfaces.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "OpenAPI parity restored between apex and well-known paths.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Incident detail endpoint lookup regression fixed.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Discovery audit and RSS freshness pipeline restored.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Footer rendering unified; legal markdown mirrors shipped.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Feedback notifier privacy hardening deployed.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Automated public issue triage workflow removed.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "X-Robots-Tag policy enforced across machine-readable routes.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "Visibility and discoverability audits returned green in CI.",
+      "link": "https://aistatusdashboard.com/changelog#2026-05-28"
+    },
+    {
+      "date": "2026-01-24",
+      "title": "Baseline discovery artifacts and public datasets published.",
+      "link": "https://aistatusdashboard.com/changelog#2026-01-24"
     }
   ]
 }

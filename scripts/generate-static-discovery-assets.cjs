@@ -158,6 +158,10 @@ async function buildSitemap(incidents, providers) {
   };
 
   addUrl(`${SITE_URL}/`, '1.0', 'daily');
+  addUrl(`${SITE_URL}/about`, '0.7', 'weekly');
+  addUrl(`${SITE_URL}/related`, '0.6', 'weekly');
+  addUrl(`${SITE_URL}/developer`, '0.8', 'daily');
+  addUrl(`${SITE_URL}/embed`, '0.7', 'weekly');
   addUrl(`${SITE_URL}/ai`, '0.9', 'daily');
   addUrl(`${SITE_URL}/providers`, '0.8', 'daily');
   addUrl(`${SITE_URL}/datasets`, '0.6', 'weekly');
@@ -188,6 +192,9 @@ async function buildSitemap(incidents, providers) {
   addUrl(`${SITE_URL}/casual/chatgpt`, '0.8', 'daily');
   addUrl(`${SITE_URL}/casual/claude`, '0.8', 'daily');
   addUrl(`${SITE_URL}/casual/gemini`, '0.8', 'daily');
+  addUrl(`${SITE_URL}/embed/chatgpt.json`, '0.7', 'daily');
+  addUrl(`${SITE_URL}/embed/chatgpt.svg`, '0.7', 'daily');
+  addUrl(`${SITE_URL}/embed/chatgpt.js`, '0.7', 'daily');
 
   providers.forEach((provider) => {
     addUrl(`${SITE_URL}/provider/${provider.id}`, '0.7', 'hourly');
@@ -232,7 +239,7 @@ function buildDocs() {
 
 function buildLlmsTxt() {
   return `AI Status Dashboard - llms.txt
-Start here: ${SITE_URL}/ai
+Start here: ${SITE_URL}/
 
 MCP server: ${SITE_URL}/mcp
 OpenAPI: ${SITE_URL}/openapi.json
@@ -247,6 +254,9 @@ Datasets:
 - ${SITE_URL}/datasets (index)
 - ${SITE_URL}/datasets/incidents.ndjson
 - ${SITE_URL}/datasets/metrics.csv
+- ${SITE_URL}/embed/chatgpt.json
+- ${SITE_URL}/embed/chatgpt.svg
+- ${SITE_URL}/embed/chatgpt.js
 
 Docs (Markdown):
 - ${SITE_URL}/docs.md
@@ -261,6 +271,10 @@ Casual mode:
 - ${SITE_URL}/casual/claude
 - ${SITE_URL}/casual/gemini
 - ${SITE_URL}/api/public/v1/casual/status?app=chatgpt
+
+Developer surface:
+- ${SITE_URL}/developer
+- ${SITE_URL}/embed
 
 Citing: ${SITE_URL}/docs/citations.md
 RSS: ${SITE_URL}/rss.xml
@@ -281,7 +295,8 @@ function buildLlmsFull() {
 AI Status Dashboard is an AI reliability control plane: status, incidents, metrics, and fallback policy generation across major AI providers.
 
 ## Core Endpoints
-- Landing: ${SITE_URL}/ai
+- Landing: ${SITE_URL}/
+- Developer: ${SITE_URL}/developer
 - MCP server: ${SITE_URL}/mcp
 - OpenAPI (JSON): ${SITE_URL}/openapi.json
 - OpenAPI (YAML): ${SITE_URL}/openapi.yaml
@@ -298,6 +313,9 @@ AI Status Dashboard is an AI reliability control plane: status, incidents, metri
 - Index: ${SITE_URL}/datasets
 - Incidents NDJSON: ${SITE_URL}/datasets/incidents.ndjson
 - Metrics CSV: ${SITE_URL}/datasets/metrics.csv
+- Embed JSON: ${SITE_URL}/embed/chatgpt.json
+- Embed SVG: ${SITE_URL}/embed/chatgpt.svg
+- Embed JS: ${SITE_URL}/embed/chatgpt.js
 
 ## Casual mode
 - ChatGPT: ${SITE_URL}/casual/chatgpt

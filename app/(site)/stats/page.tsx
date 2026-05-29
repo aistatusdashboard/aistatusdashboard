@@ -49,6 +49,10 @@ export default async function StatsPage() {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Policies generated (7d)</p>
             <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{num(stats.policies_generated_7d)}</p>
           </div>
+          <div className="surface-card p-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Distinct domains (30d)</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{num(stats.distinct_referrer_domains_30d)}</p>
+          </div>
         </section>
 
         <section className="surface-card p-6 text-sm text-slate-700 dark:text-slate-300">

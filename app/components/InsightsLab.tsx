@@ -104,7 +104,7 @@ export default function InsightsLab() {
   );
   const [failoverThreshold, setFailoverThreshold] = useState('2000');
   const [failoverTarget, setFailoverTarget] = useState('fallback-provider');
-  const [radarSecret, setRadarSecret] = useState(() => readLocalValue('ai-status-radar-secret', ''));
+  const [radarSecret, setRadarSecret] = useState(() => readLocalValue('ai-status-change-secret', ''));
   const [radarType, setRadarType] = useState('pricing');
   const [radarSeverity, setRadarSeverity] = useState('info');
   const [radarTitle, setRadarTitle] = useState('');
@@ -164,9 +164,9 @@ export default function InsightsLab() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (radarSecret) {
-      window.localStorage.setItem('ai-status-radar-secret', radarSecret);
+      window.localStorage.setItem('ai-status-change-secret', radarSecret);
     } else {
-      window.localStorage.removeItem('ai-status-radar-secret');
+      window.localStorage.removeItem('ai-status-change-secret');
     }
   }, [radarSecret]);
 

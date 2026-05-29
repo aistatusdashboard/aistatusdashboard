@@ -20,6 +20,7 @@ export type PublicStatsPayload = {
     incidents_ndjson_bytes: number;
     metrics_csv_bytes: number;
   };
+  distinct_referrer_domains_30d: number;
   last_check_ts: string | null;
   generated_at: string;
   siblings: ReturnType<typeof siblingsFor>;
@@ -89,12 +90,44 @@ async function countActiveIncidentsNow() {
   }
 }
 
+async function countDistinctReferrerDomains(secondsAgo: number) {
+  const db = getDb();
+  const since = new Date(Date.now() - secondsAgo * 1000);
+  try {
+    const snapshot = await db
+      .collection('api_logs')
+      .where('createdAt', '>=', Timestamp.fromDate(since))
+      .limit(5000)
+      .get();
+    const domains = new Set<string>();
+    for (const doc of snapshot.docs) {
+      const data = doc.data() as Record<string, any>;
+      const raw =
+        data.referrer ||
+        data.referer ||
+        data.origin ||
+        data.host ||
+        '';
+      try {
+        const url = String(raw).includes('://') ? new URL(String(raw)) : null;
+        const host = url?.hostname || String(raw).trim();
+        if (host && host !== 'null' && host !== 'undefined') domains.add(host.toLowerCase());
+      } catch {
+        // ignore parse errors
+      }
+    }
+    return domains.size;
+  } catch {
+    return 0;
+  }
+}
+
 export async function loadPublicStats(): Promise<PublicStatsPayload> {
   if (cache && cache.expiresAt > Date.now()) return cache.payload;
   if (inFlight) return inFlight;
   inFlight = (async () => {
     const pulse = await getLivePulseSnapshot();
-    const [incidents7d, incidents30d, reports7d, fallback7d, policy7d, casual7d, casual30d, activeNow] =
+    const [incidents7d, incidents30d, reports7d, fallback7d, policy7d, casual7d, casual30d, activeNow, refDomains30d] =
       await Promise.all([
         countDocs("incidents", toUnixSeconds(7 * 24 * 60 * 60 * 1000)),
         countDocs("incidents", toUnixSeconds(30 * 24 * 60 * 60 * 1000)),
@@ -104,6 +137,7 @@ export async function loadPublicStats(): Promise<PublicStatsPayload> {
         countOpsInAuditLogs("/api/public/v1/casual/status", toUnixSeconds(7 * 24 * 60 * 60 * 1000)),
         countOpsInAuditLogs("/api/public/v1/casual/status", toUnixSeconds(30 * 24 * 60 * 60 * 1000)),
         countActiveIncidentsNow(),
+        countDistinctReferrerDomains(toUnixSeconds(30 * 24 * 60 * 60 * 1000)),
       ]);
 
     const payload: PublicStatsPayload = {
@@ -123,6 +157,7 @@ export async function loadPublicStats(): Promise<PublicStatsPayload> {
         incidents_ndjson_bytes: 11030,
         metrics_csv_bytes: 347,
       },
+      distinct_referrer_domains_30d: refDomains30d,
       last_check_ts: pulse.lastUpdated,
       generated_at: new Date().toISOString(),
       siblings: siblingsFor("aistatusdashboard"),

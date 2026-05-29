@@ -4,6 +4,7 @@ import path from 'path';
 export type ChangelogEntry = {
   title: string;
   date: string;
+  summary?: string;
   link?: string;
 };
 

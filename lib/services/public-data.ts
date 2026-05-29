@@ -28,6 +28,20 @@ export type ProviderCatalog = {
 
 const DEFAULT_WINDOW_SECONDS = 1800;
 type HealthSignal = ModelMatrixTile['signal'];
+const INACTIVE_INCIDENT_STATUSES = new Set(['resolved', 'completed', 'cancelled']);
+
+function normalizeIncidentStatus(
+  status: string | undefined,
+  severity: string | undefined
+): string {
+  const raw = String(status || '').toLowerCase();
+  if (raw && raw !== 'unknown') return raw;
+  // Active incidents should never surface as "unknown".
+  if (severity === 'major_outage' || severity === 'degraded' || severity === 'partial_outage') {
+    return 'investigating';
+  }
+  return 'identified';
+}
 
 function resolveCatalog(providerId: string) {
   const catalog = (modelsCatalog as Record<string, any>)[providerId] || (modelsCatalog as any)._default;
@@ -118,6 +132,10 @@ export async function getStatusSummary(options: {
   );
 
   const filtered = statusRows.filter(Boolean) as Array<Record<string, any>>;
+  const activeIncidentCountTotal = filtered.reduce(
+    (acc, row) => acc + Number(row.active_incident_count || 0),
+    0
+  );
   const totals = filtered.reduce(
     (acc, row) => {
       acc.total += 1;
@@ -163,6 +181,7 @@ export async function getStatusSummary(options: {
     data: {
       window_seconds: windowSeconds,
       lens: options.lens || 'official',
+      all_systems_operational: activeIncidentCountTotal === 0,
       totals,
       providers: filtered,
     },
@@ -244,8 +263,9 @@ export async function searchIncidents(options: {
   const filtered = incidents.filter((incident) => {
     if (options.severity && incident.severity !== options.severity) return false;
     if (options.activeOnly) {
-      const inactive = ['resolved', 'completed', 'cancelled'];
-      if (inactive.includes(incident.status)) return false;
+      if (INACTIVE_INCIDENT_STATUSES.has(normalizeIncidentStatus(incident.status, incident.severity))) {
+        return false;
+      }
     }
     if (options.region) {
       const regions = incident.impactedRegions || [];
@@ -286,11 +306,15 @@ export async function searchIncidents(options: {
     if (idx >= 0) startIndex = idx + 1;
   }
 
-  const page = filtered.slice(startIndex, startIndex + limit).map((incident) => ({
-    ...normalizeIncidentDates(incident),
+  const page = filtered.slice(startIndex, startIndex + limit).map((incident) => {
+    const normalized = normalizeIncidentDates(incident);
+    return {
+    ...normalized,
+    status: normalizeIncidentStatus(normalized.status, normalized.severity),
     incident_id: `${incident.providerId}:${incident.id}`,
     permalink: `/incidents/${incident.providerId}:${incident.id}`,
-  }));
+  };
+  });
 
   const nextCursor = startIndex + limit < filtered.length
     ? `${filtered[startIndex + limit - 1].providerId}:${filtered[startIndex + limit - 1].id}`
@@ -378,6 +402,7 @@ export async function getIncidentById(incidentId: string) {
   const normalized = normalizeIncidentDates(incident);
   return {
     ...normalized,
+    status: normalizeIncidentStatus(normalized.status, normalized.severity),
     incident_id: `${normalized.providerId}:${normalized.id}`,
     permalink: `/incidents/${normalized.providerId}:${normalized.id}`,
   };

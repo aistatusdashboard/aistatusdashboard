@@ -1,6 +1,6 @@
 timestamp,provider_id,metric,value,sample_count,sources
-2026-05-27T19:07:13.645Z,openai,latency_p95_ms,,0,static
-2026-05-27T19:07:13.645Z,anthropic,latency_p95_ms,,0,static
-2026-05-27T19:07:13.645Z,google-ai,latency_p95_ms,,0,static
-2026-05-27T19:07:13.645Z,mistral,latency_p95_ms,,0,static
-2026-05-27T19:07:13.645Z,cohere,latency_p95_ms,,0,static
+2026-05-29T17:41:26.398Z,openai,latency_p95_ms,,0,static
+2026-05-29T17:41:26.398Z,anthropic,latency_p95_ms,,0,static
+2026-05-29T17:41:26.398Z,google-ai,latency_p95_ms,,0,static
+2026-05-29T17:41:26.398Z,mistral,latency_p95_ms,,0,static
+2026-05-29T17:41:26.398Z,cohere,latency_p95_ms,,0,static

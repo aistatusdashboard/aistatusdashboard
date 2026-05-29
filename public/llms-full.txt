@@ -4,7 +4,8 @@
 AI Status Dashboard is an AI reliability control plane: status, incidents, metrics, and fallback policy generation across major AI providers.
 
 ## Core Endpoints
-- Landing: https://aistatusdashboard.com/ai
+- Landing: https://aistatusdashboard.com/
+- Developer: https://aistatusdashboard.com/developer
 - MCP server: https://aistatusdashboard.com/mcp
 - OpenAPI (JSON): https://aistatusdashboard.com/openapi.json
 - OpenAPI (YAML): https://aistatusdashboard.com/openapi.yaml
@@ -21,6 +22,9 @@ AI Status Dashboard is an AI reliability control plane: status, incidents, metri
 - Index: https://aistatusdashboard.com/datasets
 - Incidents NDJSON: https://aistatusdashboard.com/datasets/incidents.ndjson
 - Metrics CSV: https://aistatusdashboard.com/datasets/metrics.csv
+- Embed JSON: https://aistatusdashboard.com/embed/chatgpt.json
+- Embed SVG: https://aistatusdashboard.com/embed/chatgpt.svg
+- Embed JS: https://aistatusdashboard.com/embed/chatgpt.js
 
 ## Casual mode
 - ChatGPT: https://aistatusdashboard.com/casual/chatgpt

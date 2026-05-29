@@ -24,7 +24,15 @@ export type LivePulseSnapshot = {
   communityReports: number | null;
 };
 
-function resolveOverallStatus(totals: Record<string, number>) {
+function resolveOverallStatus(
+  totals: Record<string, number>,
+  providers: Array<Record<string, any>>
+) {
+  const activeIncidentCount = providers.reduce(
+    (acc, provider) => acc + Number(provider.active_incident_count || provider.activeIncidentCount || 0),
+    0
+  );
+  if (activeIncidentCount > 0) return 'degraded';
   if ((totals.down || 0) > 0) return 'down';
   if ((totals.degraded || 0) > 0) return 'degraded';
   if ((totals.maintenance || 0) > 0) return 'maintenance';
@@ -67,7 +75,7 @@ export const getLivePulseSnapshot = cache(async (): Promise<LivePulseSnapshot> =
   const providers = summaryPayload.data.providers || [];
   const totals = summaryPayload.data.totals || { total: 0 };
   const tracking = totals.total || providers.length || providerService.getProviders().length;
-  const status = resolveOverallStatus(totals);
+  const status = resolveOverallStatus(totals, providers);
   const lastUpdated = parseLatestUpdated(providers);
 
   let avgLatency: number | null = null;

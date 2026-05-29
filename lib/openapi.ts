@@ -96,6 +96,7 @@ export function buildOpenApiSpec(version: '3.0.0' | '3.1.0') {
         properties: {
           window_seconds: { type: 'number' },
           lens: { type: 'string' },
+          all_systems_operational: { type: 'boolean' },
           totals: {
             type: 'object',
             properties: {
@@ -464,10 +465,95 @@ export function buildOpenApiSpec(version: '3.0.0' | '3.1.0') {
         },
         responses: {
           200: {
-            description: 'Report accepted',
+            description: 'Report accepted or rate-limited',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/ResponseEnvelope' },
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/ResponseEnvelope' },
+                    {
+                      properties: {
+                        data: {
+                          type: 'object',
+                          properties: {
+                            ok: { type: 'boolean' },
+                            message: { type: 'string', nullable: true },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/embed/{provider}.json': {
+      get: {
+        operationId: 'getEmbedStatusJson',
+        summary: 'Minimal embed status payload for a provider/app.',
+        servers: [{ url: 'https://aistatusdashboard.com' }],
+        parameters: [
+          { name: 'provider', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: 'Embed JSON payload',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    provider: { type: 'string' },
+                    provider_id: { type: 'string' },
+                    status: { type: 'string' },
+                    headline: { type: 'string' },
+                    updated_at: { type: 'string', format: 'date-time' },
+                    casual_url: { type: 'string', format: 'uri' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/embed/{provider}.svg': {
+      get: {
+        operationId: 'getEmbedStatusSvg',
+        summary: 'SVG embed badge for a provider/app.',
+        servers: [{ url: 'https://aistatusdashboard.com' }],
+        parameters: [
+          { name: 'provider', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: 'SVG badge',
+            content: {
+              'image/svg+xml': {
+                schema: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/embed/{provider}.js': {
+      get: {
+        operationId: 'getEmbedStatusScript',
+        summary: 'JavaScript embed snippet for a provider/app.',
+        servers: [{ url: 'https://aistatusdashboard.com' }],
+        parameters: [
+          { name: 'provider', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: 'Embed script',
+            content: {
+              'application/javascript': {
+                schema: { type: 'string' },
               },
             },
           },

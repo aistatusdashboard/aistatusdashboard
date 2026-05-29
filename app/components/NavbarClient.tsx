@@ -125,9 +125,11 @@ export default function NavbarClient({ statusLabel, updatedAgo, reports, statusT
   ];
 
   const developerLinks: NavItem[] = [
-    { label: 'API', href: '/docs/api' },
+    { label: 'Developer hub', href: '/developer' },
+    { label: 'API docs', href: '/docs/api' },
     { label: 'OpenAPI', href: '/openapi.json' },
-    { label: 'MCP', href: '/ai' },
+    { label: 'MCP', href: '/mcp' },
+    { label: 'Embed widget', href: '/embed' },
     { label: 'RSS', href: '/rss.xml', dataTour: 'nav-rss' },
     { label: 'Datasets', href: '/datasets' },
     { label: 'Discovery audit', href: '/discovery/audit' },
