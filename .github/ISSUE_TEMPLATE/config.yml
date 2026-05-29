@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: AIStatusDashboard Docs
+    url: https://aistatusdashboard.com/docs/api
+    about: Check API and product docs before opening an issue.
