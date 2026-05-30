@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const BASE_URL = (process.env.BASE_URL || 'https://aistatusdashboard.com').replace(/\/$/, '');
+const METADATA_ROUTE_SET = (process.env.METADATA_ROUTE_SET || 'full').toLowerCase();
 const BAD_GENERIC_TITLE = 'AI Status Dashboard - Real-time AI Provider Monitoring';
 const MACHINE_BRAND = 'AIStatusDashboard';
 const BAD_DOUBLE_TITLES = [
@@ -137,13 +138,7 @@ async function resolveIncidentExpectation() {
 }
 
 async function run() {
-  const incident = await resolveIncidentExpectation();
-  const routes = [
-    {
-      route: '/',
-      expectedShareTitle: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
-      expectedVisibleTitle: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
-    },
+  const staticRoutes = [
     {
       route: '/embed',
       expectedShareTitle: 'Embed Status Widget | AI Status Dashboard',
@@ -169,27 +164,41 @@ async function run() {
       expectedShareTitle: 'Related projects | AI Status Dashboard',
       expectedVisibleTitle: 'Related projects | AI Status Dashboard',
     },
-    {
-      route: '/casual/chatgpt',
-      expectedShareTitle: 'Is ChatGPT down? Live status | AI Status Dashboard',
-      expectedVisibleTitle: 'Is ChatGPT down? Live status | AI Status Dashboard',
-    },
-    {
-      route: '/casual/claude',
-      expectedShareTitle: 'Is Claude down? Live status | AI Status Dashboard',
-      expectedVisibleTitle: 'Is Claude down? Live status | AI Status Dashboard',
-    },
-    {
-      route: '/casual/gemini',
-      expectedShareTitle: 'Is Gemini down? Live status | AI Status Dashboard',
-      expectedVisibleTitle: 'Is Gemini down? Live status | AI Status Dashboard',
-    },
-    {
-      route: incident.route,
-      expectedShareTitle: incident.expectedShareTitle,
-      expectedVisibleTitle: incident.expectedVisibleTitle,
-    },
   ];
+
+  const fullRoutes = async () => {
+    const incident = await resolveIncidentExpectation();
+    return [
+      {
+        route: '/',
+        expectedShareTitle: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
+        expectedVisibleTitle: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
+      },
+      ...staticRoutes,
+      {
+        route: '/casual/chatgpt',
+        expectedShareTitle: 'Is ChatGPT down? Live status | AI Status Dashboard',
+        expectedVisibleTitle: 'Is ChatGPT down? Live status | AI Status Dashboard',
+      },
+      {
+        route: '/casual/claude',
+        expectedShareTitle: 'Is Claude down? Live status | AI Status Dashboard',
+        expectedVisibleTitle: 'Is Claude down? Live status | AI Status Dashboard',
+      },
+      {
+        route: '/casual/gemini',
+        expectedShareTitle: 'Is Gemini down? Live status | AI Status Dashboard',
+        expectedVisibleTitle: 'Is Gemini down? Live status | AI Status Dashboard',
+      },
+      {
+        route: incident.route,
+        expectedShareTitle: incident.expectedShareTitle,
+        expectedVisibleTitle: incident.expectedVisibleTitle,
+      },
+    ];
+  };
+
+  const routes = METADATA_ROUTE_SET === 'static' ? staticRoutes : await fullRoutes();
 
   for (const item of routes) {
     const html = await fetchText(item.route);

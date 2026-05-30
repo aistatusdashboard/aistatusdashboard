@@ -118,7 +118,7 @@ jobs:
         run: |
           npm run start -- --hostname 127.0.0.1 --port 3000 >/tmp/ai-status-start.log 2>&1 &
           for i in {1..30}; do
-            if curl -fsS "http://127.0.0.1:3000/" >/dev/null; then
+            if curl -fsS "http://127.0.0.1:3000/about" >/dev/null; then
               exit 0
             fi
             sleep 1
@@ -129,4 +129,5 @@ jobs:
       - name: Verify route metadata
         env:
           BASE_URL: http://127.0.0.1:3000
+          METADATA_ROUTE_SET: static
         run: npm run test:metadata:prod
