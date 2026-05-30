@@ -62,14 +62,19 @@ async function loadDatasetDocs(): Promise<DatasetDoc[]> {
     fileMetadata('/datasets/incidents.ndjson'),
     fileMetadata('/datasets/metrics.csv'),
   ]);
+  const latestDatasetUpdate =
+    incidents.updatedAt && metrics.updatedAt
+      ? new Date(Math.max(new Date(incidents.updatedAt).getTime(), new Date(metrics.updatedAt).getTime())).toISOString()
+      : incidents.updatedAt || metrics.updatedAt;
+  const totalDatasetBytes = incidents.bytes + metrics.bytes;
 
   return [
     {
       name: 'Datasets index',
       href: '/datasets',
       format: 'HTML index',
-      bytes: null,
-      updatedAt: null,
+      bytes: totalDatasetBytes,
+      updatedAt: latestDatasetUpdate,
       schemaHref: '/datasets/schemas',
       sample: 'Browse dataset entries, schemas, and retrieval links.',
     },
