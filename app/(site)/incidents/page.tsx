@@ -5,17 +5,17 @@ import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 
 export const metadata: Metadata = {
   title: 'Incidents',
-  description: 'Recent AI provider incidents tracked by AIStatusDashboard.',
+  description: 'Recent AI provider incidents tracked by AI Status Dashboard.',
   alternates: {
     canonical: '/incidents',
   },
   openGraph: {
     title: 'Incidents | AI Status Dashboard',
-    description: 'Recent AI provider incidents tracked by AIStatusDashboard.',
+    description: 'Recent AI provider incidents tracked by AI Status Dashboard.',
   },
   twitter: {
     title: 'Incidents | AI Status Dashboard',
-    description: 'Recent AI provider incidents tracked by AIStatusDashboard.',
+    description: 'Recent AI provider incidents tracked by AI Status Dashboard.',
   },
 };
 

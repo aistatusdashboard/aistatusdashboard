@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     return handleMcpStream(request);
   }
   const message = [
-    'AIStatusDashboard MCP endpoint.',
+    'AI Status Dashboard MCP endpoint.',
     'Use POST with JSON-RPC 2.0 for tools, resources, and prompts.',
     'See https://aistatusdashboard.com/ai for quickstart and docs.',
   ].join('\n');

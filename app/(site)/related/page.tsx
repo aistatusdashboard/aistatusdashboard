@@ -31,7 +31,7 @@ export default function RelatedPage() {
             Portfolio context
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
-            AIStatusDashboard is part of a portfolio of projects focused on agent reliability, routing,
+            AI Status Dashboard is part of a portfolio of projects focused on agent reliability, routing,
             and discoverability.
           </p>
         </header>

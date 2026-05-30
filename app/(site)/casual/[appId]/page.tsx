@@ -51,6 +51,26 @@ function statusTone(status: string) {
   }
 }
 
+function notifyCopyForStatus(status: string, providerName: string) {
+  const normalized = status.toLowerCase();
+  if (normalized === 'operational') {
+    return {
+      prompt: `Get notified the next time ${providerName} has an issue`,
+      cta: 'Notify me',
+    };
+  }
+  if (normalized === 'resolved' || normalized === 'recovering') {
+    return {
+      prompt: `Notify me of future ${providerName} incidents`,
+      cta: 'Notify me',
+    };
+  }
+  return {
+    prompt: 'Notify me when this is fixed',
+    cta: 'Notify me',
+  };
+}
+
 export default async function CasualAppPage({ params }: { params: Promise<CasualParams> }) {
   const { appId } = await params;
   const app = getCasualApp(appId);
@@ -75,7 +95,7 @@ export default async function CasualAppPage({ params }: { params: Promise<Casual
     { id: 'gemini', name: 'Gemini' },
   ].filter((item) => item.id !== app.id);
 
-  const actionableOutage = status.overall_status === 'down' || status.overall_status === 'degraded';
+  const notifyCopy = notifyCopyForStatus(status.overall_status, name);
 
   return (
     <main className="flex-1">
@@ -140,28 +160,30 @@ export default async function CasualAppPage({ params }: { params: Promise<Casual
             <CasualHelpful appId={app.id} />
           </section>
 
-          {actionableOutage ? (
-            <section className="surface-card p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">What to do now</h3>
-              <NotifyInlineForm providerIds={[app.providerId]} />
-              <div className="text-sm text-slate-600 dark:text-slate-300 space-y-2">
-                <p>Try a working alternative:</p>
-                <div className="flex flex-wrap gap-3">
-                  {alternatives.map((item) => (
-                    <Link key={item.id} href={`/casual/${item.id}`} className="underline">
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-                <p>
-                  Need fallback policy details?{' '}
-                  <Link href="/developer" className="underline">
-                    Open fallback API guidance →
+          <section className="surface-card p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">What to do now</h3>
+            <NotifyInlineForm
+              providerIds={[app.providerId]}
+              prompt={notifyCopy.prompt}
+              ctaLabel={notifyCopy.cta}
+            />
+            <div className="text-sm text-slate-600 dark:text-slate-300 space-y-2">
+              <p>Try a working alternative:</p>
+              <div className="flex flex-wrap gap-3">
+                {alternatives.map((item) => (
+                  <Link key={item.id} href={`/casual/${item.id}`} className="underline">
+                    {item.name}
                   </Link>
-                </p>
+                ))}
               </div>
-            </section>
-          ) : null}
+              <p>
+                Need fallback policy details?{' '}
+                <Link href="/developer" className="underline">
+                  Open fallback API guidance →
+                </Link>
+              </p>
+            </div>
+          </section>
 
           <section className="surface-card p-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">

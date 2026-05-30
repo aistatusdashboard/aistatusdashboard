@@ -31,7 +31,7 @@ const dropdownItemClass =
   'flex items-center min-h-[40px] px-3 py-2 rounded-xl whitespace-nowrap leading-none text-[13px] font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition';
 
 const statusToneStyles: Record<StatusTone, { dot: string; text: string }> = {
-  operational: { dot: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300' },
+  operational: { dot: 'bg-sky-500', text: 'text-sky-700 dark:text-sky-300' },
   degraded: { dot: 'bg-amber-500', text: 'text-amber-700 dark:text-amber-300' },
   down: { dot: 'bg-rose-500', text: 'text-rose-700 dark:text-rose-300' },
   maintenance: { dot: 'bg-sky-500', text: 'text-sky-700 dark:text-sky-300' },

@@ -2,6 +2,7 @@
 
 const BASE_URL = (process.env.BASE_URL || 'https://aistatusdashboard.com').replace(/\/$/, '');
 const BAD_GENERIC_TITLE = 'AI Status Dashboard - Real-time AI Provider Monitoring';
+const MACHINE_BRAND = 'AIStatusDashboard';
 const BAD_DOUBLE_TITLES = [
   'AI Status Dashboard | AI Status Dashboard',
   'AIStatusDashboard | AI Status Dashboard',
@@ -58,6 +59,23 @@ function extractTitle(html) {
   return match?.[1]?.trim() || null;
 }
 
+function extractBodyVisibleText(html) {
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const body = bodyMatch?.[1] || '';
+  const withoutIgnoredBlocks = body
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<template[\s\S]*?<\/template>/gi, ' ')
+    .replace(/<pre[\s\S]*?<\/pre>/gi, ' ')
+    .replace(/<code[\s\S]*?<\/code>/gi, ' ');
+  return withoutIgnoredBlocks
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function assertEqual(route, field, actual, expected) {
   if (!actual) {
     throw new Error(`[metadata] ${route} missing ${field}`);
@@ -75,6 +93,32 @@ function assertNoDoubleBrand(route, title) {
     if (title.includes(bad)) {
       throw new Error(`[metadata] ${route} visible <title> contains doubled brand: "${title}"`);
     }
+  }
+}
+
+function assertNoMachineBrandInVisibleBody(route, html) {
+  const text = extractBodyVisibleText(html);
+  if (text.includes(MACHINE_BRAND)) {
+    throw new Error(
+      `[metadata] ${route} contains disallowed machine-form brand in visible body text: "${MACHINE_BRAND}"`
+    );
+  }
+}
+
+function assertCasualRouteHasEmailInput(route, html) {
+  if (!route.startsWith('/casual/')) return;
+  if (!/<input[^>]*type=["']email["'][^>]*>/i.test(html)) {
+    throw new Error(`[metadata] ${route} is missing required notify email input`);
+  }
+}
+
+function assertEmbedCopyButtons(route, html) {
+  if (route !== '/embed') return;
+  const copyButtons = [...html.matchAll(/<button[^>]*aria-label=["'][^"']*copy[^"']*["'][^>]*>/gi)];
+  if (copyButtons.length < 3) {
+    throw new Error(
+      `[metadata] ${route} expected at least 3 copy buttons with aria-label containing "Copy", found ${copyButtons.length}`
+    );
   }
 }
 
@@ -157,6 +201,9 @@ async function run() {
     assertEqual(item.route, 'twitter:title', twitterTitle, item.expectedShareTitle);
     assertEqual(item.route, '<title>', visibleTitle, item.expectedVisibleTitle);
     assertNoDoubleBrand(item.route, visibleTitle);
+    assertNoMachineBrandInVisibleBody(item.route, html);
+    assertCasualRouteHasEmailInput(item.route, html);
+    assertEmbedCopyButtons(item.route, html);
     console.log(`[metadata] PASS ${item.route}`);
     console.log(`  <title>=${visibleTitle}`);
     console.log(`  og:title=${ogTitle}`);

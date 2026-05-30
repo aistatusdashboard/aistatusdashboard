@@ -61,6 +61,26 @@ function summarizeStatus(status: string) {
   };
 }
 
+function notifyCopy(status: string, providerName: string) {
+  const normalized = status.toLowerCase();
+  if (normalized === 'operational') {
+    return {
+      prompt: `Get notified the next time ${providerName} has an issue`,
+      cta: 'Notify me',
+    };
+  }
+  if (normalized === 'resolved' || normalized === 'recovering') {
+    return {
+      prompt: `Notify me of future ${providerName} incidents`,
+      cta: 'Notify me',
+    };
+  }
+  return {
+    prompt: 'Notify me when this is fixed',
+    cta: 'Notify me',
+  };
+}
+
 export default async function LandingPage() {
   const sevenDaysAgoIso = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const [livePulse, statusSummary, incidentPayload] = await Promise.all([
@@ -135,6 +155,8 @@ export default async function LandingPage() {
             const app = item!.app;
             const status = item!.status;
             const tone = summarizeStatus(status.overall_status);
+            const providerName = app.label.replace(' Status', '');
+            const notify = notifyCopy(status.overall_status, providerName);
             return (
               <article
                 key={app.id}
@@ -143,7 +165,7 @@ export default async function LandingPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <Image src={LOGOS[app.id] || '/logos/openai.svg'} alt={`${app.label} logo`} width={28} height={28} />
-                    <p className="text-lg font-semibold">{app.label.replace(' Status', '')}</p>
+                    <p className="text-lg font-semibold">{providerName}</p>
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/80 dark:bg-slate-900/70 px-2 py-1 text-xs border border-current/20">
                     <span className={`h-2 w-2 rounded-full ${tone.pill}`} aria-hidden="true" />
@@ -152,7 +174,7 @@ export default async function LandingPage() {
                 </div>
 
                 <p className="text-base font-medium">
-                  {app.label.replace(' Status', '')} {tone.headline}.
+                  {providerName} {tone.headline}.
                 </p>
                 <p className="text-sm opacity-90">{status.is_it_just_me.note}</p>
                 {status.history.last_similar_event ? (
@@ -161,7 +183,11 @@ export default async function LandingPage() {
                   </p>
                 ) : null}
 
-                <NotifyInlineForm providerIds={[app.providerId]} />
+                <NotifyInlineForm
+                  providerIds={[app.providerId]}
+                  prompt={notify.prompt}
+                  ctaLabel={notify.cta}
+                />
                 <Link
                   href={`/casual/${app.id}`}
                   className="inline-block text-sm underline"

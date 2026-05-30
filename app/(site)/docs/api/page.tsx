@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import CodeSnippet from '@/app/components/CodeSnippet';
 
 export const metadata: Metadata = {
   title: 'API Docs',
-  description: 'Public REST API endpoints and OpenAPI specs for AIStatusDashboard.',
+  description: 'Public REST API endpoints and OpenAPI specs for AI Status Dashboard.',
   alternates: {
     canonical: '/docs/api',
   },
@@ -29,6 +30,10 @@ export default function ApiDocsPage() {
 
           <section className="surface-card p-6 space-y-3">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Core endpoints</h2>
+            <CodeSnippet
+              code={`curl "${BASE_URL}/status/summary?provider=openai&lens=observed"`}
+              ariaLabel="Copy docs API summary curl command"
+            />
             <ul className="text-sm text-slate-600 dark:text-slate-300 space-y-2 list-disc pl-6">
               <li>GET /status/summary</li>
               <li>GET /status/health-matrix</li>

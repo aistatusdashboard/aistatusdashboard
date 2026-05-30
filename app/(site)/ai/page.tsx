@@ -86,7 +86,7 @@ export default function AiLandingPage() {
           </section>
 
           <section className="surface-card p-6 space-y-3">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Build on AIStatusDashboard</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Build on AI Status Dashboard</h2>
             <p className="text-sm text-slate-600 dark:text-slate-300">
               Stable public surfaces for apps, agents, and search systems.
             </p>

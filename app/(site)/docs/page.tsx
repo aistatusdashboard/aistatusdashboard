@@ -4,7 +4,7 @@ import McpCallout from '@/app/components/McpCallout';
 
 export const metadata: Metadata = {
   title: 'Docs',
-  description: 'AIStatusDashboard documentation for APIs, MCP tools, and datasets.',
+  description: 'AI Status Dashboard documentation for APIs, MCP tools, and datasets.',
   alternates: {
     canonical: '/docs',
   },
@@ -22,7 +22,7 @@ export default function DocsPage() {
               Documentation
             </p>
             <h1 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white mt-3">
-              AIStatusDashboard docs
+              AI Status Dashboard docs
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">
               Everything you need to call the public API, integrate MCP tools, and browse datasets.

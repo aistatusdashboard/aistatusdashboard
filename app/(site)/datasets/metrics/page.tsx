@@ -4,7 +4,7 @@ import { queryMetricSeries } from '@/lib/services/metrics';
 
 export const metadata: Metadata = {
   title: 'Metrics Dataset',
-  description: 'Aggregated metrics dataset from AIStatusDashboard.',
+  description: 'Aggregated metrics dataset from AI Status Dashboard.',
   alternates: {
     canonical: '/datasets/metrics',
   },
@@ -54,7 +54,7 @@ export default async function MetricsDatasetPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
-    name: 'AIStatusDashboard Metrics Dataset',
+    name: 'AI Status Dashboard Metrics Dataset',
     url: `${SITE_URL}/datasets/metrics`,
     description: 'Aggregated latency and reliability metrics across AI providers.',
     temporalCoverage: '2024-01-01/2025-12-31',

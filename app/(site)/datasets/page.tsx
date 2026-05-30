@@ -7,7 +7,7 @@ import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 
 export const metadata: Metadata = {
   title: 'Datasets',
-  description: 'Public datasets for incidents and metrics from AIStatusDashboard.',
+  description: 'Public datasets for incidents and metrics from AI Status Dashboard.',
   alternates: {
     canonical: '/datasets',
   },
@@ -82,13 +82,13 @@ export default async function DatasetsPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'DataCatalog',
-    name: 'AIStatusDashboard Data Catalog',
+    name: 'AI Status Dashboard Data Catalog',
     url: `${SITE_URL}/datasets`,
-    description: 'Public incident and metrics datasets from AIStatusDashboard.',
+    description: 'Public incident and metrics datasets from AI Status Dashboard.',
     dataset: [
       {
         '@type': 'Dataset',
-        name: 'AIStatusDashboard Incidents',
+        name: 'AI Status Dashboard Incidents',
         url: `${SITE_URL}/datasets/incidents`,
         description: 'Normalized incident feed across AI providers.',
         temporalCoverage: '2024-01-01/2025-12-31',
@@ -102,7 +102,7 @@ export default async function DatasetsPage() {
       },
       {
         '@type': 'Dataset',
-        name: 'AIStatusDashboard Metrics',
+        name: 'AI Status Dashboard Metrics',
         url: `${SITE_URL}/datasets/metrics`,
         description: 'Aggregated latency and reliability metrics.',
         temporalCoverage: '2024-01-01/2025-12-31',

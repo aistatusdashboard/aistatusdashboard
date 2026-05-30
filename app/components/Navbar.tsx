@@ -3,21 +3,6 @@ import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { shouldRenderStatusPill } from '@/lib/ui/status-chrome';
 
-function formatStatusLabel(status: string): string | null {
-  switch (status) {
-    case 'operational':
-      return 'Operational';
-    case 'degraded':
-      return 'Degraded';
-    case 'down':
-      return 'Down';
-    case 'maintenance':
-      return 'Maintenance';
-    default:
-      return null;
-  }
-}
-
 export default async function Navbar({ showStatusChrome = true }: { showStatusChrome?: boolean }) {
   let statusLabel: string | null = null;
   let updatedAgo: string | null = null;
@@ -33,13 +18,12 @@ export default async function Navbar({ showStatusChrome = true }: { showStatusCh
         communityReports: snapshot.communityReports,
       })
     ) {
-      const formatted = formatStatusLabel(snapshot.status);
       const updated = formatTimeAgo(snapshot.lastUpdated);
-      if (formatted && updated !== '—') {
-        statusLabel = formatted;
+      if (updated !== '—') {
+        statusLabel = 'Monitoring: Active';
         updatedAgo = updated;
         reports = snapshot.communityReports;
-        statusTone = snapshot.status;
+        statusTone = 'operational';
       }
     }
   }

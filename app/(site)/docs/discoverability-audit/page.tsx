@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import CodeSnippet from '@/app/components/CodeSnippet';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export const metadata: Metadata = {
   title: 'Discoverability Audit',
-  description: 'Self-service audit checklist for AIStatusDashboard discovery surfaces.',
+  description: 'Self-service audit checklist for AI Status Dashboard discovery surfaces.',
   alternates: {
     canonical: '/docs/discoverability-audit',
   },
@@ -46,7 +47,7 @@ export default function DiscoverabilityAuditPage() {
               Discoverability audit
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">
-              Quick checklist for AI and crawler access to AIStatusDashboard public surfaces.
+              Quick checklist for AI and crawler access to AI Status Dashboard public surfaces.
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
               Last verified: {verifiedAt}
@@ -83,14 +84,15 @@ export default function DiscoverabilityAuditPage() {
 
           <section className="surface-card p-6 space-y-4">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Verify with curl</h2>
-            <pre className="text-xs text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900/50 p-4 rounded">
-{`curl -i https://aistatusdashboard.com/sitemap.xml
+            <CodeSnippet
+              code={`curl -i https://aistatusdashboard.com/sitemap.xml
 curl -i https://aistatusdashboard.com/rss.xml
 curl -i https://aistatusdashboard.com/datasets/incidents.ndjson
 curl -i https://aistatusdashboard.com/datasets/metrics.csv
 curl -i https://aistatusdashboard.com/llms.txt
 curl -i https://aistatusdashboard.com/openapi.yaml`}
-            </pre>
+              ariaLabel="Copy discoverability audit curl commands"
+            />
             <p className="text-sm text-slate-600 dark:text-slate-300">
               For the full audit output, see the Markdown mirror.
             </p>

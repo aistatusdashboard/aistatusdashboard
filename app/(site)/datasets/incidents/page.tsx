@@ -4,7 +4,7 @@ import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 
 export const metadata: Metadata = {
   title: 'Incidents Dataset',
-  description: 'Normalized incident dataset from AIStatusDashboard.',
+  description: 'Normalized incident dataset from AI Status Dashboard.',
   alternates: {
     canonical: '/datasets/incidents',
   },
@@ -48,7 +48,7 @@ export default async function IncidentsDatasetPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
-    name: 'AIStatusDashboard Incidents Dataset',
+    name: 'AI Status Dashboard Incidents Dataset',
     url: `${SITE_URL}/datasets/incidents`,
     description: 'Normalized incidents across AI providers with updates and severity metadata.',
     temporalCoverage: '2024-01-01/2025-12-31',

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Dataset Schemas',
-  description: 'JSON schema files for AIStatusDashboard datasets.',
+  description: 'JSON schema files for AI Status Dashboard datasets.',
   alternates: {
     canonical: '/datasets/schemas',
   },

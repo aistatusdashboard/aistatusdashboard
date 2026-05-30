@@ -7,7 +7,7 @@ export default function McpCallout() {
     <>
       <aside className="callout callout--mcp" role="note" aria-labelledby="mcp-callout-title">
         <div className="callout__body">
-          <h2 id="mcp-callout-title">Try the MCP server for AIStatusDashboard</h2>
+          <h2 id="mcp-callout-title">Try the MCP server for AI Status Dashboard</h2>
           <p>Install from GitHub, and see the announcement for more details.</p>
           <ul className="callout__links">
             <li><a href={MCP_GITHUB_URL}>Install from GitHub</a></li>

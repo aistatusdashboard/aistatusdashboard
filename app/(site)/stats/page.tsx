@@ -17,7 +17,7 @@ export default async function StatsPage() {
             Public Stats
           </p>
           <h1 className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">
-            AIStatusDashboard Stats
+            AI Status Dashboard Stats
           </h1>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             Generated {stats.generated_at} · JSON: <a className="underline" href="/stats.json">/stats.json</a>

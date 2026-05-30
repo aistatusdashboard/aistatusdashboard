@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const body = `# AIStatusDashboard Bedrock Action Group
+  const body = `# AI Status Dashboard Bedrock Action Group
 
 Use the OpenAPI 3.0 spec for Bedrock Agents.
 

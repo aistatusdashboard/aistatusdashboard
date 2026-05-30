@@ -27,9 +27,9 @@ function extractIncidentId(path?: string | null) {
 }
 
 function summarizeIncident(incident: Awaited<ReturnType<typeof getIncidentById>>): string {
-  if (!incident) return 'Incident detail from AIStatusDashboard.';
+  if (!incident) return 'Incident detail from AI Status Dashboard.';
   const fromUpdate = incident.updates?.find((update) => update.body?.trim())?.body?.trim();
-  const candidate = fromUpdate || incident.title || 'Incident detail from AIStatusDashboard.';
+  const candidate = fromUpdate || incident.title || 'Incident detail from AI Status Dashboard.';
   return candidate.length > 140 ? `${candidate.slice(0, 137)}...` : candidate;
 }
 

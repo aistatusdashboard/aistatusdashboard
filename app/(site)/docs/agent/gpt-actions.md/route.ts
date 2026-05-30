@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const body = `# AIStatusDashboard GPT Actions
+  const body = `# AI Status Dashboard GPT Actions
 
-Use the public OpenAPI spec to add AIStatusDashboard as a GPT Action.
+Use the public OpenAPI spec to add AI Status Dashboard as a GPT Action.
 
 ## Steps
 1. Open the GPT editor and go to Actions.

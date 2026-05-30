@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'MCP Tools',
-  description: 'Tool catalog for the AIStatusDashboard MCP server.',
+  description: 'Tool catalog for the AI Status Dashboard MCP server.',
   alternates: {
     canonical: '/docs/agent/mcp-tools',
   },

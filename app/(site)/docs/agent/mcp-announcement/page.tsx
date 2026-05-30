@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'MCP Announcement',
-  description: 'Announcement and overview for the AIStatusDashboard MCP server launch.',
+  description: 'Announcement and overview for the AI Status Dashboard MCP server launch.',
   alternates: {
     canonical: '/docs/agent/mcp-announcement',
   },
@@ -19,7 +19,7 @@ export default function McpAnnouncementPage() {
               Announcement
             </p>
             <h1 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white mt-3">
-              AIStatusDashboard MCP server is live
+              AI Status Dashboard MCP server is live
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">
               The MCP endpoint is now available for agents to query status summaries, incidents, metrics,

@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
+import CodeSnippet from '@/app/components/CodeSnippet';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -21,6 +23,7 @@ export default function EmbedPage() {
     '<script src="https://aistatusdashboard.com/embed/chatgpt.js" data-size="small" data-theme="auto"></script>';
   const svgSnippet = '![ChatGPT status](https://aistatusdashboard.com/embed/chatgpt.svg)';
   const jsonSnippet = 'curl https://aistatusdashboard.com/embed/chatgpt.json';
+  const previewDoc = `<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:8px;font:12px/1.4 system-ui;background:transparent;} .host{display:block;overflow-x:auto;}</style></head><body><div class="host"><script src="https://aistatusdashboard.com/embed/chatgpt.js" data-size="small" data-theme="auto"></script></div></body></html>`;
 
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
@@ -37,29 +40,33 @@ export default function EmbedPage() {
 
         <section className="surface-card p-6 space-y-3">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">JavaScript</h2>
-          <pre className="rounded-xl bg-slate-900 text-slate-100 p-4 overflow-x-auto text-xs">{scriptSnippet}</pre>
+          <CodeSnippet code={scriptSnippet} ariaLabel="Copy JavaScript embed snippet" />
           <div className="border rounded-xl border-slate-200/70 dark:border-slate-700/70 p-4">
             <iframe
               title="JavaScript embed preview"
-              src="/embed/chatgpt.svg"
-              className="h-10 w-full border-0"
+              srcDoc={previewDoc}
+              className="h-14 w-full border-0"
             />
           </div>
         </section>
 
         <section className="surface-card p-6 space-y-3">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">SVG badge</h2>
-          <pre className="rounded-xl bg-slate-900 text-slate-100 p-4 overflow-x-auto text-xs">{svgSnippet}</pre>
-          <iframe
-            title="SVG embed preview"
-            src="/embed/chatgpt.svg"
-            className="h-10 w-80 max-w-full border-0"
-          />
+          <CodeSnippet code={svgSnippet} ariaLabel="Copy SVG embed snippet" />
+          <div className="rounded-xl border border-slate-200/70 dark:border-slate-700/70 p-4 overflow-hidden">
+            <Image
+              src="/embed/chatgpt.svg"
+              alt="SVG embed preview"
+              width={640}
+              height={32}
+              className="max-w-full h-auto block"
+            />
+          </div>
         </section>
 
         <section className="surface-card p-6 space-y-3">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">JSON payload</h2>
-          <pre className="rounded-xl bg-slate-900 text-slate-100 p-4 overflow-x-auto text-xs">{jsonSnippet}</pre>
+          <CodeSnippet code={jsonSnippet} ariaLabel="Copy JSON curl snippet" />
         </section>
 
         <section className="surface-card p-6 space-y-3">

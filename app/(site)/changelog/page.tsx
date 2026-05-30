@@ -46,8 +46,8 @@ export default async function ChangelogPage() {
             <ul className="space-y-4">
               {changelog.entries.map((entry) => (
                 <li key={`${entry.date}-${entry.title}`} id={entry.date.replace(/[^0-9-]/g, '')}>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="space-y-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 min-w-0 flex-1">
                       <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                         {entry.title}
                       </h2>
@@ -59,7 +59,7 @@ export default async function ChangelogPage() {
                     {entry.link && (
                       <a
                         href={entry.link}
-                        className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                        className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white whitespace-nowrap shrink-0 mt-0.5"
                       >
                         View →
                       </a>

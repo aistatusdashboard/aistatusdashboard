@@ -396,8 +396,11 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
         status = incidentSignal === 'down' ? 'down' : incidentSignal === 'degraded' ? 'degraded' : status;
         if (!signalType) {
           if (surface === 'login') signalType = 'auth';
-          if (surface === 'billing') signalType = 'billing';
+          else if (surface === 'billing') signalType = 'billing';
           if (surface === 'images') signalType = 'image_fail';
+          if (!signalType) {
+            signalType = incidentSignal === 'down' ? 'errors' : 'latency';
+          }
         }
       }
 

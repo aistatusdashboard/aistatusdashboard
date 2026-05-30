@@ -6,12 +6,14 @@ type NotifyInlineFormProps = {
   providerIds: string[];
   className?: string;
   ctaLabel?: string;
+  prompt?: string;
 };
 
 export default function NotifyInlineForm({
   providerIds,
   className,
   ctaLabel = 'Notify me when this is fixed',
+  prompt = 'Get status alerts by email',
 }: NotifyInlineFormProps) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -48,10 +50,13 @@ export default function NotifyInlineForm({
 
   return (
     <form onSubmit={onSubmit} className={className || 'space-y-2'}>
-      <label className="sr-only" htmlFor={`notify-${providerIds.join('-')}`}>
-        Email
+      <label
+        className="block text-sm font-semibold text-slate-800 dark:text-slate-200"
+        htmlFor={`notify-${providerIds.join('-')}`}
+      >
+        {prompt}
       </label>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <input
           id={`notify-${providerIds.join('-')}`}
           type="email"
@@ -59,12 +64,12 @@ export default function NotifyInlineForm({
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
-          className="min-w-[200px] flex-1 rounded-full border border-slate-200/70 dark:border-slate-700/70 px-3 py-2 text-sm bg-white/90 dark:bg-slate-900/70 text-slate-900 dark:text-white"
+          className="w-full sm:min-w-[220px] sm:flex-1 rounded-full border border-slate-200/70 dark:border-slate-700/70 px-3 py-2.5 text-sm bg-white/90 dark:bg-slate-900/70 text-slate-900 dark:text-white min-h-[44px]"
         />
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2 text-sm font-semibold"
+          className="rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2.5 text-sm font-semibold min-h-[44px]"
         >
           {status === 'loading' ? 'Submitting…' : ctaLabel}
         </button>

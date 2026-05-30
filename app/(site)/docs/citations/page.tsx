@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Citations',
-  description: 'How to cite AIStatusDashboard incidents and datasets.',
+  description: 'How to cite AI Status Dashboard incidents and datasets.',
   alternates: {
     canonical: '/docs/citations',
   },
@@ -18,7 +18,7 @@ export default function CitationsPage() {
               Citations
             </p>
             <h1 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white mt-3">
-              Citing AIStatusDashboard
+              Citing AI Status Dashboard
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">
               Use the evidence bundle and dataset links below when you cite incidents or metrics.

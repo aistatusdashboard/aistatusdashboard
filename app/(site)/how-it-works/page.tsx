@@ -79,7 +79,7 @@ export default function HowItWorksPage() {
           </section>
 
           <section className="surface-card p-6 space-y-4">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Build on AIStatusDashboard</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Build on AI Status Dashboard</h2>
             <p className="text-sm text-slate-600 dark:text-slate-300">
               Use stable public surfaces to integrate reliability data into your workflows.
             </p>

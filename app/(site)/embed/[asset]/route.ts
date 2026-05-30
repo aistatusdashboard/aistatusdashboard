@@ -22,19 +22,29 @@ function parseAsset(asset: string): { provider: string; format: 'svg' | 'js' | '
   return null;
 }
 
+function escapeXml(input: string) {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function toJavascript(payload: {
   provider: string;
   status: string;
   casual_url: string;
 }) {
   const dot = tone(payload.status).color;
+  const label = tone(payload.status).label;
   return `(function(){\n` +
     `var script=document.currentScript;if(!script){return;}\n` +
     `var a=document.createElement('a');a.href='${payload.casual_url}';a.target='_blank';a.rel='noopener noreferrer';\n` +
-    `a.style.cssText='display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #cbd5e1;background:#0f172a;color:#e2e8f0;font:12px/1.2 Inter,Segoe UI,sans-serif;text-decoration:none';\n` +
+    `a.style.cssText='display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #cbd5e1;background:#0f172a;color:#e2e8f0;font:12px/1.2 Inter,Segoe UI,sans-serif;text-decoration:none;white-space:nowrap;max-width:100%;width:max-content';\n` +
     `var dot=document.createElement('span');dot.style.cssText='width:8px;height:8px;border-radius:50%;display:inline-block;background:${dot};';\n` +
-    `var text=document.createElement('span');text.textContent='${payload.provider}: ${payload.status}';\n` +
-    `var brand=document.createElement('span');brand.style.cssText='opacity:.8';brand.textContent='powered by AIStatusDashboard';\n` +
+    `var text=document.createElement('span');text.textContent='${payload.provider}: ${label}';\n` +
+    `var brand=document.createElement('span');brand.style.cssText='opacity:.8';brand.textContent='powered by AI Status Dashboard';\n` +
     `a.appendChild(dot);a.appendChild(text);a.appendChild(brand);script.parentNode.insertBefore(a,script.nextSibling);\n` +
     `})();`;
 }
@@ -45,14 +55,22 @@ function toSvg(payload: {
   casual_url: string;
 }) {
   const state = tone(payload.status);
-  const label = `${payload.provider}: ${state.label}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="380" height="32" role="img" aria-label="${label}">
-  <rect width="380" height="32" rx="8" fill="#0f172a"/>
+  const statusLabel = `${payload.provider}: ${state.label}`;
+  const brandLabel = 'powered by AI Status Dashboard';
+  const contentWidth = Math.max(
+    360,
+    Math.ceil(payload.provider.length * 7.2) + Math.ceil(state.label.length * 7.2) + Math.ceil(brandLabel.length * 6.4) + 120
+  );
+  const providerTextX = 34;
+  const stateTextX = Math.max(providerTextX + payload.provider.length * 7.2 + 24, 170);
+  const brandTextX = Math.max(stateTextX + state.label.length * 7.2 + 20, 245);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${contentWidth}" height="32" viewBox="0 0 ${contentWidth} 32" role="img" aria-label="${escapeXml(statusLabel)}">
+  <rect width="${contentWidth}" height="32" rx="8" fill="#0f172a"/>
   <circle cx="18" cy="16" r="6" fill="${state.color}"/>
-  <text x="34" y="20" font-family="Inter,Segoe UI,sans-serif" font-size="12" fill="#e2e8f0">${payload.provider}</text>
-  <text x="198" y="20" font-family="Inter,Segoe UI,sans-serif" font-size="12" fill="#ffffff">${state.label}</text>
+  <text x="${providerTextX}" y="20" font-family="Inter,Segoe UI,sans-serif" font-size="12" fill="#e2e8f0">${escapeXml(payload.provider)}</text>
+  <text x="${stateTextX}" y="20" font-family="Inter,Segoe UI,sans-serif" font-size="12" fill="#ffffff">${escapeXml(state.label)}</text>
   <a href="${payload.casual_url}">
-    <text x="250" y="20" font-family="Inter,Segoe UI,sans-serif" font-size="11" fill="#93c5fd">powered by AIStatusDashboard</text>
+    <text x="${brandTextX}" y="20" font-family="Inter,Segoe UI,sans-serif" font-size="11" fill="#93c5fd">${brandLabel}</text>
   </a>
 </svg>`;
 }

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import McpCallout from '@/app/components/McpCallout';
+import CodeSnippet from '@/app/components/CodeSnippet';
 
 export const metadata: Metadata = {
   title: 'MCP Quickstart',
-  description: 'Quickstart for the AIStatusDashboard MCP server.',
+  description: 'Quickstart for the AI Status Dashboard MCP server.',
   alternates: {
     canonical: '/docs/agent/mcp-quickstart',
   },
@@ -37,8 +38,8 @@ export default function McpQuickstartPage() {
 
           <section className="surface-card p-6 space-y-4">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Example JSON-RPC calls</h2>
-            <pre className="text-xs bg-slate-950 text-slate-100 rounded p-4 overflow-auto">
-{`{
+            <CodeSnippet
+              code={`{
   "jsonrpc": "2.0",
   "id": 1,
   "method": "tools/call",
@@ -47,7 +48,8 @@ export default function McpQuickstartPage() {
     "arguments": { "provider": "openai", "window_seconds": 1800 }
   }
 }`}
-            </pre>
+              ariaLabel="Copy MCP quickstart JSON-RPC request"
+            />
           </section>
 
           <section className="surface-card p-6 space-y-4">
