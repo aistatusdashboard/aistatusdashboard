@@ -123,6 +123,24 @@ function assertEmbedCopyButtons(route, html) {
   }
 }
 
+function assertNoDeadTwitterHandle(route, html) {
+  const forbiddenPatterns = [
+    /@aistatusdash\b/i,
+    /https?:\/\/(?:www\.)?twitter\.com\/aistatusdash(?:[/?#]|$)/i,
+    /https?:\/\/(?:www\.)?x\.com\/aistatusdash(?:[/?#]|$)/i,
+    /<meta[^>]+name=["']twitter:creator["'][^>]*>/i,
+    /<meta[^>]+name=["']twitter:site["'][^>]*>/i,
+  ];
+
+  for (const pattern of forbiddenPatterns) {
+    if (pattern.test(html)) {
+      throw new Error(
+        `[metadata] ${route} contains forbidden dead Twitter reference matching ${pattern}`
+      );
+    }
+  }
+}
+
 async function resolveIncidentExpectation() {
   const incidentList = await fetchJson('/api/public/v1/incidents');
   const first = incidentList?.data?.incidents?.[0];
@@ -211,6 +229,7 @@ async function run() {
     assertEqual(item.route, '<title>', visibleTitle, item.expectedVisibleTitle);
     assertNoDoubleBrand(item.route, visibleTitle);
     assertNoMachineBrandInVisibleBody(item.route, html);
+    assertNoDeadTwitterHandle(item.route, html);
     assertCasualRouteHasEmailInput(item.route, html);
     assertEmbedCopyButtons(item.route, html);
     console.log(`[metadata] PASS ${item.route}`);
