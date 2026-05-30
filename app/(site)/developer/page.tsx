@@ -15,6 +15,8 @@ type DatasetDoc = {
   sample: string;
 };
 
+const MIN_VALID_YEAR = 2000;
+
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Developer hub',
@@ -57,15 +59,44 @@ async function fileMetadata(relPath: string) {
   };
 }
 
+function isLikelyRealTimestamp(iso: string | null) {
+  if (!iso) return false;
+  const parsed = new Date(iso);
+  return !Number.isNaN(parsed.getTime()) && parsed.getUTCFullYear() >= MIN_VALID_YEAR;
+}
+
+async function readDiscoveryGeneratedAt(): Promise<string | null> {
+  try {
+    const target = path.join(process.cwd(), 'public', 'discovery', 'audit', 'latest.json');
+    const raw = await fs.readFile(target, 'utf8');
+    const parsed = JSON.parse(raw) as { generated_at?: string };
+    return typeof parsed.generated_at === 'string' ? parsed.generated_at : null;
+  } catch {
+    return null;
+  }
+}
+
 async function loadDatasetDocs(): Promise<DatasetDoc[]> {
   const [incidents, metrics] = await Promise.all([
     fileMetadata('/datasets/incidents.ndjson'),
     fileMetadata('/datasets/metrics.csv'),
   ]);
+  const discoveryGeneratedAt = await readDiscoveryGeneratedAt();
+  const normalizedIncidentsUpdatedAt = isLikelyRealTimestamp(incidents.updatedAt)
+    ? incidents.updatedAt
+    : discoveryGeneratedAt;
+  const normalizedMetricsUpdatedAt = isLikelyRealTimestamp(metrics.updatedAt)
+    ? metrics.updatedAt
+    : discoveryGeneratedAt;
   const latestDatasetUpdate =
-    incidents.updatedAt && metrics.updatedAt
-      ? new Date(Math.max(new Date(incidents.updatedAt).getTime(), new Date(metrics.updatedAt).getTime())).toISOString()
-      : incidents.updatedAt || metrics.updatedAt;
+    normalizedIncidentsUpdatedAt && normalizedMetricsUpdatedAt
+      ? new Date(
+          Math.max(
+            new Date(normalizedIncidentsUpdatedAt).getTime(),
+            new Date(normalizedMetricsUpdatedAt).getTime()
+          )
+        ).toISOString()
+      : normalizedIncidentsUpdatedAt || normalizedMetricsUpdatedAt;
   const totalDatasetBytes = incidents.bytes + metrics.bytes;
 
   return [
@@ -83,7 +114,7 @@ async function loadDatasetDocs(): Promise<DatasetDoc[]> {
       href: '/datasets/incidents.ndjson',
       format: 'NDJSON',
       bytes: incidents.bytes,
-      updatedAt: incidents.updatedAt,
+      updatedAt: normalizedIncidentsUpdatedAt,
       schemaHref: '/datasets/schemas/incidents.schema.json',
       sample: incidents.sample,
     },
@@ -92,7 +123,7 @@ async function loadDatasetDocs(): Promise<DatasetDoc[]> {
       href: '/datasets/metrics.csv',
       format: 'CSV',
       bytes: metrics.bytes,
-      updatedAt: metrics.updatedAt,
+      updatedAt: normalizedMetricsUpdatedAt,
       schemaHref: '/datasets/schemas/metrics.schema.json',
       sample: metrics.sample,
     },
