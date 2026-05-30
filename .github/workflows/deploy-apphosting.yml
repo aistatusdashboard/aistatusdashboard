@@ -95,7 +95,28 @@ jobs:
           done
 
       - name: Deploy App Hosting
-        run: npx firebase-tools deploy --only apphosting --project ai-status-dashboard --token "$FIREBASE_TOKEN" --non-interactive
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            echo "App Hosting deploy attempt ${attempt}/5"
+            set +e
+            output=$(npx firebase-tools deploy --only apphosting --project ai-status-dashboard --token "$FIREBASE_TOKEN" --non-interactive 2>&1)
+            status=$?
+            set -e
+            echo "$output"
+            if [ "$status" -eq 0 ]; then
+              exit 0
+            fi
+            if echo "$output" | grep -q 'HTTP Error: 409, unable to queue the operation'; then
+              if [ "$attempt" -lt 5 ]; then
+                echo "App Hosting queue busy (409). Retrying in 30s..."
+                sleep 30
+                continue
+              fi
+            fi
+            exit "$status"
+          done
+          exit 1
 
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
