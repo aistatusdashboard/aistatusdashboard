@@ -14,6 +14,7 @@ type ClassifyOptions = {
   secondsAgo?: number;
   knownSelfTestIpPrefixes?: string[];
   knownSelfTestFingerprints?: Array<{ ip: string; userAgent: string }>;
+  knownSelfTestUserAgents?: string[];
   knownBotUserAgents?: string[];
 };
 
@@ -49,6 +50,9 @@ function buildKnownSets(options: ClassifyOptions = {}) {
     (options.knownSelfTestFingerprints || []).map((item) => hashToken(`${item.ip}:${item.userAgent}`))
   );
   const knownSelfTestIpPrefixes = new Set(['176.100.0.0/16', ...(options.knownSelfTestIpPrefixes || [])]);
+  const knownSelfTestUserAgentHashes = new Set(
+    (options.knownSelfTestUserAgents || ['curl/8.5.0', 'HeadlessChrome/142.0.0.0']).map(hashToken)
+  );
   const knownBotUserAgentHashes = new Set(
     (options.knownBotUserAgents || ['GPTBot/1.0', 'ClaudeBot/1.0', 'PerplexityBot/1.0']).map(hashToken)
   );
@@ -56,6 +60,7 @@ function buildKnownSets(options: ClassifyOptions = {}) {
   return {
     knownSelfTestClientHashes,
     knownSelfTestIpPrefixes,
+    knownSelfTestUserAgentHashes,
     knownBotUserAgentHashes,
   };
 }
@@ -65,7 +70,12 @@ export function classifyStoredCasualReport(
   duplicateCount: number,
   options: ClassifyOptions = {}
 ) {
-  const { knownSelfTestClientHashes, knownSelfTestIpPrefixes, knownBotUserAgentHashes } = buildKnownSets(options);
+  const {
+    knownSelfTestClientHashes,
+    knownSelfTestIpPrefixes,
+    knownSelfTestUserAgentHashes,
+    knownBotUserAgentHashes,
+  } = buildKnownSets(options);
   let classification = (data.classification || 'indeterminate') as CasualReportClassification;
   let isSelfTest = data.isSelfTest === true;
 
@@ -76,6 +86,7 @@ export function classifyStoredCasualReport(
     classification === 'self_test' ||
     (data.clientHash && knownSelfTestClientHashes.has(data.clientHash)) ||
     (data.ipPrefix && knownSelfTestIpPrefixes.has(data.ipPrefix)) ||
+    (data.userAgentHash && knownSelfTestUserAgentHashes.has(data.userAgentHash)) ||
     classifyByFixtureShape(data, duplicateCount)
   ) {
     classification = 'self_test';
