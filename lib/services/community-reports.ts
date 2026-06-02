@@ -6,7 +6,7 @@ export async function getCommunityReportCount(windowMinutes = 10): Promise<numbe
     const summary = await summarizeRecentCasualReports({
       secondsAgo: windowMinutes * 60,
     });
-    return summary.issueReportsFiltered;
+    return summary.issueReportsVerifiedExternal;
   } catch (error: any) {
     log('warn', 'Community reports query failed', { error });
     return null;

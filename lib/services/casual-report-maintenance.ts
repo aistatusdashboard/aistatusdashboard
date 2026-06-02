@@ -118,6 +118,8 @@ export function summarizeCasualReports(records: CasualReportRecord[], options: C
     pending: 0,
     issueReportsFiltered: 0,
     issueReportsRaw: 0,
+    verifiedExternal: 0,
+    issueReportsVerifiedExternal: 0,
     self_test: 0,
     verified_external: 0,
     bot_or_automation: 0,
@@ -138,8 +140,14 @@ export function summarizeCasualReports(records: CasualReportRecord[], options: C
       if (classified.classification === 'indeterminate') {
         summary.pending += 1;
       }
+      if (classified.classification === 'verified_external') {
+        summary.verifiedExternal += 1;
+      }
       if (data.issue === true) {
         summary.issueReportsFiltered += 1;
+        if (classified.classification === 'verified_external') {
+          summary.issueReportsVerifiedExternal += 1;
+        }
       }
     }
   });

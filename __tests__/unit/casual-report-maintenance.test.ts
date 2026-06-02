@@ -22,8 +22,10 @@ describe('summarizeCasualReports', () => {
     expect(summary.self_test).toBe(3);
     expect(summary.filtered).toBe(1);
     expect(summary.pending).toBe(1);
+    expect(summary.verifiedExternal).toBe(0);
     expect(summary.issueReportsRaw).toBe(4);
     expect(summary.issueReportsFiltered).toBe(1);
+    expect(summary.issueReportsVerifiedExternal).toBe(0);
   });
 
   it('treats known internal automation user agents as self-test', () => {
@@ -42,5 +44,7 @@ describe('summarizeCasualReports', () => {
     expect(summary.self_test).toBe(1);
     expect(summary.filtered).toBe(0);
     expect(summary.pending).toBe(0);
+    expect(summary.verifiedExternal).toBe(0);
+    expect(summary.issueReportsVerifiedExternal).toBe(0);
   });
 });

@@ -161,7 +161,7 @@ export async function loadPublicStats(): Promise<PublicStatsPayload> {
       active_incidents_now: activeNow,
       avg_latency_ms_current: pulse.avgLatency ?? 0,
       community_reports_10m: pulse.communityReports ?? 0,
-      community_reports_7d: reports7dSummary.filtered,
+      community_reports_7d: reports7dSummary.verifiedExternal,
       community_reports_7d_raw: reports7dSummary.total,
       community_reports_7d_classification_pending: reports7dSummary.pending,
       fallback_plans_generated_7d: fallback7d,
