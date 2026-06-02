@@ -24,6 +24,7 @@ const DEFAULT_WINDOW_MINUTES = 30;
 const REPORT_WINDOW_MINUTES = 10;
 const BASELINE_WINDOW_MINUTES = 60;
 const REPORT_RATE_LIMIT_MINUTES = 5;
+const SELF_TEST_HEADER = 'x-aistatus-selftest';
 
 const LATENCY_DEGRADED_MS = 4000;
 const LATENCY_WARNING_MS = 2000;
@@ -244,6 +245,50 @@ function resolveRegion(headers: Headers): string | undefined {
 function hashToken(value: string): string {
   const salt = config.insights.telemetrySalt || 'ai-status-dashboard';
   return crypto.createHash('sha256').update(`${salt}:${value}`).digest('hex');
+}
+
+export type CasualReportClassification =
+  | 'self_test'
+  | 'verified_external'
+  | 'bot_or_automation'
+  | 'indeterminate';
+
+export function maskIpPrefix(ip: string): string {
+  const normalized = ip.trim();
+  const ipv4 = normalized.match(/^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/);
+  if (ipv4) {
+    return `${ipv4[1]}.${ipv4[2]}.0.0/16`;
+  }
+
+  if (normalized.includes(':')) {
+    const segments = normalized.split(':').filter(Boolean);
+    if (segments.length >= 4) {
+      return `${segments.slice(0, 4).join(':')}::/64`;
+    }
+  }
+
+  return 'unknown';
+}
+
+export function classifyCasualReport(headers: Headers, ip: string, ua: string): {
+  classification: CasualReportClassification;
+  isSelfTest: boolean;
+  clientHash: string;
+  userAgentHash: string;
+  ipPrefix: string;
+} {
+  const clientHash = hashToken(`${ip}:${ua}`);
+  const userAgentHash = hashToken(ua);
+  const ipPrefix = maskIpPrefix(ip);
+  const isSelfTest = headers.get(SELF_TEST_HEADER) === '1';
+
+  return {
+    classification: isSelfTest ? 'self_test' : 'indeterminate',
+    isSelfTest,
+    clientHash,
+    userAgentHash,
+    ipPrefix,
+  };
 }
 
 async function loadRecentTelemetry(providerId: string, since: Date, until: Date) {
@@ -596,12 +641,12 @@ export async function submitCasualReport(options: {
 
   const ip = options.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || options.headers.get('x-real-ip') || 'unknown';
   const ua = options.headers.get('user-agent') || 'unknown';
-  const clientHash = hashToken(`${ip}:${ua}`);
+  const classification = classifyCasualReport(options.headers, ip, ua);
 
   const region = options.region || resolveRegion(options.headers) || 'global';
 
   const bucket = Math.floor(Date.now() / (REPORT_RATE_LIMIT_MINUTES * 60 * 1000));
-  const lockId = `${clientHash}:${app.id}:${surface}:${bucket}`;
+  const lockId = `${classification.clientHash}:${app.id}:${surface}:${bucket}`;
   const lockRef = db.collection('casual_report_locks').doc(lockId);
 
   try {
@@ -623,7 +668,11 @@ export async function submitCasualReport(options: {
     issueType: options.issueType || null,
     region,
     clientType: options.clientType || 'web',
-    clientHash,
+    clientHash: classification.clientHash,
+    userAgentHash: classification.userAgentHash,
+    ipPrefix: classification.ipPrefix,
+    classification: classification.classification,
+    isSelfTest: classification.isSelfTest,
     createdAt: FieldValue.serverTimestamp(),
   });
 

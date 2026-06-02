@@ -10,6 +10,7 @@ export async function getCommunityReportCount(windowMinutes = 10): Promise<numbe
     const snapshot = await db
       .collection('casual_reports')
       .where('createdAt', '>=', Timestamp.fromDate(since))
+      .where('isSelfTest', '==', false)
       .get();
     const reports = snapshot.docs.map((doc) => doc.data());
     return reports.filter((report) => report.issue === true).length;
@@ -19,7 +20,7 @@ export async function getCommunityReportCount(windowMinutes = 10): Promise<numbe
         const fallback = await db.collection('casual_reports').limit(200).get();
         const reports = fallback.docs.map((doc) => doc.data()).filter((report) => {
           const ts = report.createdAt?.toDate?.()?.getTime?.() || 0;
-          return ts >= since.getTime();
+          return ts >= since.getTime() && report.isSelfTest !== true;
         });
         return reports.filter((report) => report.issue === true).length;
       } catch (innerError) {
