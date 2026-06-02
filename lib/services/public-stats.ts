@@ -2,6 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getLivePulseSnapshot } from "@/lib/services/live-pulse";
 import { getDb } from "@/lib/db/firestore";
 import { siblingsFor } from "@/lib/cross-project";
+import { summarizeRecentCasualReports } from "@/lib/services/casual-report-maintenance";
 
 export type PublicStatsPayload = {
   providers_tracked: number;
@@ -57,36 +58,6 @@ async function countDocs(collectionName: string, secondsAgo: number) {
       .limit(5000)
       .get();
     return snap.size;
-  }
-}
-
-async function countCasualReports(
-  secondsAgo: number,
-  filters: Array<{ field: string; op: FirebaseFirestore.WhereFilterOp; value: unknown }> = []
-) {
-  const db = getDb();
-  const since = new Date(Date.now() - secondsAgo * 1000);
-  try {
-    let query: FirebaseFirestore.Query = db
-      .collection('casual_reports')
-      .where('createdAt', '>=', Timestamp.fromDate(since));
-
-    for (const filter of filters) {
-      query = query.where(filter.field, filter.op, filter.value);
-    }
-
-    const snap = await query.count().get();
-    return Number(snap.data().count || 0);
-  } catch {
-    const snap = await db.collection('casual_reports').where('createdAt', '>=', Timestamp.fromDate(since)).limit(5000).get();
-    return snap.docs
-      .map((doc) => doc.data() as Record<string, any>)
-      .filter((doc) => filters.every((filter) => {
-        const current = doc[filter.field];
-        if (filter.op === '==') return current === filter.value;
-        return true;
-      }))
-      .length;
   }
 }
 
@@ -162,9 +133,7 @@ export async function loadPublicStats(): Promise<PublicStatsPayload> {
     const [
       incidents7d,
       incidents30d,
-      reports7d,
-      reports7dRaw,
-      reports7dPending,
+      reports7dSummary,
       fallback7d,
       policy7d,
       casual7d,
@@ -175,14 +144,7 @@ export async function loadPublicStats(): Promise<PublicStatsPayload> {
       await Promise.all([
         countDocs("incidents", toUnixSeconds(7 * 24 * 60 * 60 * 1000)),
         countDocs("incidents", toUnixSeconds(30 * 24 * 60 * 60 * 1000)),
-        countCasualReports(toUnixSeconds(7 * 24 * 60 * 60 * 1000), [
-          { field: 'isSelfTest', op: '==', value: false },
-        ]),
-        countCasualReports(toUnixSeconds(7 * 24 * 60 * 60 * 1000)),
-        countCasualReports(toUnixSeconds(7 * 24 * 60 * 60 * 1000), [
-          { field: 'isSelfTest', op: '==', value: false },
-          { field: 'classification', op: '==', value: 'indeterminate' },
-        ]),
+        summarizeRecentCasualReports({ secondsAgo: toUnixSeconds(7 * 24 * 60 * 60 * 1000) }),
         countOpsInAuditLogs("/api/public/v1/recommendations/fallback_plan", toUnixSeconds(7 * 24 * 60 * 60 * 1000)),
         countOpsInAuditLogs("/api/public/v1/policy/generate", toUnixSeconds(7 * 24 * 60 * 60 * 1000)),
         countOpsInAuditLogs("/api/public/v1/casual/status", toUnixSeconds(7 * 24 * 60 * 60 * 1000)),
@@ -199,9 +161,9 @@ export async function loadPublicStats(): Promise<PublicStatsPayload> {
       active_incidents_now: activeNow,
       avg_latency_ms_current: pulse.avgLatency ?? 0,
       community_reports_10m: pulse.communityReports ?? 0,
-      community_reports_7d: reports7d,
-      community_reports_7d_raw: reports7dRaw,
-      community_reports_7d_classification_pending: reports7dPending,
+      community_reports_7d: reports7dSummary.filtered,
+      community_reports_7d_raw: reports7dSummary.total,
+      community_reports_7d_classification_pending: reports7dSummary.pending,
       fallback_plans_generated_7d: fallback7d,
       policies_generated_7d: policy7d,
       casual_status_calls_7d: casual7d,

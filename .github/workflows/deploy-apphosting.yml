@@ -53,8 +53,6 @@ jobs:
     timeout-minutes: 30
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-      APP_CRON_SECRET: ${{ secrets.APP_CRON_SECRET }}
-      CRON_SECRET: ${{ secrets.CRON_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,24 +121,9 @@ jobs:
       - name: Ensure jq available
         run: command -v jq >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y jq)
 
-      - name: Backfill and classify casual reports
-        run: |
-          set -euo pipefail
-          cron_secret="${APP_CRON_SECRET:-${CRON_SECRET}}"
-          body="$(mktemp)"
-          code="$(curl -sS -o "$body" -w '%{http_code}' \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "x-cron-secret: ${cron_secret}" \
-            -d '{"days":7}' \
-            "https://aistatusdashboard.com/api/cron/casual-reports/classify?cb=$(date +%s)")"
-          cat "$body"
-          test "$code" = "200"
-
       - name: Verify self-test tagging stays out of filtered community report stats
         run: |
           set -euo pipefail
-          cron_secret="${APP_CRON_SECRET:-${CRON_SECRET}}"
           baseline="$(mktemp)"
           curl -sS "https://aistatusdashboard.com/stats.json?cb=$(date +%s)" > "$baseline"
           cat "$baseline"
@@ -167,16 +150,6 @@ jobs:
             echo "attempt=${attempt} filtered=${filtered} raw=${raw} pending=${pending}"
             cat "$body"
             if [ "$raw" -gt "$baseline_raw" ] && [ "$filtered" = "$baseline_filtered" ]; then
-              verify="$(mktemp)"
-              verify_code="$(curl -sS -o "$verify" -w '%{http_code}' \
-                -X POST \
-                -H "Content-Type: application/json" \
-                -H "x-cron-secret: ${cron_secret}" \
-                -d '{"days":7}' \
-                "https://aistatusdashboard.com/api/cron/casual-reports/classify?cb=$(date +%s)")"
-              cat "$verify"
-              test "$verify_code" = "200"
-              jq -e '.summary.sample[]? | select(.isSelfTest == true and .classification == "self_test")' "$verify" >/dev/null
               exit 0
             fi
             sleep 10
