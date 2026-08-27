@@ -28,7 +28,7 @@
       "providerId": "google-ai",
       "type": "gemini",
       "envKey": "GOOGLE_GEMINI_API_KEY",
-      "model": "gemini-2.5-flash-lite",
+      "model": "gemini-3.5-flash-lite",
       "modelEnvKey": "GEMINI_PROBE_MODEL",
       "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
       "endpoint": "chat",

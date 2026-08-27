@@ -50,7 +50,7 @@ env:
   - variable: GOOGLE_SITE_VERIFICATION_ALT
     value: "thZbMJrJpI5W61kPQCXhMn44Gt9ycmYeTX6f2xxIg68"
   - variable: GEMINI_PROBE_MODEL
-    value: "gemini-2.5-flash-lite"
+    value: "gemini-3.5-flash-lite"
   - variable: CRON_SECRET
     secret: "CRON_SECRET"
   - variable: APP_CRON_SECRET

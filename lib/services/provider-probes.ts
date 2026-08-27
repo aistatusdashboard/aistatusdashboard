@@ -29,6 +29,17 @@ type ProbeRunSummary = {
 };
 
 const DEFAULT_TIMEOUT_MS = 12000;
+
+function logProbeFailure(providerId: string, status: number, data: unknown) {
+  let detail = '';
+  try {
+    detail = JSON.stringify(data).slice(0, 400);
+  } catch {
+    detail = String(data).slice(0, 400);
+  }
+  log('warn', 'Real probe request failed', { providerId, status, detail });
+}
+
 const SEMANTIC_PROMPT = 'Output the word READY and nothing else.';
 const PROBE_NETWORK_CODES = [
   'fetch failed',
@@ -253,6 +264,7 @@ async function probeOpenAICompatible(configEntry: ProbeProviderConfig, apiKey: s
 
   const event = buildEvent(configEntry, latencyMs);
   if (!response.ok) {
+    logProbeFailure(configEntry.providerId, response.status, data);
     event.errorCode = `http-${response.status}`;
     if (response.status === 429) event.http429Rate = 1;
     if (response.status >= 500) event.http5xxRate = 1;
@@ -298,6 +310,7 @@ async function probeAnthropic(configEntry: ProbeProviderConfig, apiKey: string) 
 
   const event = buildEvent(configEntry, latencyMs);
   if (!response.ok) {
+    logProbeFailure(configEntry.providerId, response.status, data);
     event.errorCode = `http-${response.status}`;
     if (response.status === 429) event.http429Rate = 1;
     if (response.status >= 500) event.http5xxRate = 1;
@@ -340,6 +353,7 @@ async function probeGemini(configEntry: ProbeProviderConfig, apiKey: string) {
 
   const event = buildEvent(configEntry, latencyMs);
   if (!response.ok) {
+    logProbeFailure(configEntry.providerId, response.status, data);
     event.errorCode = `http-${response.status}`;
     if (response.status === 429) event.http429Rate = 1;
     if (response.status >= 500) event.http5xxRate = 1;
@@ -384,6 +398,7 @@ async function probeCohere(configEntry: ProbeProviderConfig, apiKey: string) {
 
   const event = buildEvent(configEntry, latencyMs);
   if (!response.ok) {
+    logProbeFailure(configEntry.providerId, response.status, data);
     event.errorCode = `http-${response.status}`;
     if (response.status === 429) event.http429Rate = 1;
     if (response.status >= 500) event.http5xxRate = 1;
@@ -429,6 +444,7 @@ async function probeAzureOpenAI(configEntry: ProbeProviderConfig, apiKey: string
 
   const event = buildEvent(configEntry, latencyMs);
   if (!response.ok) {
+    logProbeFailure(configEntry.providerId, response.status, data);
     event.errorCode = `http-${response.status}`;
     if (response.status === 429) event.http429Rate = 1;
     if (response.status >= 500) event.http5xxRate = 1;
