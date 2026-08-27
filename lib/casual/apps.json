@@ -5,7 +5,16 @@
       "label": "ChatGPT Status",
       "providerId": "openai",
       "providerDisplay": "OpenAI",
-      "surfaces": ["text", "images", "voice", "browse", "tools", "login", "billing", "rate_limits"],
+      "surfaces": [
+        "text",
+        "images",
+        "voice",
+        "browse",
+        "tools",
+        "login",
+        "billing",
+        "rate_limits"
+      ],
       "defaultModel": "gpt-4o-mini",
       "defaultRegion": "us-east"
     },
@@ -14,8 +23,14 @@
       "label": "Claude Status",
       "providerId": "anthropic",
       "providerDisplay": "Anthropic",
-      "surfaces": ["text", "tools", "login", "billing", "rate_limits"],
-      "defaultModel": "claude-3-haiku-20240307",
+      "surfaces": [
+        "text",
+        "tools",
+        "login",
+        "billing",
+        "rate_limits"
+      ],
+      "defaultModel": "claude-haiku-4-5-20251001",
       "defaultRegion": "us-east"
     },
     {
@@ -23,8 +38,16 @@
       "label": "Gemini Status",
       "providerId": "google-ai",
       "providerDisplay": "Google",
-      "surfaces": ["text", "images", "browse", "tools", "login", "billing", "rate_limits"],
-      "defaultModel": "gemini-2.0-flash",
+      "surfaces": [
+        "text",
+        "images",
+        "browse",
+        "tools",
+        "login",
+        "billing",
+        "rate_limits"
+      ],
+      "defaultModel": "gemini-2.5-flash-lite",
       "defaultRegion": "us-central"
     },
     {
@@ -32,8 +55,13 @@
       "label": "Grok Status",
       "providerId": "xai",
       "providerDisplay": "xAI",
-      "surfaces": ["text", "images", "login", "rate_limits"],
-      "defaultModel": "grok-2-latest",
+      "surfaces": [
+        "text",
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultModel": "grok-4-fast-reasoning",
       "defaultRegion": "us-east"
     },
     {
@@ -41,7 +69,12 @@
       "label": "Perplexity Status",
       "providerId": "perplexity",
       "providerDisplay": "Perplexity",
-      "surfaces": ["text", "browse", "login", "rate_limits"],
+      "surfaces": [
+        "text",
+        "browse",
+        "login",
+        "rate_limits"
+      ],
       "defaultModel": "sonar",
       "defaultRegion": "us-east"
     },
@@ -50,7 +83,11 @@
       "label": "DeepSeek Status",
       "providerId": "deepseek",
       "providerDisplay": "DeepSeek",
-      "surfaces": ["text", "login", "rate_limits"],
+      "surfaces": [
+        "text",
+        "login",
+        "rate_limits"
+      ],
       "defaultModel": "deepseek-chat",
       "defaultRegion": "global"
     },
@@ -59,7 +96,11 @@
       "label": "Meta AI Status",
       "providerId": "meta",
       "providerDisplay": "Meta",
-      "surfaces": ["text", "images", "login"],
+      "surfaces": [
+        "text",
+        "images",
+        "login"
+      ],
       "defaultRegion": "global"
     },
     {
@@ -67,7 +108,12 @@
       "label": "GitHub Copilot Status",
       "providerId": "github",
       "providerDisplay": "GitHub",
-      "surfaces": ["text", "tools", "login", "rate_limits"],
+      "surfaces": [
+        "text",
+        "tools",
+        "login",
+        "rate_limits"
+      ],
       "defaultRegion": "global"
     },
     {
@@ -75,7 +121,12 @@
       "label": "Cursor Status",
       "providerId": "cursor",
       "providerDisplay": "Cursor",
-      "surfaces": ["text", "tools", "login", "rate_limits"],
+      "surfaces": [
+        "text",
+        "tools",
+        "login",
+        "rate_limits"
+      ],
       "defaultRegion": "global"
     },
     {
@@ -83,7 +134,11 @@
       "label": "Character.AI Status",
       "providerId": "character-ai",
       "providerDisplay": "Character.AI",
-      "surfaces": ["text", "voice", "login"],
+      "surfaces": [
+        "text",
+        "voice",
+        "login"
+      ],
       "defaultRegion": "global"
     },
     {
@@ -91,7 +146,11 @@
       "label": "Le Chat Status",
       "providerId": "mistral",
       "providerDisplay": "Mistral",
-      "surfaces": ["text", "login", "rate_limits"],
+      "surfaces": [
+        "text",
+        "login",
+        "rate_limits"
+      ],
       "defaultModel": "mistral-small-latest",
       "defaultRegion": "eu-west"
     }
