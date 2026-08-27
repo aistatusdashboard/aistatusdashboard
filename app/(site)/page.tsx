@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
+import { getOpenGaps, getRecentCaughtEvents } from '@/lib/services/gap-detector';
 import { searchIncidents } from '@/lib/services/public-data';
 import { formatTimeAgo } from '@/lib/utils/time';
 import {
@@ -39,7 +40,7 @@ export default async function HomePage() {
   const apps = listCasualApps();
   const sevenDaysAgoIso = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [statuses, incidentPayload] = await Promise.all([
+  const [statuses, incidentPayload, openGaps, caughtEvents] = await Promise.all([
     Promise.all(
       apps.map(async (app) => {
         const status = await getCasualStatus({ appId: app.id }).catch(() => null);
@@ -47,12 +48,17 @@ export default async function HomePage() {
       })
     ),
     searchIncidents({ since: sevenDaysAgoIso, limit: 6 }).catch(() => ({ data: { incidents: [] } })),
+    getOpenGaps(),
+    getRecentCaughtEvents(3),
   ]);
 
+  const gapProviders = new Set(openGaps.map((gap) => gap.providerId));
   const configOrder = new Map(apps.map((app, index) => [app.id, index]));
   const board = statuses
     .map(({ app, status }) => {
-      const key = status ? verdictKey(status.overall_status) : ('unknown' as const);
+      const rawKey = status ? verdictKey(status.overall_status) : ('unknown' as const);
+      // Our failing probes outrank a green official page.
+      const key = gapProviders.has(app.providerId) && rawKey === 'up' ? ('wobbly' as const) : rawKey;
       return { app, status, key, name: shortName(app.id, app.label) };
     })
     .sort(
@@ -185,6 +191,33 @@ export default async function HomePage() {
             All outage history →
           </Link>
         </section>
+
+        {/* Receipts for the headline claim — only rendered when we have them. */}
+        {caughtEvents.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Caught before it was announced</h2>
+            <ul className="divide-y divide-slate-200/70 dark:divide-slate-800/70 surface-card">
+              {caughtEvents.map((event) => (
+                <li key={event.incidentId}>
+                  <Link
+                    href={`/incidents/${event.incidentId}`}
+                    className="flex items-center justify-between gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-slate-900 dark:text-white truncate">
+                        {event.incidentTitle}
+                      </span>
+                      <span className="block font-mono text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                        our tests caught this {event.leadMinutes} min before it was acknowledged
+                      </span>
+                    </span>
+                    <span className="text-slate-400 shrink-0" aria-hidden="true">→</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Why trust this. */}
         <section className="grid gap-4 sm:grid-cols-3 text-sm">

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps } from '@/lib/services/casual';
 import { getProbeReceipt } from '@/lib/services/probe-receipt';
+import { getOpenGap } from '@/lib/services/gap-detector';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
@@ -56,9 +57,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const app = getCasualApp(appId);
   if (!app) return notFound();
 
-  const [status, receipt] = await Promise.all([
+  const [status, receipt, openGap] = await Promise.all([
     getCasualStatus({ appId: app.id }).catch(() => null),
     getProbeReceipt(app.providerId),
+    getOpenGap(app.providerId),
   ]);
   const name = shortName(app.id, app.label);
 
@@ -82,7 +84,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
     );
   }
 
-  const key = verdictKey(status.overall_status);
+  // An open gap (our probes failing, official page still green) outranks a
+  // green official verdict — that's the whole point of testing independently.
+  const rawKey = verdictKey(status.overall_status);
+  const key = openGap && rawKey === 'up' ? 'wobbly' : rawKey;
   const tone = VERDICT_TONE[key];
 
   const answer =
@@ -148,6 +153,22 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             <p className="text-base text-slate-700 dark:text-slate-200 max-w-xl mx-auto">{status.headline}</p>
           )}
         </header>
+
+        {/* Caught it first: our probes disagree with the official page. */}
+        {openGap && (
+          <section className="rounded-2xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 p-5 space-y-2">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-amber-700 dark:text-amber-400">
+              Not yet acknowledged
+            </p>
+            <p className="text-sm text-amber-900 dark:text-amber-100">
+              Our live tests have failed {openGap.failCount} times in a row since{' '}
+              {formatTimeAgo(openGap.startedAt)}
+              {openGap.lastErrorCode ? ` (${openGap.lastErrorCode})` : ''}, but{' '}
+              {app.providerDisplay}&apos;s official status page still says operational. You may be
+              seeing this before it&apos;s announced.
+            </p>
+          </section>
+        )}
 
         {/* The receipt: proof we actually tested it, plus a citable plain-text answer. */}
         <section className="surface-card p-5 space-y-3">

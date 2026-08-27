@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storeSyntheticProbe } from '@/lib/services/probe-store';
+import { updateGapState } from '@/lib/services/gap-detector';
 import { runRealProviderProbes } from '@/lib/services/provider-probes';
 import { log } from '@/lib/utils/logger';
 import { normalizeProbeRegion } from '@/lib/utils/probe-region';
@@ -54,6 +55,7 @@ export async function GET(request: NextRequest) {
       await storeSyntheticProbe(event);
       ingested += 1;
     }
+    await updateGapState(summary.events);
 
     return NextResponse.json({
       success: true,

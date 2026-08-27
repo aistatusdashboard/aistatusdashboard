@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { providerService } from '@/lib/services/providers';
 import { statusService } from '@/lib/services/status';
 import { storeSyntheticProbe } from '@/lib/services/probe-store';
+import { updateGapState } from '@/lib/services/gap-detector';
 import { runRealProviderProbes } from '@/lib/services/provider-probes';
 import { log } from '@/lib/utils/logger';
 import { normalizeProbeRegion } from '@/lib/utils/probe-region';
@@ -76,6 +77,7 @@ export async function GET(request: NextRequest) {
           await storeSyntheticProbe(event);
           ingestedReal += 1;
         }
+        await updateGapState(summary.events);
         realSummary = { ingested: ingestedReal, skipped: summary.skipped, failures: summary.failures };
       } catch (error) {
         log('error', 'Real provider probe run failed', { error });
