@@ -120,16 +120,50 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
 
   const troubledSurfaces = status.surfaces.filter((s) => s.status !== 'operational');
 
+  // Real-data FAQ: rendered on the page AND mirrored into FAQPage JSON-LD
+  // (Google requires content parity between the two).
+  const provider = app.providerDisplay;
+  const statusPageHost = status.evidence.find((e) => e.type === 'official')?.url;
+  const faqs: Array<{ q: string; a: string }> = [
+    {
+      q: `Is ${name} down right now?`,
+      a: `${answer} ${status.headline} This is based on ${provider}'s official incident feed, our own independent checks, and user reports, updated every few minutes.`,
+    },
+    {
+      q: `Why is ${name} not working for me?`,
+      a:
+        key === 'up'
+          ? `${name} looks healthy on our checks right now, so a problem is likely on your side: try refreshing, logging out and back in, disabling VPNs or browser extensions, or switching networks. If others start reporting the same issue, this page will say so.`
+          : `${name} is currently having service-side problems, so it is probably not you. ${status.symptoms.slice(0, 2).join('. ')}.`,
+    },
+    {
+      q: `How long do ${name} outages usually last?`,
+      a: typicalResolution
+        ? `Based on recent ${provider} incidents we have tracked, outages like this typically resolve in about ${typicalResolution} minutes, though major incidents can take longer.`
+        : `Most ${provider} incidents we have tracked resolve within an hour, though major outages can take several hours. Check the outage history on this site for recent examples.`,
+    },
+    {
+      q: `What can I use while ${name} is down?`,
+      a: alternatives.length
+        ? `Right now these comparable AI services are up: ${alternatives.map((item) => item.name).join(', ')}. We check each one independently every few minutes.`
+        : `Check our live board at aistatusdashboard.com for AI services that are currently up.`,
+    },
+    {
+      q: `Does ${name} have an official status page?`,
+      a: statusPageHost
+        ? `Yes — ${provider} publishes an official status page at ${statusPageHost}. Official pages sometimes lag behind real problems, which is why we also run our own independent tests.`
+        : `${provider} publishes service updates through its official channels; we combine those with our own independent tests.`,
+    },
+  ];
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: `Is ${name} down right now?`,
-        acceptedAnswer: { '@type': 'Answer', text: `${answer} ${status.headline}` },
-      },
-    ],
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: { '@type': 'Answer', text: faq.a },
+    })),
   };
 
   return (
@@ -329,6 +363,22 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             summary={`${answer} ${status.headline} — via https://aistatusdashboard.com/${app.id}`}
           />
           <CasualHelpful appId={app.id} />
+        </section>
+
+        {/* Real-data FAQ — the questions people actually search mid-outage. */}
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Common questions</h2>
+          <div className="surface-card divide-y divide-slate-200/70 dark:divide-slate-800/70">
+            {faqs.slice(1).map((faq) => (
+              <details key={faq.q} className="p-4 group">
+                <summary className="text-sm font-semibold text-slate-900 dark:text-white cursor-pointer list-none flex justify-between items-center">
+                  {faq.q}
+                  <span className="text-slate-400 group-open:rotate-90 transition-transform" aria-hidden="true">›</span>
+                </summary>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{faq.a}</p>
+              </details>
+            ))}
+          </div>
         </section>
 
         {/* Receipts. */}

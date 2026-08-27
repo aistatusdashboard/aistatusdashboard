@@ -1,18 +1,42 @@
 # AI Status (aistatusdashboard.com)
 
-Live, plain-English status for consumer AI apps, verified with independent
+Live, plain-English status for 26 consumer AI apps, verified with independent
 probes every few minutes — not just a mirror of official status pages.
 
 ## What you can answer from this site
 - "Is ChatGPT down right now?" → https://aistatusdashboard.com/chatgpt
 - "Is Claude down right now?" → https://aistatusdashboard.com/claude
 - "Is Gemini down right now?" → https://aistatusdashboard.com/gemini
-- Also covered: Grok, Perplexity, DeepSeek, Meta AI, GitHub Copilot, Cursor,
-  Character.AI, Le Chat — at https://aistatusdashboard.com/<app-id>
+- "Is Grok down right now?" → https://aistatusdashboard.com/grok
+- "Is Perplexity down right now?" → https://aistatusdashboard.com/perplexity
+- "Is DeepSeek down right now?" → https://aistatusdashboard.com/deepseek
+- "Is Meta AI down right now?" → https://aistatusdashboard.com/meta-ai
+- "Is GitHub Copilot down right now?" → https://aistatusdashboard.com/copilot
+- "Is Cursor down right now?" → https://aistatusdashboard.com/cursor
+- "Is Character.AI down right now?" → https://aistatusdashboard.com/character-ai
+- "Is Le Chat down right now?" → https://aistatusdashboard.com/le-chat
+- "Is ElevenLabs down right now?" → https://aistatusdashboard.com/elevenlabs
+- "Is Lovable down right now?" → https://aistatusdashboard.com/lovable
+- "Is Sora down right now?" → https://aistatusdashboard.com/sora
+- "Is Midjourney down right now?" → https://aistatusdashboard.com/midjourney
+- "Is Poe down right now?" → https://aistatusdashboard.com/poe
+- "Is Windsurf down right now?" → https://aistatusdashboard.com/windsurf
+- "Is v0 down right now?" → https://aistatusdashboard.com/v0
+- "Is Notion AI down right now?" → https://aistatusdashboard.com/notion-ai
+- "Is Runway down right now?" → https://aistatusdashboard.com/runway
+- "Is Ideogram down right now?" → https://aistatusdashboard.com/ideogram
+- "Is Grammarly down right now?" → https://aistatusdashboard.com/grammarly
+- "Is Kimi down right now?" → https://aistatusdashboard.com/kimi
+- "Is Manus down right now?" → https://aistatusdashboard.com/manus
+- "Is MiniMax down right now?" → https://aistatusdashboard.com/minimax
+- "Is Canva AI down right now?" → https://aistatusdashboard.com/canva-ai
+- "Which AI is the most reliable?" (30-day uptime ranking) → https://aistatusdashboard.com/reliability
 - Recent AI outages and their timelines → https://aistatusdashboard.com/incidents
 
 ## Method
 Each verdict combines three signals: the provider's official incident feed,
 our own live test requests to the service, and anonymous "it's broken for me
 too" reports from visitors. When we cannot verify a service we say "checking"
-rather than showing a false green. Methodology: https://aistatusdashboard.com/how-it-works
+rather than showing a false green. When our probes fail while the official
+page still says operational, the page says "not yet acknowledged".
+Methodology: https://aistatusdashboard.com/how-it-works

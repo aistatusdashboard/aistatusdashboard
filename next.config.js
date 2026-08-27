@@ -23,6 +23,24 @@ const nextConfig = {
       { source: '/provider/:id', destination: '/', permanent: true },
       { source: '/developer', destination: '/', permanent: true },
       { source: '/status', destination: '/', permanent: true },
+      // Recover link equity from the torn-down developer-era URL families
+      // (Search Console shows ~150 of these as 404s).
+      { source: '/docs', destination: '/how-it-works', permanent: true },
+      { source: '/docs/:path*', destination: '/how-it-works', permanent: true },
+      { source: '/datasets', destination: '/reliability', permanent: true },
+      { source: '/datasets/:path*', destination: '/reliability', permanent: true },
+      { source: '/metrics', destination: '/reliability', permanent: true },
+      { source: '/metrics/:path*', destination: '/reliability', permanent: true },
+      { source: '/reports/:path*', destination: '/reliability', permanent: true },
+      { source: '/stats', destination: '/reliability', permanent: true },
+      { source: '/embed', destination: '/', permanent: true },
+      { source: '/embed/:path*', destination: '/', permanent: true },
+      { source: '/discovery/:path*', destination: '/', permanent: true },
+      { source: '/related', destination: '/about', permanent: true },
+      { source: '/changelog', destination: '/incidents', permanent: true },
+      { source: '/system-health', destination: '/', permanent: true },
+      { source: '/ai', destination: '/about', permanent: true },
+      { source: '/mcp', destination: '/about', permanent: true },
     ];
   },
   generateBuildId: async () => {
