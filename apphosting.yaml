@@ -32,13 +32,13 @@ env:
   - variable: APP_ENABLE_EMAIL
     value: "true"
   - variable: SMTP_HOST
-    value: "smtp.sendgrid.net"
+    value: "smtp.resend.com"
   - variable: SMTP_PORT
     value: "587"
   - variable: SMTP_SECURE
     value: "false"
   - variable: SMTP_FROM
-    value: "AI Status Dashboard <hello@aistatusdashboard.com>"
+    value: "AI Status <hello@aistatusdashboard.com>"
   - variable: APP_ALLOW_OPEN_CRON
     value: "false"
   - variable: PROBE_ENABLED
