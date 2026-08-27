@@ -26,9 +26,12 @@ function uptimeTone(pct: number): string {
 
 export default async function ReliabilityPage() {
   const rows = await getReliabilityRanking();
-  const best = rows[0];
+  // Only crown winners among services that actually recorded incidents —
+  // a clean sheet on a feed we added yesterday proves nothing.
   const withIncidents = rows.filter((row) => row.incidentCount > 0);
+  const best = withIncidents.length ? withIncidents[0] : null;
   const worst = withIncidents.length ? withIncidents[withIncidents.length - 1] : null;
+  const cleanCount = rows.length - withIncidents.length;
 
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
@@ -41,9 +44,14 @@ export default async function ReliabilityPage() {
             The last 30 days across every AI service we watch, ranked by measured uptime — computed
             from official incident feeds and our own independent checks, not marketing pages.
           </p>
-          {best && worst && (
+          {best && worst && best.appId !== worst.appId && (
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Over the last 30 days, the most reliable was{' '}
+              {cleanCount > 0 && (
+                <>
+                  {cleanCount} of {rows.length} services recorded no incidents in the window.{' '}
+                </>
+              )}
+              Among those that did, the most reliable was{' '}
               <strong className="text-slate-900 dark:text-white">{best.name}</strong> (
               {best.uptimePct.toFixed(2)}% uptime, {best.incidentCount} incident
               {best.incidentCount === 1 ? '' : 's'}); the most trouble-prone was{' '}
