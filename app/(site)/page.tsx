@@ -127,6 +127,7 @@ export default async function HomePage() {
                   alt=""
                   width={36}
                   height={36}
+                  loading="eager"
                   className="rounded-lg shrink-0"
                 />
                 <span className="min-w-0 flex-1">

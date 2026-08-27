@@ -175,18 +175,16 @@ function pickGuidance(surface: ExperienceSurfaceId, signalType: string | null): 
 function buildEvidence(providerId: string, incidents: NormalizedIncident[]): ExperienceEvidence[] {
   const provider = providerService.getProvider(providerId);
   const evidence: ExperienceEvidence[] = [];
+  // Consumer-facing evidence only: the human-readable official page and any
+  // active incident links — no raw JSON endpoints.
   if (provider?.statusPageUrl) {
     evidence.push({ label: 'Official status page', url: provider.statusPageUrl, type: 'official' });
-  }
-  if (provider?.statusUrl) {
-    evidence.push({ label: 'Official status API', url: provider.statusUrl, type: 'official' });
   }
   incidents.slice(0, 2).forEach((incident) => {
     if (incident.rawUrl) {
       evidence.push({ label: incident.title, url: incident.rawUrl, type: 'incident' });
     }
   });
-  evidence.push({ label: 'Status summary JSON', url: `/api/public/v1/status/summary?provider=${providerId}`, type: 'observed' });
   return evidence;
 }
 

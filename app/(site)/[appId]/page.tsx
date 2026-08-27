@@ -139,7 +139,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
         {/* The answer. */}
         <header className="pt-6 text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
-            <Image src={APP_LOGOS[app.id] || '/logos/openai.svg'} alt="" width={32} height={32} className="rounded-lg" />
+            <Image src={APP_LOGOS[app.id] || '/logos/openai.svg'} alt="" width={32} height={32} priority className="rounded-lg" />
             <p className="font-mono text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
               Is {name} down?
             </p>
@@ -223,7 +223,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             , {name} is{' '}
             {key === 'up' ? 'operational' : key === 'wobbly' ? 'having issues' : key === 'down' ? 'experiencing an outage' : 'unverified'}
             {receipt
-              ? ` — our last independent test ${receipt.ok ? 'succeeded' : 'failed'} ${formatTimeAgo(receipt.at)}.`
+              ? ` — our last ${receipt.kind === 'real' ? 'independent test' : 'check'} ${receipt.ok ? 'succeeded' : 'failed'} ${formatTimeAgo(receipt.at)}.`
               : '.'}
           </p>
         </section>
