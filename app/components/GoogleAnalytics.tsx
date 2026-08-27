@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Script from 'next/script';
+import { useEffect } from 'react';
 import {
   COOKIE_CONSENT_UPDATED_EVENT,
   type CookieConsentDecision,
@@ -14,34 +13,23 @@ declare global {
   }
 }
 
-function applyGaConsent(measurementId: string, decision: CookieConsentDecision | null) {
-  if (typeof window === 'undefined') return false;
-
-  const analyticsEnabled = decision === 'accepted';
-  (window as any)[`ga-disable-${measurementId}`] = !analyticsEnabled;
-
-  if (window.gtag) {
-    window.gtag('consent', 'update', {
-      analytics_storage: analyticsEnabled ? 'granted' : 'denied',
-    });
-  }
-
-  return analyticsEnabled;
+// The gtag bootstrap lives in the root layout's <head> so it is part of the
+// initial HTML and always executes (dynamically mounted inline scripts do
+// not). This component only keeps GA's consent state in sync with the banner.
+function applyGaConsent(decision: CookieConsentDecision | null) {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('consent', 'update', {
+    analytics_storage: decision === 'accepted' ? 'granted' : 'denied',
+  });
 }
 
-export default function GoogleAnalytics({ measurementId }: { measurementId: string }) {
-  const [enabled, setEnabled] = useState(false);
-
+export default function GoogleAnalytics(_props: { measurementId?: string }) {
   useEffect(() => {
-    const updateFromDecision = (decision: CookieConsentDecision | null) => {
-      setEnabled(applyGaConsent(measurementId, decision));
-    };
-
-    updateFromDecision(getCookieConsentDecision());
+    applyGaConsent(getCookieConsentDecision());
 
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<{ decision?: CookieConsentDecision }>).detail;
-      updateFromDecision(detail?.decision || getCookieConsentDecision());
+      applyGaConsent(detail?.decision || getCookieConsentDecision());
     };
 
     window.addEventListener(COOKIE_CONSENT_UPDATED_EVENT, handleConsentUpdated as EventListener);
@@ -51,28 +39,7 @@ export default function GoogleAnalytics({ measurementId }: { measurementId: stri
         handleConsentUpdated as EventListener
       );
     };
-  }, [measurementId]);
+  }, []);
 
-  if (!measurementId || !enabled) return null;
-
-  return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy="afterInteractive"
-      />
-      <Script id="ga-init" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          window.gtag = gtag;
-          gtag('js', new Date());
-          gtag('consent', 'default', { analytics_storage: 'granted' });
-          gtag('config', '${measurementId}', {
-            page_path: window.location.pathname,
-          });
-        `}
-      </Script>
-    </>
-  );
+  return null;
 }

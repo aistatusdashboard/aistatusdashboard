@@ -134,6 +134,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+
+        {/* GA4 bootstrap in initial HTML — deterministic, consent-mode gated.
+            Stored opt-in grants analytics_storage synchronously; otherwise the
+            tag runs cookieless until the banner decision arrives. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+(function () {
+  var granted = false;
+  try {
+    var raw = localStorage.getItem('ai-status-cookie-consent-v1');
+    if (raw) granted = JSON.parse(raw).decision === 'accepted';
+  } catch (e) {}
+  gtag('consent', 'default', {
+    analytics_storage: granted ? 'granted' : 'denied',
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied'
+  });
+  gtag('js', new Date());
+  gtag('config', '${GA_MEASUREMENT_ID}');
+})();`,
+          }}
+        />
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
       </head>
       <body className={`${geistSans.className} ${geistMono.variable} antialiased min-h-screen bg-background font-sans`}>
         <ErrorBoundary>
