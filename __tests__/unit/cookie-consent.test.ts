@@ -40,13 +40,14 @@ describe('cookie consent', () => {
     window.removeEventListener(COOKIE_CONSENT_UPDATED_EVENT, listener as EventListener);
   });
 
-  it('blocks event forwarding without consent', () => {
+  it('forwards events even without stored consent (Consent Mode gates storage, not events)', () => {
     const gtag = jest.fn();
     (window as any).gtag = gtag;
 
     trackEvent('page_view');
 
-    expect(gtag).not.toHaveBeenCalled();
+    expect(gtag).toHaveBeenCalledTimes(1);
+    expect(gtag).toHaveBeenCalledWith('event', 'page_view', {});
     delete (window as any).gtag;
   });
 
