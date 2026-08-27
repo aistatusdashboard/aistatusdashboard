@@ -178,6 +178,162 @@
         "rate_limits"
       ],
       "defaultRegion": "global"
+    },
+    {
+      "id": "sora",
+      "label": "Sora Status",
+      "providerId": "openai",
+      "providerDisplay": "OpenAI",
+      "surfaces": [
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "us-east"
+    },
+    {
+      "id": "midjourney",
+      "label": "Midjourney Status",
+      "providerId": "midjourney",
+      "providerDisplay": "Midjourney",
+      "surfaces": [
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "poe",
+      "label": "Poe Status",
+      "providerId": "poe",
+      "providerDisplay": "Poe",
+      "surfaces": [
+        "text",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "windsurf",
+      "label": "Windsurf Status",
+      "providerId": "windsurf",
+      "providerDisplay": "Windsurf",
+      "surfaces": [
+        "text",
+        "tools",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "v0",
+      "label": "v0 Status",
+      "providerId": "vercel",
+      "providerDisplay": "Vercel",
+      "surfaces": [
+        "text",
+        "tools",
+        "login"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "notion-ai",
+      "label": "Notion AI Status",
+      "providerId": "notion",
+      "providerDisplay": "Notion",
+      "surfaces": [
+        "text",
+        "login"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "runway",
+      "label": "Runway Status",
+      "providerId": "runway",
+      "providerDisplay": "Runway",
+      "surfaces": [
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "ideogram",
+      "label": "Ideogram Status",
+      "providerId": "ideogram",
+      "providerDisplay": "Ideogram",
+      "surfaces": [
+        "images",
+        "login"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "grammarly",
+      "label": "Grammarly Status",
+      "providerId": "grammarly",
+      "providerDisplay": "Grammarly",
+      "surfaces": [
+        "text",
+        "login"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "kimi",
+      "label": "Kimi Status",
+      "providerId": "moonshot",
+      "providerDisplay": "Moonshot AI",
+      "surfaces": [
+        "text",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "manus",
+      "label": "Manus Status",
+      "providerId": "manus",
+      "providerDisplay": "Manus",
+      "surfaces": [
+        "text",
+        "tools",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "minimax",
+      "label": "MiniMax Status",
+      "providerId": "minimax",
+      "providerDisplay": "MiniMax",
+      "surfaces": [
+        "text",
+        "images",
+        "voice",
+        "login"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "canva-ai",
+      "label": "Canva AI Status",
+      "providerId": "canva",
+      "providerDisplay": "Canva",
+      "surfaces": [
+        "images",
+        "tools",
+        "login"
+      ],
+      "defaultRegion": "global"
     }
   ]
 }

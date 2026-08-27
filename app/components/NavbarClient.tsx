@@ -34,6 +34,7 @@ const NAV_LINKS: NavItem[] = [
   { label: 'ChatGPT', href: '/chatgpt' },
   { label: 'Claude', href: '/claude' },
   { label: 'Gemini', href: '/gemini' },
+  { label: 'Reliability', href: '/reliability' },
   { label: 'Outage history', href: '/incidents' },
   { label: 'How it works', href: '/how-it-works' },
 ];

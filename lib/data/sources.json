@@ -202,6 +202,94 @@
       "baseUrl": "https://status.lovable.dev",
       "platform": "statuspage",
       "pollIntervalSeconds": 90
+    },
+    {
+      "id": "midjourney-statuspage",
+      "providerId": "midjourney",
+      "name": "Midjourney Statuspage",
+      "baseUrl": "https://midjourney.statuspage.io",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "windsurf-statuspage",
+      "providerId": "windsurf",
+      "name": "Windsurf Statuspage",
+      "baseUrl": "https://status.windsurf.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "vercel-statuspage",
+      "providerId": "vercel",
+      "name": "Vercel Statuspage",
+      "baseUrl": "https://www.vercel-status.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "notion-statuspage",
+      "providerId": "notion",
+      "name": "Notion Statuspage",
+      "baseUrl": "https://www.notion-status.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "poe-statuspage",
+      "providerId": "poe",
+      "name": "Poe Statuspage",
+      "baseUrl": "https://status.poe.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "ideogram-statuspage",
+      "providerId": "ideogram",
+      "name": "Ideogram Statuspage",
+      "baseUrl": "https://status.ideogram.ai",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "grammarly-statuspage",
+      "providerId": "grammarly",
+      "name": "Grammarly Statuspage",
+      "baseUrl": "https://status.grammarly.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "moonshot-statuspage",
+      "providerId": "moonshot",
+      "name": "Moonshot Statuspage",
+      "baseUrl": "https://status.moonshot.cn",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "manus-statuspage",
+      "providerId": "manus",
+      "name": "Manus Statuspage",
+      "baseUrl": "https://status.manus.im",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "minimax-statuspage",
+      "providerId": "minimax",
+      "name": "MiniMax Statuspage",
+      "baseUrl": "https://status.minimaxi.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "canva-statuspage",
+      "providerId": "canva",
+      "name": "Canva Statuspage",
+      "baseUrl": "https://www.canvastatus.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
     }
   ]
 }

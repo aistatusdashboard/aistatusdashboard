@@ -188,9 +188,14 @@ export default async function HomePage() {
               <Link href="/incidents" className="underline">See the full history</Link>.
             </p>
           )}
-          <Link href="/incidents" className="inline-block text-sm underline text-slate-700 dark:text-slate-200">
-            All outage history →
-          </Link>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/incidents" className="inline-block text-sm underline text-slate-700 dark:text-slate-200">
+              All outage history →
+            </Link>
+            <Link href="/reliability" className="inline-block text-sm underline text-slate-700 dark:text-slate-200">
+              Which AI is most reliable? →
+            </Link>
+          </div>
         </section>
 
         {/* Receipts for the headline claim — only rendered when we have them. */}

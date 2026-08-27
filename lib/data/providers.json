@@ -230,11 +230,11 @@
         "runwayml",
         "runway ml"
       ],
-      "category": "LLM",
+      "category": "AI app",
       "statusUrl": "https://status.runwayml.com/api/v2/status.json",
       "statusPageUrl": "https://status.runwayml.com",
       "format": "statuspage",
-      "enabled": false
+      "enabled": true
     },
     {
       "id": "huggingface",
@@ -392,6 +392,162 @@
       "category": "AI app",
       "statusUrl": "https://status.lovable.dev/api/v2/status.json",
       "statusPageUrl": "https://status.lovable.dev",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "midjourney",
+      "name": "Midjourney",
+      "displayName": "Midjourney",
+      "aliases": [
+        "midjourney",
+        "mj"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://midjourney.statuspage.io/api/v2/status.json",
+      "statusPageUrl": "https://midjourney.statuspage.io",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "windsurf",
+      "name": "Windsurf",
+      "displayName": "Windsurf",
+      "aliases": [
+        "windsurf",
+        "codeium"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.windsurf.com/api/v2/status.json",
+      "statusPageUrl": "https://status.windsurf.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "vercel",
+      "name": "Vercel (v0)",
+      "displayName": "v0 (Vercel)",
+      "aliases": [
+        "v0",
+        "vercel"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://www.vercel-status.com/api/v2/status.json",
+      "statusPageUrl": "https://www.vercel-status.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "displayName": "Notion AI",
+      "aliases": [
+        "notion",
+        "notion ai"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://www.notion-status.com/api/v2/status.json",
+      "statusPageUrl": "https://www.notion-status.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "poe",
+      "name": "Poe",
+      "displayName": "Poe",
+      "aliases": [
+        "poe",
+        "quora poe"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.poe.com/api/v2/status.json",
+      "statusPageUrl": "https://status.poe.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "ideogram",
+      "name": "Ideogram",
+      "displayName": "Ideogram",
+      "aliases": [
+        "ideogram"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.ideogram.ai/api/v2/status.json",
+      "statusPageUrl": "https://status.ideogram.ai",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "grammarly",
+      "name": "Grammarly",
+      "displayName": "Grammarly",
+      "aliases": [
+        "grammarly",
+        "grammarlygo"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.grammarly.com/api/v2/status.json",
+      "statusPageUrl": "https://status.grammarly.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "moonshot",
+      "name": "Moonshot AI (Kimi)",
+      "displayName": "Kimi",
+      "aliases": [
+        "kimi",
+        "moonshot",
+        "kimi ai"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.moonshot.cn/api/v2/status.json",
+      "statusPageUrl": "https://status.moonshot.cn",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "manus",
+      "name": "Manus",
+      "displayName": "Manus",
+      "aliases": [
+        "manus",
+        "manus ai"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.manus.im/api/v2/status.json",
+      "statusPageUrl": "https://status.manus.im",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "minimax",
+      "name": "MiniMax",
+      "displayName": "MiniMax (Hailuo)",
+      "aliases": [
+        "minimax",
+        "hailuo",
+        "talkie"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.minimaxi.com/api/v2/status.json",
+      "statusPageUrl": "https://status.minimaxi.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "canva",
+      "name": "Canva",
+      "displayName": "Canva AI",
+      "aliases": [
+        "canva",
+        "canva ai",
+        "magic studio"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://www.canvastatus.com/api/v2/status.json",
+      "statusPageUrl": "https://www.canvastatus.com",
       "format": "statuspage",
       "enabled": true
     }
