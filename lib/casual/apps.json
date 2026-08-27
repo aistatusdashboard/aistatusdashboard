@@ -26,6 +26,74 @@
       "surfaces": ["text", "images", "browse", "tools", "login", "billing", "rate_limits"],
       "defaultModel": "gemini-2.0-flash",
       "defaultRegion": "us-central"
+    },
+    {
+      "id": "grok",
+      "label": "Grok Status",
+      "providerId": "xai",
+      "providerDisplay": "xAI",
+      "surfaces": ["text", "images", "login", "rate_limits"],
+      "defaultModel": "grok-2-latest",
+      "defaultRegion": "us-east"
+    },
+    {
+      "id": "perplexity",
+      "label": "Perplexity Status",
+      "providerId": "perplexity",
+      "providerDisplay": "Perplexity",
+      "surfaces": ["text", "browse", "login", "rate_limits"],
+      "defaultModel": "sonar",
+      "defaultRegion": "us-east"
+    },
+    {
+      "id": "deepseek",
+      "label": "DeepSeek Status",
+      "providerId": "deepseek",
+      "providerDisplay": "DeepSeek",
+      "surfaces": ["text", "login", "rate_limits"],
+      "defaultModel": "deepseek-chat",
+      "defaultRegion": "global"
+    },
+    {
+      "id": "meta-ai",
+      "label": "Meta AI Status",
+      "providerId": "meta",
+      "providerDisplay": "Meta",
+      "surfaces": ["text", "images", "login"],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "copilot",
+      "label": "GitHub Copilot Status",
+      "providerId": "github",
+      "providerDisplay": "GitHub",
+      "surfaces": ["text", "tools", "login", "rate_limits"],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "cursor",
+      "label": "Cursor Status",
+      "providerId": "cursor",
+      "providerDisplay": "Cursor",
+      "surfaces": ["text", "tools", "login", "rate_limits"],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "character-ai",
+      "label": "Character.AI Status",
+      "providerId": "character-ai",
+      "providerDisplay": "Character.AI",
+      "surfaces": ["text", "voice", "login"],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "le-chat",
+      "label": "Le Chat Status",
+      "providerId": "mistral",
+      "providerDisplay": "Mistral",
+      "surfaces": ["text", "login", "rate_limits"],
+      "defaultModel": "mistral-small-latest",
+      "defaultRegion": "eu-west"
     }
   ]
 }

@@ -5,7 +5,7 @@ import {
   hasCookieConsent,
   setCookieConsentDecision,
 } from '@/lib/utils/cookie-consent';
-import { getAnalyticsSessionId, trackEvent } from '@/lib/utils/analytics-client';
+import { trackEvent } from '@/lib/utils/analytics-client';
 
 describe('cookie consent', () => {
   beforeEach(() => {
@@ -40,28 +40,25 @@ describe('cookie consent', () => {
     window.removeEventListener(COOKIE_CONSENT_UPDATED_EVENT, listener as EventListener);
   });
 
-  it('blocks analytics session and tracking without consent', () => {
-    expect(getAnalyticsSessionId()).toBeNull();
+  it('blocks event forwarding without consent', () => {
+    const gtag = jest.fn();
+    (window as any).gtag = gtag;
 
     trackEvent('page_view');
 
-    expect(fetch).not.toHaveBeenCalled();
+    expect(gtag).not.toHaveBeenCalled();
+    delete (window as any).gtag;
   });
 
-  it('allows analytics session and tracking after consent', () => {
+  it('forwards events to gtag after consent', () => {
+    const gtag = jest.fn();
+    (window as any).gtag = gtag;
     setCookieConsentDecision('accepted');
 
-    const sessionId = getAnalyticsSessionId();
-    expect(sessionId).toBeTruthy();
+    trackEvent('page_view', { metadata: { path: '/chatgpt' } });
 
-    trackEvent('page_view', { metadata: { path: '/dashboard' } });
-
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/analytics/track',
-      expect.objectContaining({
-        method: 'POST',
-      })
-    );
+    expect(gtag).toHaveBeenCalledTimes(1);
+    expect(gtag).toHaveBeenCalledWith('event', 'page_view', { path: '/chatgpt' });
+    delete (window as any).gtag;
   });
 });

@@ -1,57 +1,60 @@
 export const metadata = {
   title: 'Privacy Policy',
-  description: 'Privacy Policy for AI Status Dashboard.',
+  description: 'How AI Status handles your data: minimal by design, nothing sold, analytics only with your consent.',
+  alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPage() {
   return (
     <main className="px-4 sm:px-6 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
-        <header className="surface-card p-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-            Legal
-          </p>
-          <h1 className="text-3xl font-semibold text-slate-900 dark:text-white mt-3">
+        <header className="pt-4 space-y-3">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
             Privacy Policy
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
-            How AI Status Dashboard handles data and telemetry.
+          <p className="text-base text-slate-600 dark:text-slate-300">
+            Minimal by design: this site works without an account and collects as little as possible.
           </p>
         </header>
 
         <section className="surface-card p-6 space-y-4 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            We collect minimal operational data needed to power status summaries, incidents, and
-            reliability insights. We do not collect prompts or response content by default.
+            <strong className="text-slate-900 dark:text-white">Status checks:</strong> the data on
+            this site comes from providers&apos; public status pages and our own automated tests —
+            none of it is about you.
           </p>
           <p>
-            Anonymous telemetry may include latency, error codes, provider identifiers, and coarse
-            region. IP addresses are used transiently for rate limiting and abuse prevention.
+            <strong className="text-slate-900 dark:text-white">&ldquo;It&apos;s broken for me too&rdquo; reports:</strong>{' '}
+            anonymous. We store the app, the kind of issue, a coarse region, and hashed technical
+            identifiers used only to filter spam and duplicates. IP addresses are used transiently
+            for abuse prevention and stored only as a masked prefix.
           </p>
           <p>
-            We do not sell personal data. Data is retained only as long as needed for reliability
-            reporting and auditing.
+            <strong className="text-slate-900 dark:text-white">Email alerts:</strong> if you sign
+            up, we store your address solely to send the alerts you asked for. Every email includes
+            an unsubscribe link, and unsubscribing removes you.
           </p>
           <p>
-            If you opt in to account-specific telemetry, data is hashed and stored without personal
-            identifiers. You can request removal at any time.
+            <strong className="text-slate-900 dark:text-white">We do not sell personal data.</strong>{' '}
+            Ever.
           </p>
         </section>
 
-        <section id="cookies" className="surface-card p-6 space-y-4 text-sm text-slate-600 dark:text-slate-300">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Cookies and local storage</h2>
+        <section className="surface-card p-6 space-y-4 text-sm text-slate-600 dark:text-slate-300">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+            Cookies and local storage
+          </h2>
           <p>
-            We use essential browser storage for core product features such as accessibility
-            settings and session continuity.
+            Essential browser storage powers core features such as your dark-mode preference.
           </p>
           <p>
-            Optional analytics and telemetry storage is only enabled when you accept it in the
-            cookie banner. If you reject optional storage, we do not send client-side analytics or
-            telemetry events from your browser.
+            Optional analytics (Google Analytics) runs only if you accept it in the cookie banner —
+            it helps us understand which status pages help people most. If you reject it, no
+            analytics events are sent from your browser.
           </p>
           <p>
-            You can update your choice any time using the <strong>Cookie preferences</strong>{' '}
-            link in the footer.
+            You can change your choice any time via the <strong>Cookie preferences</strong> link in
+            the footer.
           </p>
           <p>
             Contact: <a className="underline" href="mailto:hello@aistatusdashboard.com">hello@aistatusdashboard.com</a>

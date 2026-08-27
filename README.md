@@ -1,68 +1,58 @@
-# AI Status Dashboard
-[![MCP Registry](https://img.shields.io/badge/MCP-Registry-blue)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.aistatusdashboard%2Faistatusdashboard/versions/latest)
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-available-success)](https://aistatusdashboard.com/openapi.json)
-[![Datasets](https://img.shields.io/badge/Datasets-available-informational)](https://aistatusdashboard.com/datasets)
+# AI Status
 
-A real-time status dashboard for AI service providers (OpenAI, Anthropic, Google Gemini, etc.).
+**Is ChatGPT down, or is it just you?**
 
-## Features
-- **Real-time Status Monitoring**: Active checks via `StatusService`.
-- **Historical Data**: Firestore-backed history and incident logging.
-- **Analytics**: Dashboard for uptime, response times, and costs.
-- **Notifications**: Email alerts via SMTP (Nodemailer) and Webhooks.
-- **Stack**: Next.js (App Router), Tailwind CSS, Firebase Firestore.
+AI Status answers that one question, fast, for the AI apps people actually use:
+ChatGPT, Claude, Gemini, Grok, Perplexity, DeepSeek, Meta AI, GitHub Copilot,
+Cursor, Character.AI, and Le Chat.
 
-## Getting Started
+What makes it different from mirroring an official status page:
 
-### Prerequisites
-- Node.js 18+
-- Firebase Project (Firestore enabled)
+- **We test the services ourselves.** Cron-driven probes send real requests to
+  each provider every few minutes and record latency and errors
+  (`lib/services/provider-probes.ts`).
+- **We read the official incident feeds** for every provider and link to the
+  original source on each incident (`lib/services/source-ingestion.ts`).
+- **Visitors report in.** A one-tap "it's broken for me too" button feeds the
+  "is it just you?" verdict, with self-test traffic filtered out.
+- **We never fake a green light.** If a status can't be verified it renders as
+  "checking", not "operational".
 
-### Installation
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy `.env.example` to `.env.local` and configure your Firebase credentials.
-   ```bash
-   cp .env.example .env.local
-   ```
+## Stack
 
-### Running Locally
+Next.js (App Router) · Tailwind CSS · Firebase Firestore · Firebase App Hosting.
+
+## Pages
+
+- `/` — live board for all monitored apps, troubled apps sort first
+- `/<app-id>` — per-app verdict page (e.g. `/chatgpt`, `/claude`)
+- `/incidents` — outage history with per-incident detail
+- `/how-it-works`, `/about`, `/privacy`, `/terms`
+
+## Running locally
+
 ```bash
+npm install
+cp .env.example .env.local   # add Firebase credentials
 npm run dev
 ```
 
-### Quick links
-- OpenAPI: https://aistatusdashboard.com/openapi.json
-- MCP server: https://aistatusdashboard.com/mcp
-- MCP Quickstart: https://aistatusdashboard.com/docs/agent/mcp-quickstart
-- Discoverability audit: https://aistatusdashboard.com/docs/discoverability-audit.md
-- Datasets: https://aistatusdashboard.com/datasets
-- Citing: https://aistatusdashboard.com/docs/citations.md
+Tests and checks:
 
-### Deployment (Firebase App Hosting)
-1. Configure production environment variables in `apphosting.yaml`.
-2. Store secrets in Secret Manager and grant App Hosting access.
-3. Deploy:
-   ```bash
-   firebase deploy --only apphosting --project ai-status-dashboard
-   ```
+```bash
+npm run lint
+npm run type-check
+npm test          # unit tests (jest)
+npm run test:e2e  # playwright
+```
 
-### Testing
-- Unit Tests: `npm run test:unit`
-- E2E Tests: `npm run test:e2e`
+## Data pipeline
 
-## Architecture
-- **App Router**: APIs located in `app/api`.
-- **Services**: Business logic in `lib/services`.
-- **Database**: Firestore (collections: `status_history`, `emailSubscriptions`, `emailQueue`, `analytics_events`, `webhooks`, `comments`).
-- **Cron**:
-  - `/api/cron/status` runs a monitoring cycle and persists status changes.
-  - `/api/cron/notifications` processes the email queue (set `CRON_SECRET` / `APP_CRON_SECRET` in prod; or explicitly set `APP_ALLOW_OPEN_CRON=true`).
-- **Webhook registration**:
-  - `/api/webhooks` accepts new webhook registrations. Set `WEBHOOK_SECRET` / `APP_WEBHOOK_SECRET` in prod (or explicitly set `APP_ALLOW_PUBLIC_WEBHOOKS=true`).
+Cron routes under `/api/cron/*` (protected by `CRON_SECRET`) poll status pages,
+run live probes, ingest incident feeds, classify community reports, and send
+email alerts. Schedules live in Cloud Scheduler; results land in Firestore
+(`incidents`, `synthetic_probes`, `casual_reports`, `provider_status`, …).
 
 ## License
+
 MIT

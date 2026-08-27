@@ -406,9 +406,18 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       intelligenceService.getIncidents({ providerId: app.providerId, limit: 50 }),
     ]);
 
+    const STALE_INCIDENT_MS = 24 * 60 * 60 * 1000;
     const activeIncidents = incidents.filter((incident) => {
       const status = incident.status;
-      return !['resolved', 'completed', 'cancelled'].includes(status);
+      // An incident with a resolution timestamp is over, whatever its status
+      // field says — some feeds (e.g. Google Cloud) leave status as "unknown".
+      if (incident.resolvedAt) return false;
+      if (['resolved', 'completed', 'cancelled'].includes(status)) return false;
+      // An "investigating" incident with no update in 24h is a zombie (e.g. the
+      // provider closed it without a final update); don't let it hold a verdict.
+      const updated = Date.parse(incident.updatedAt || '');
+      if (Number.isFinite(updated) && Date.now() - updated > STALE_INCIDENT_MS) return false;
+      return true;
     });
 
     const surfaceStatuses: ExperienceSurfaceStatus[] = [];

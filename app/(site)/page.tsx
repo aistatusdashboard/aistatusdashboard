@@ -2,254 +2,211 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
-import { getCasualStatus, getCasualApp } from '@/lib/services/casual';
-import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
-import { getStatusSummary, searchIncidents } from '@/lib/services/public-data';
-import { providerService } from '@/lib/services/providers';
+import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
+import { searchIncidents } from '@/lib/services/public-data';
 import { formatTimeAgo } from '@/lib/utils/time';
+import {
+  APP_LOGOS,
+  VERDICT_COPY,
+  VERDICT_ORDER,
+  VERDICT_TONE,
+  shortName,
+  verdictKey,
+} from '@/lib/ui/verdict';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
+const DESCRIPTION =
+  'Is ChatGPT down? Is Claude down? Live, plain-English status for the AI apps you use — checked with our own tests every few minutes, not just the official status pages.';
 
 export const metadata: Metadata = {
-  description:
-    'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
+  description: DESCRIPTION,
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
-    description:
-      'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
+    title: 'Is your AI down right now?',
+    description: DESCRIPTION,
     images: ['https://aistatusdashboard.com/og/status-home.svg'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
-    description:
-      'Live status for ChatGPT, Claude, Gemini, and 15 other AI providers. Is your AI down? Check in 3 seconds.',
+    title: 'Is your AI down right now?',
+    description: DESCRIPTION,
     images: ['https://aistatusdashboard.com/og/status-home.svg'],
   },
 };
 
-const FOCUS_APPS = ['chatgpt', 'claude', 'gemini'] as const;
-const LOGOS: Record<string, string> = {
-  chatgpt: '/logos/openai-chatgpt.png',
-  claude: '/logos/claude.svg',
-  gemini: '/logos/google-ai.svg',
-};
-
-function summarizeStatus(status: string) {
-  if (status === 'down') {
-    return {
-      headline: 'is having problems',
-      tone: 'bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-100',
-      pill: 'bg-rose-500',
-      label: 'Down',
-    };
-  }
-  if (status === 'degraded') {
-    return {
-      headline: 'is partially affected',
-      tone: 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-100',
-      pill: 'bg-amber-500',
-      label: 'Degraded',
-    };
-  }
-  return {
-    headline: 'is working normally',
-    tone: 'bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-100',
-    pill: 'bg-emerald-500',
-    label: 'Operational',
-  };
-}
-
-function notifyCopy(status: string, providerName: string) {
-  const normalized = status.toLowerCase();
-  if (normalized === 'operational') {
-    return {
-      prompt: `Get notified the next time ${providerName} has an issue`,
-      cta: 'Notify me',
-    };
-  }
-  if (normalized === 'resolved' || normalized === 'recovering') {
-    return {
-      prompt: `Notify me of future ${providerName} incidents`,
-      cta: 'Notify me',
-    };
-  }
-  return {
-    prompt: 'Notify me when this is fixed',
-    cta: 'Notify me',
-  };
-}
-
-export default async function LandingPage() {
+export default async function HomePage() {
+  const apps = listCasualApps();
   const sevenDaysAgoIso = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const [livePulse, statusSummary, incidentPayload] = await Promise.all([
-    getLivePulseSnapshot(),
-    getStatusSummary({ windowSeconds: 1800, lens: 'observed' }),
-    searchIncidents({ since: sevenDaysAgoIso, limit: 8 }),
+
+  const [statuses, incidentPayload] = await Promise.all([
+    Promise.all(
+      apps.map(async (app) => {
+        const status = await getCasualStatus({ appId: app.id }).catch(() => null);
+        return { app, status };
+      })
+    ),
+    searchIncidents({ since: sevenDaysAgoIso, limit: 6 }).catch(() => ({ data: { incidents: [] } })),
   ]);
 
-  const appStatuses = await Promise.all(
-    FOCUS_APPS.map(async (appId) => {
-      const app = getCasualApp(appId);
-      if (!app) return null;
-      const status = await getCasualStatus({ appId: app.id });
-      return app && status ? { app, status } : null;
+  const configOrder = new Map(apps.map((app, index) => [app.id, index]));
+  const board = statuses
+    .map(({ app, status }) => {
+      const key = status ? verdictKey(status.overall_status) : ('unknown' as const);
+      return { app, status, key, name: shortName(app.id, app.label) };
     })
-  );
+    .sort(
+      (a, b) =>
+        VERDICT_ORDER[a.key] - VERDICT_ORDER[b.key] ||
+        (configOrder.get(a.app.id) ?? 99) - (configOrder.get(b.app.id) ?? 99)
+    );
 
-  const providerRows = statusSummary.data.providers || [];
-  const focusProviderIds = new Set(
-    appStatuses
-      .filter(Boolean)
-      .map((item) => item!.app.providerId)
-  );
-  const providerLookup = new Map(providerRows.map((row: any) => [row.provider_id, row]));
-  const secondaryProviders = providerService
-    .getProviders()
-    .filter((provider) => !focusProviderIds.has(provider.id))
-    .map((provider) => ({
-      provider,
-      status: providerLookup.get(provider.id)?.status || 'unknown',
-      app: getCasualApp(provider.id),
-    }));
+  const verified = board.filter((item) => item.status);
+  const troubled = board.filter((item) => item.key === 'down' || item.key === 'wobbly');
+  const updatedAt = verified
+    .map((item) => item.status!.updated_at)
+    .sort()
+    .pop();
 
-  const caughtEarly = (incidentPayload.data?.incidents || [])
-    .map((incident: any) => {
-      const started = Date.parse(incident.startedAt || '');
-      const updated = Date.parse(incident.updatedAt || '');
-      if (!Number.isFinite(started) || !Number.isFinite(updated) || updated <= started) return null;
-      return {
-        id: incident.incident_id,
-        title: incident.title,
-        providerId: incident.providerId,
-        deltaMinutes: Math.round((updated - started) / 60000),
-      };
-    })
-    .filter(Boolean)
-    .slice(0, 5) as Array<{ id: string; title: string; providerId: string; deltaMinutes: number }>;
+  const heroSentence = verified.length === 0
+    ? 'Checking every AI service now…'
+    : troubled.length === 0
+      ? 'All quiet. Every AI we watch is up.'
+      : troubled.length === 1
+        ? VERDICT_COPY[troubled[0].key].sentence(troubled[0].name)
+        : `${troubled.map((item) => item.name).slice(0, 3).join(', ')} ${troubled.length === 2 ? 'are' : 'and more are'} having issues.`;
+
+  const heroTone = verified.length === 0
+    ? 'text-slate-500 dark:text-slate-400'
+    : troubled.some((item) => item.key === 'down')
+      ? 'text-rose-600 dark:text-rose-400'
+      : troubled.length
+        ? 'text-amber-600 dark:text-amber-400'
+        : 'text-emerald-600 dark:text-emerald-400';
+
+  const recentIncidents = (incidentPayload.data?.incidents || []).slice(0, 6);
+  const providerIds = Array.from(new Set(board.map((item) => item.app.providerId)));
 
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <header className="surface-card-strong p-6 md:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Live AI status</p>
-              <h1 className="mt-2 text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white">
-                Is your AI working?
-              </h1>
-              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-                Fast answers for ChatGPT, Claude, and Gemini. Then drill into details only when needed.
-              </p>
-            </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 text-right">
-              <div>Updated {formatTimeAgo(livePulse.lastUpdated)}</div>
-              <div>Last check: {formatTimeAgo(livePulse.lastUpdated)}</div>
-            </div>
-          </div>
+      <div className="max-w-5xl mx-auto space-y-12">
+        {/* The answer, before anything else. */}
+        <header className="pt-6 md:pt-10 text-center space-y-4">
+          <p className="font-mono text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse mr-2 align-middle" aria-hidden="true" />
+            Live · checked {updatedAt ? formatTimeAgo(updatedAt) : 'just now'}
+          </p>
+          <h1 className={`text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight ${heroTone}`}>
+            {heroSentence}
+          </h1>
+          <p className="text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            We don&apos;t just mirror the official status pages — we test these services ourselves,
+            every few minutes, and we tell you when something is off before it&apos;s acknowledged.
+          </p>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          {appStatuses.filter(Boolean).map((item) => {
-            const app = item!.app;
-            const status = item!.status;
-            const tone = summarizeStatus(status.overall_status);
-            const providerName = app.label.replace(' Status', '');
-            const notify = notifyCopy(status.overall_status, providerName);
+        {/* The board. Troubled apps float to the top. */}
+        <section aria-label="AI app status board" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {board.map(({ app, status, key, name }) => {
+            const tone = VERDICT_TONE[key];
+            const copy = VERDICT_COPY[key];
             return (
-              <article
+              <Link
                 key={app.id}
-                className={`rounded-2xl border p-5 space-y-4 ${tone.tone}`}
+                href={`/${app.id}`}
+                className={`group rounded-2xl border bg-white/80 dark:bg-slate-900/70 p-4 flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-lg ${tone.card}`}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <Image src={LOGOS[app.id] || '/logos/openai.svg'} alt={`${app.label} logo`} width={28} height={28} />
-                    <p className="text-lg font-semibold">{providerName}</p>
-                  </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/80 dark:bg-slate-900/70 px-2 py-1 text-xs border border-current/20">
-                    <span className={`h-2 w-2 rounded-full ${tone.pill}`} aria-hidden="true" />
-                    {tone.label}
-                  </span>
-                </div>
-
-                <p className="text-base font-medium">
-                  {providerName} {tone.headline}.
-                </p>
-                <p className="text-sm opacity-90">{status.is_it_just_me.note}</p>
-                {status.history.last_similar_event ? (
-                  <p className="text-xs opacity-80">
-                    Recent: {status.history.last_similar_event.title}
-                  </p>
-                ) : null}
-
-                <NotifyInlineForm
-                  providerIds={[app.providerId]}
-                  prompt={notify.prompt}
-                  ctaLabel={notify.cta}
+                <Image
+                  src={APP_LOGOS[app.id] || '/logos/openai.svg'}
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="rounded-lg shrink-0"
                 />
-                <Link
-                  href={`/casual/${app.id}`}
-                  className="inline-block text-sm underline"
-                >
-                  See details →
-                </Link>
-              </article>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-semibold text-slate-900 dark:text-white truncate">
+                    {name}
+                  </span>
+                  <span className={`block text-sm font-medium ${tone.text}`}>{copy.label}</span>
+                </span>
+                <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${tone.dot} ${key !== 'up' ? 'animate-pulse' : ''}`} aria-hidden="true" />
+              </Link>
             );
           })}
         </section>
 
-        <section className="surface-card p-5">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Other providers</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {secondaryProviders.map(({ provider, status, app }) => {
-              const tone = summarizeStatus(status);
-              return (
-                <Link
-                  key={provider.id}
-                  href={app ? `/casual/${app.id}` : `/provider/${provider.id}`}
-                  className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs bg-white/80 dark:bg-slate-900/60"
-                >
-                  <span className={`h-2 w-2 rounded-full ${tone.pill}`} aria-hidden="true" />
-                  {provider.displayName || provider.name}
-                </Link>
-              );
-            })}
-          </div>
+        {/* One alert CTA for the whole page. */}
+        <section id="alerts" className="surface-card-strong p-6 md:p-8 max-w-2xl mx-auto text-center space-y-3">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+            Know the moment your AI breaks
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            One email when something goes down, one when it&apos;s back. Nothing else.
+          </p>
+          <NotifyInlineForm
+            providerIds={providerIds}
+            prompt=""
+            ctaLabel="Alert me"
+            className="space-y-2 max-w-md mx-auto"
+          />
         </section>
 
-        <section className="surface-card p-5">
-          <Link className="text-sm underline" href="/developer">
-            Developer? Use the API / MCP / Datasets →
-          </Link>
-        </section>
-
-        <section className="surface-card p-6 space-y-3">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Caught early</h2>
-          {caughtEarly.length ? (
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              {caughtEarly.map((item) => (
-                <li key={item.id}>
-                  {item.title} ({item.providerId}) · detected {item.deltaMinutes} min before full update window closed.
+        {/* What broke recently — social proof that we catch things. */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">This week&apos;s incidents</h2>
+          {recentIncidents.length ? (
+            <ul className="divide-y divide-slate-200/70 dark:divide-slate-800/70 surface-card">
+              {recentIncidents.map((incident: any) => (
+                <li key={incident.incident_id}>
+                  <Link
+                    href={incident.permalink}
+                    className="flex items-center justify-between gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-slate-900 dark:text-white truncate">
+                        {incident.title}
+                      </span>
+                      <span className="block font-mono text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {incident.providerId} · {formatTimeAgo(incident.updatedAt)}
+                      </span>
+                    </span>
+                    <span className="text-slate-400 shrink-0" aria-hidden="true">→</span>
+                  </Link>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              No verified pre-acknowledgement detections are published yet.
+            <p className="text-sm text-slate-600 dark:text-slate-300 surface-card p-4">
+              A quiet week — no outages recorded in the last 7 days.{' '}
+              <Link href="/incidents" className="underline">See the full history</Link>.
             </p>
           )}
+          <Link href="/incidents" className="inline-block text-sm underline text-slate-700 dark:text-slate-200">
+            All outage history →
+          </Link>
         </section>
 
-        <noscript>
-          <div className="surface-card p-4 text-sm">
-            Open the full interactive report:
-            {' '}
-            <Link className="underline" href="/casual/chatgpt">
-              /casual/chatgpt
-            </Link>
+        {/* Why trust this. */}
+        <section className="grid gap-4 sm:grid-cols-3 text-sm">
+          <div className="surface-card p-5">
+            <p className="font-semibold text-slate-900 dark:text-white">We test it ourselves</p>
+            <p className="mt-1 text-slate-600 dark:text-slate-300">
+              Real requests to the services every few minutes — not just a copy of the official page.
+            </p>
           </div>
-        </noscript>
+          <div className="surface-card p-5">
+            <p className="font-semibold text-slate-900 dark:text-white">People like you report in</p>
+            <p className="mt-1 text-slate-600 dark:text-slate-300">
+              One tap to say &ldquo;it&apos;s broken for me too&rdquo; — so you know if it&apos;s just you.
+            </p>
+          </div>
+          <div className="surface-card p-5">
+            <p className="font-semibold text-slate-900 dark:text-white">We say when we don&apos;t know</p>
+            <p className="mt-1 text-slate-600 dark:text-slate-300">
+              If we can&apos;t verify a service, we show &ldquo;checking&rdquo; — never a false green light.
+            </p>
+          </div>
+        </section>
       </div>
     </main>
   );

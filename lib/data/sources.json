@@ -162,6 +162,30 @@
       "baseUrl": "https://xai.instatus.com",
       "platform": "instatus",
       "pollIntervalSeconds": 120
+    },
+    {
+      "id": "github-statuspage",
+      "providerId": "github",
+      "name": "GitHub Statuspage",
+      "baseUrl": "https://www.githubstatus.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "cursor-statuspage",
+      "providerId": "cursor",
+      "name": "Cursor Statuspage",
+      "baseUrl": "https://status.cursor.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "character-ai-statuspage",
+      "providerId": "character-ai",
+      "name": "Character.AI Statuspage",
+      "baseUrl": "https://characteraistatus.statuspage.io",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
     }
   ]
 }

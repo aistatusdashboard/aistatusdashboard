@@ -63,7 +63,7 @@ export default function CookieConsentBanner() {
           <p className="text-sm font-semibold text-slate-900 dark:text-white">Privacy and cookies</p>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
             We use essential storage for core features. With your permission, we also use analytics
-            and telemetry cookies/storage to improve reliability insights.
+            cookies to understand which status pages help people most.
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Review our{' '}

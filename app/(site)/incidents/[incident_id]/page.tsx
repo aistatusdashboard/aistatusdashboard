@@ -1,8 +1,23 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { getIncidentById } from '@/lib/services/public-data';
+import { providerService } from '@/lib/services/providers';
+import { formatTimeAgo } from '@/lib/utils/time';
 import { log } from '@/lib/utils/logger';
+
+function providerLabel(providerId: string): string {
+  const provider = providerService.getProvider(providerId);
+  return provider?.displayName || provider?.name || providerId;
+}
+
+function formatWhen(value?: string | null): string | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return `${parsed.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })} UTC`;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -128,105 +143,85 @@ export default async function IncidentDetailPage({
     },
   };
 
+  const resolved =
+    ['resolved', 'completed', 'cancelled'].includes(String(incident.status || '').toLowerCase()) ||
+    Boolean(incident.resolvedAt);
+  const impactedParts = [
+    incident.impactedComponentNames?.length
+      ? incident.impactedComponentNames.join(', ')
+      : incident.impactedComponents?.length
+        ? incident.impactedComponents.join(', ')
+        : null,
+    incident.impactedRegions?.length ? `regions: ${incident.impactedRegions.join(', ')}` : null,
+    incident.impactedModels?.length ? `models: ${incident.impactedModels.join(', ')}` : null,
+  ].filter(Boolean);
+
   return (
-    <main className="flex-1">
-      <div className="px-4 sm:px-6 py-10">
-        <div className="max-w-5xl mx-auto space-y-6">
-          <header className="surface-card-strong p-8">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-              {incident.providerId}
-            </p>
-            <h1 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white mt-3">
-              {incident.title}
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">
-              Status: {incident.status} | Severity: {incident.severity}
-            </p>
-            <a
-              href={`/incidents/${incident.incident_id}/cite`}
-              className="cta-secondary text-xs inline-block mt-3"
-            >
-              Cite this incident
-            </a>
-          </header>
+    <main className="flex-1 px-4 sm:px-6 py-10">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <header className="pt-4 space-y-3">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            {providerLabel(incident.providerId)} · {formatTimeAgo(incident.updatedAt)}
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {incident.title}
+          </h1>
+          <span
+            className={`inline-block text-xs font-semibold px-3 py-1 rounded-full border ${
+              resolved
+                ? 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900/60 dark:text-slate-300 dark:border-slate-700'
+                : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+            }`}
+          >
+            {resolved ? 'Resolved' : 'Ongoing'}
+          </span>
+        </header>
 
-          <section className="surface-card p-6 space-y-3">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Timeline</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              Started: {incident.startedAt}
-            </p>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              Updated: {incident.updatedAt}
-            </p>
-            {incident.resolvedAt && (
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Resolved: {incident.resolvedAt}
-              </p>
-            )}
-          </section>
-
-          <section className="surface-card p-6 space-y-3">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Impact scope</h2>
-            <div className="text-sm text-slate-600 dark:text-slate-300 space-y-2">
-              <p>Impacted regions: {incident.impactedRegions?.length ? incident.impactedRegions.join(', ') : 'None reported'}</p>
-              <p>Impacted models: {incident.impactedModels?.length ? incident.impactedModels.join(', ') : 'None reported'}</p>
-              <p>
-                Impacted components:{' '}
-                {incident.impactedComponentNames?.length
-                  ? incident.impactedComponentNames.join(', ')
-                  : incident.impactedComponents?.length
-                    ? incident.impactedComponents.join(', ')
-                    : 'None reported'}
-              </p>
-            </div>
-          </section>
-
-          <section className="surface-card p-6 space-y-3">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Official sources</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              Provider: {incident.providerId}
-            </p>
-            {incident.rawUrl ? (
+        <section className="surface-card p-6 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white">Timeline</h2>
+          <p>Started: {formatWhen(incident.startedAt)}</p>
+          <p>Last update: {formatWhen(incident.updatedAt)}</p>
+          {incident.resolvedAt && <p>Resolved: {formatWhen(incident.resolvedAt)}</p>}
+          {impactedParts.length > 0 && <p>Affected: {impactedParts.join(' · ')}</p>}
+          {incident.rawUrl && (
+            <p>
               <a
                 href={incident.rawUrl}
-                className="text-sm text-blue-600 hover:text-blue-700 underline underline-offset-2"
+                className="underline"
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                View official incident page
+                {providerLabel(incident.providerId)}&apos;s official report →
               </a>
-            ) : (
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Official incident URL not available for this source.
-              </p>
-            )}
-          </section>
+            </p>
+          )}
+        </section>
 
+        {incident.updates && incident.updates.length > 0 && (
           <section className="surface-card p-6 space-y-3">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Updates</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">Updates</h2>
             <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
-              {incident.updates?.map((update) => (
+              {incident.updates.map((update) => (
                 <li key={update.id} className="border-l border-slate-200 dark:border-slate-700 pl-4">
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">{update.status}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200 capitalize">{update.status}</p>
                   <p>{update.body}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{update.createdAt}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{formatWhen(update.createdAt)}</p>
                 </li>
               ))}
             </ul>
           </section>
+        )}
 
-          <noscript>
-            <div className="surface-card p-4">
-              <p>Incident {incident.id}: {incident.title}</p>
-              <p>Status: {incident.status}. Data: /api/public/v1/incidents</p>
-            </div>
-          </noscript>
+        <p className="text-sm">
+          <Link href="/incidents" className="underline text-slate-700 dark:text-slate-200">
+            ← All outage history
+          </Link>
+        </p>
 
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          />
-        </div>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </div>
     </main>
   );

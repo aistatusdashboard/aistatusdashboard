@@ -1,50 +1,0 @@
-# Bot checks after fixes
-# format: url | ua | status | content-type | cache-control | bytes
-https://aistatusdashboard.com/rss.xml | curl/8.7.1 | 200 | application/rss+xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/rss.xml | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | application/rss+xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/rss.xml | OAI-SearchBot | 200 | application/rss+xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/rss.xml | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | application/rss+xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/sitemap.xml | curl/8.7.1 | 200 | application/xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/sitemap.xml | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | application/xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/sitemap.xml | OAI-SearchBot | 200 | application/xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/sitemap.xml | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | application/xml; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs.md | curl/8.7.1 | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs.md | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs.md | OAI-SearchBot | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs.md | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/api.md | curl/8.7.1 | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/api.md | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/api.md | OAI-SearchBot | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/api.md | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/citations.md | curl/8.7.1 | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/citations.md | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/citations.md | OAI-SearchBot | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/docs/citations.md | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/providers.md | curl/8.7.1 | 200 | text/markdown; charset=UTF-8 | max-age=0, private | 374
-https://aistatusdashboard.com/providers.md | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | text/markdown; charset=UTF-8 | max-age=0, private | 374
-https://aistatusdashboard.com/providers.md | OAI-SearchBot | 200 | text/markdown; charset=UTF-8 | max-age=0, private | 374
-https://aistatusdashboard.com/providers.md | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | text/markdown; charset=UTF-8 | max-age=0, private | 374
-https://aistatusdashboard.com/status.md | curl/8.7.1 | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/status.md | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/status.md | OAI-SearchBot | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/status.md | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | text/markdown; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/incidents.ndjson | curl/8.7.1 | 200 | application/x-ndjson; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/incidents.ndjson | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | application/x-ndjson; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/incidents.ndjson | OAI-SearchBot | 200 | application/x-ndjson; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/incidents.ndjson | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | application/x-ndjson; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/metrics.csv | curl/8.7.1 | 200 | text/csv; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/metrics.csv | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | text/csv; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/metrics.csv | OAI-SearchBot | 200 | text/csv; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/datasets/metrics.csv | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | text/csv; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/api/health | curl/8.7.1 | 200 | application/json | - | -
-https://aistatusdashboard.com/api/health | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | application/json | - | -
-https://aistatusdashboard.com/api/health | OAI-SearchBot | 200 | application/json | - | -
-https://aistatusdashboard.com/api/health | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | application/json | - | -
-https://aistatusdashboard.com/api/status | curl/8.7.1 | 200 | application/json | - | -
-https://aistatusdashboard.com/api/status | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | application/json | - | -
-https://aistatusdashboard.com/api/status | OAI-SearchBot | 200 | application/json | - | -
-https://aistatusdashboard.com/api/status | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | application/json | - | -
-https://aistatusdashboard.com/mcp | curl/8.7.1 | 200 | text/plain; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/mcp | Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html) | 200 | text/plain; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/mcp | OAI-SearchBot | 200 | text/plain; charset=utf-8 | max-age=300, private | -
-https://aistatusdashboard.com/mcp | Mozilla/5.0 (compatible; FeedFetcher-Google; +http://www.google.com/feedfetcher.html) | 200 | text/plain; charset=utf-8 | max-age=300, private | -

@@ -18,44 +18,17 @@ const googleSiteVerificationTokens = [
   process.env.GOOGLE_SITE_VERIFICATION_ALT || 'thZbMJrJpI5W61kPQCXhMn44Gt9ycmYeTX6f2xxIg68',
 ].filter(Boolean);
 
-const homeJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'AI Status Dashboard',
-  url: SITE_URL,
-  applicationCategory: 'WebApplication',
-  operatingSystem: 'Web',
-  description: 'AI reliability control plane: status, incidents, metrics, and fallback policy generation.',
-  offers: { '@type': 'Offer', price: '0' },
-  sameAs: [
-    'https://github.com/aistatusdashboard/aistatusdashboard',
-    'https://registry.modelcontextprotocol.io/v0.1/servers/io.github.aistatusdashboard%2Faistatusdashboard/versions/latest',
-  ],
-};
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'AI Status — is ChatGPT, Claude, or Gemini down right now?',
-    template: '%s | AI Status Dashboard',
+    default: 'Is ChatGPT down? Live status for your AI apps | AI Status',
+    template: '%s | AI Status',
   },
   description:
-    'Real-time status monitoring dashboard for AI provider APIs including OpenAI, Anthropic, Google AI, and more. Monitor service availability.',
-  keywords: [
-    'AI status',
-    'API monitoring',
-    'OpenAI status',
-    'Anthropic status',
-    'Google AI status',
-    'service monitoring',
-    'uptime monitoring',
-    'API dashboard',
-    'real-time status',
-    'AI provider monitoring',
-  ],
-  authors: [{ name: 'AI Status Dashboard Team' }],
-  creator: 'AI Status Dashboard',
-  publisher: 'AI Status Dashboard',
+    'Is ChatGPT down? Is Claude down? Live, plain-English status for the AI apps you use — checked with our own tests every few minutes.',
+  authors: [{ name: 'AI Status' }],
+  creator: 'AI Status',
+  publisher: 'AI Status',
   robots: {
     index: true,
     follow: true,
@@ -71,23 +44,23 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: SITE_URL,
-    siteName: 'AI Status Dashboard',
-    title: 'AI Status Dashboard - Real-time AI Provider Monitoring',
+    siteName: 'AI Status',
+    title: 'Is your AI down right now?',
     description:
-      'Monitor the status of major AI providers including OpenAI, Anthropic, Google AI, and more in real-time.',
+      'Live, plain-English status for ChatGPT, Claude, Gemini, and the other AI apps you use.',
     images: [
       {
         url: `${SITE_URL}/og.png`,
         width: 1200,
         height: 630,
-        alt: 'AI Status Dashboard',
+        alt: 'AI Status',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Status Dashboard - Real-time AI Provider Monitoring',
-    description: 'Real-time monitoring of AI provider APIs',
+    title: 'Is your AI down right now?',
+    description: 'Live, plain-English status for ChatGPT, Claude, Gemini, and more.',
     images: [`${SITE_URL}/og.png`],
   },
   alternates: {
@@ -108,32 +81,20 @@ export const metadata: Metadata = {
       { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
-    other: [
-      {
-        rel: 'mask-icon',
-        url: '/safari-pinned-tab.svg',
-        color: '#3b82f6',
-      },
-    ],
   },
   other: {
     'msapplication-TileColor': '#0f172a',
   },
 };
 
-// Client-side initialization
-function ClientInit() {
-  return null;
-}
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'AI Status Dashboard',
+      name: 'AI Status',
       url: SITE_URL,
-      logo: `${SITE_URL}/brand/mark-transparent-512.png`,
+      logo: `${SITE_URL}/logo.png`,
       contactPoint: process.env.NEXT_PUBLIC_CONTACT_EMAIL
         ? {
             '@type': 'ContactPoint',
@@ -145,27 +106,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      name: 'AI Status Dashboard',
+      name: 'AI Status',
       url: SITE_URL,
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: `${SITE_URL}/dashboard?q={search_term_string}`,
-        'query-input': 'required name=search_term_string',
-      },
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: 'AI Status Dashboard',
-      description: 'Real-time status monitoring dashboard for AI provider APIs',
-      url: SITE_URL,
-      applicationCategory: 'DeveloperApplication',
-      operatingSystem: 'Any',
-      offers: {
-        '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'USD',
-      },
     },
   ];
 
@@ -182,20 +124,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <meta name="application-name" content="AI Status Dashboard" />
-        <meta name="apple-mobile-web-app-title" content="AI Status Dashboard" />
+        <meta name="application-name" content="AI Status" />
+        <meta name="apple-mobile-web-app-title" content="AI Status" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#0f172a" />
-        <meta name="msapplication-config" content="/browserconfig.xml" />
 
-        {/* Structured Data */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify([homeJsonLd, ...jsonLd]) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-
       </head>
       <body className={`${geistSans.className} ${geistMono.variable} antialiased min-h-screen bg-background font-sans`}>
         <ErrorBoundary>
@@ -204,21 +142,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
             </Suspense>
             <GlobalErrorHandler />
-            <Suspense fallback={null}>
-              <ClientInit />
-            </Suspense>
             <OfflineIndicator />
             <CookieConsentBanner />
             {children}
           </Providers>
         </ErrorBoundary>
-        <noscript>
-          <div className="noscript-notice">
-            <p>Interactive dashboard requires JavaScript. Live snapshot is available below.</p>
-          </div>
-        </noscript>
-
-        <Script src="/sdk/ai-status-sdk.js" strategy="afterInteractive" />
 
         {/* Service Worker Registration */}
         <Script id="sw-registration" strategy="afterInteractive">
@@ -238,8 +166,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     return;
                   }
 
-                  const registration = await navigator.serviceWorker.register('/sw.js');
-                  console.log('SW registered:', registration);
+                  await navigator.serviceWorker.register('/sw.js');
                 } catch (registrationError) {
                   console.log('SW registration failed:', registrationError);
                 }
@@ -255,21 +182,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }
           `}
         </Script>
-
-        {/* Firebase Messaging - Temporarily disabled to avoid import issues */}
-        {/* 
-        <Script id="firebase-messaging" strategy="afterInteractive">
-          {`
-            // Initialize Firebase messaging when the page loads
-            if (typeof window !== 'undefined') {
-              import('../lib/firebase-messaging').then(module => {
-                module.initializePushNotifications();
-              }).catch(console.error);
-            }
-          `}
-        </Script>
-        */}
-
       </body>
     </html>
   );

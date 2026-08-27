@@ -1,7 +1,0 @@
-# Key endpoint checks
-# format: url | status | content-type
-https://aistatusdashboard.com/ai | 200 | text/html; charset=utf-8
-https://aistatusdashboard.com/.well-known/openapi.json | 200 | application/json; charset=utf-8
-https://aistatusdashboard.com/.well-known/ai-plugin.json | 200 | application/json; charset=utf-8
-https://aistatusdashboard.com/openapi.json | 200 | application/json; charset=utf-8
-https://aistatusdashboard.com/api/public/v1/providers | 200 | application/json; charset=utf-8

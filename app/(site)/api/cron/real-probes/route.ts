@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { insightsService } from '@/lib/services/insights';
+import { storeSyntheticProbe } from '@/lib/services/probe-store';
 import { runRealProviderProbes } from '@/lib/services/provider-probes';
 import { log } from '@/lib/utils/logger';
 import { normalizeProbeRegion } from '@/lib/utils/probe-region';
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const summary = await runRealProviderProbes({ regionOverride: regionOverride || undefined });
     let ingested = 0;
     for (const event of summary.events) {
-      await insightsService.ingestSynthetic(event);
+      await storeSyntheticProbe(event);
       ingested += 1;
     }
 

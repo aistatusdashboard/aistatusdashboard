@@ -42,11 +42,12 @@ export class StatusService {
 
                 let { status, details } = await this.parseStatus(provider, response);
                 if (status === 'unknown') {
+                    // Never coerce an unverifiable read into "operational" — an honest
+                    // "unknown" beats a false green on a status product.
                     const note = response.ok
                         ? 'Unverified: status page did not provide a clear signal'
                         : `Unverified: status endpoint returned HTTP ${response.status}`;
                     details = details ? `${details} | ${note}` : note;
-                    status = 'operational';
                 }
                 const result: StatusResult = {
                     id: provider.id,
@@ -75,7 +76,7 @@ export class StatusService {
             name: provider.name,
             displayName: provider.displayName || provider.name,
             aliases: provider.aliases,
-            status: 'operational',
+            status: 'unknown',
             responseTime: Date.now() - startTime,
             lastChecked: new Date().toISOString(),
             error: lastError,

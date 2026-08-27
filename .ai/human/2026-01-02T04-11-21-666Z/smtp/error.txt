@@ -1,1 +1,0 @@
-SMTP send failed: SES rejected sender hello@aistatusdashboard.com (identity not verified in us-east-1).

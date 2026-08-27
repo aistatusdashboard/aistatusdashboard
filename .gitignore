@@ -59,3 +59,4 @@ serviceAccountKey.json.env.production.local
 # local brand kit artifacts
 .tmp_logo_kit/
 /aistatusdashboard_logo_kit.zip
+.env*

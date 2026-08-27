@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { providerService } from '@/lib/services/providers';
 import { statusService } from '@/lib/services/status';
-import { insightsService } from '@/lib/services/insights';
+import { storeSyntheticProbe } from '@/lib/services/probe-store';
 import { runRealProviderProbes } from '@/lib/services/provider-probes';
 import { log } from '@/lib/utils/logger';
 import { normalizeProbeRegion } from '@/lib/utils/probe-region';
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     for (const result of results) {
       if (result.status !== 'fulfilled') continue;
       const data = result.value;
-      await insightsService.ingestSynthetic({
+      await storeSyntheticProbe({
         providerId: data.id,
         model: 'status',
         endpoint: 'status',
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         const summary = await runRealProviderProbes({ regionOverride: regionOverride || undefined });
         let ingestedReal = 0;
         for (const event of summary.events) {
-          await insightsService.ingestSynthetic(event);
+          await storeSyntheticProbe(event);
           ingestedReal += 1;
         }
         realSummary = { ingested: ingestedReal, skipped: summary.skipped, failures: summary.failures };

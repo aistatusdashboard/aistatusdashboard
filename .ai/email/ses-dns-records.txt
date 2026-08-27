@@ -1,8 +1,0 @@
-SES DNS records for aistatusdashboard.com:
-
-TXT	_amazonses.aistatusdashboard.com	9tYsgh961KIgW8LUjq0lQhUa11X6zIo/PFp4j3B2+Z4=	TTL=300	# SES domain verification
-CNAME	6kopl3fdflbatcgau7y2fezrknlcomzl._domainkey.aistatusdashboard.com	6kopl3fdflbatcgau7y2fezrknlcomzl.dkim.amazonses.com	TTL=300	# SES DKIM
-CNAME	r644q35jm3cfwayncsvbv35rnwtc53mf._domainkey.aistatusdashboard.com	r644q35jm3cfwayncsvbv35rnwtc53mf.dkim.amazonses.com	TTL=300	# SES DKIM
-CNAME	tmtcwiookgwmimnno5ugasvqcahenlem._domainkey.aistatusdashboard.com	tmtcwiookgwmimnno5ugasvqcahenlem.dkim.amazonses.com	TTL=300	# SES DKIM
-TXT	aistatusdashboard.com	v=spf1 include:amazonses.com -all	TTL=300	# SPF (recommended)
-TXT	_dmarc.aistatusdashboard.com	v=DMARC1; p=none; rua=mailto:hello@aistatusdashboard.com; ruf=mailto:hello@aistatusdashboard.com; fo=1	TTL=300	# DMARC (recommended)

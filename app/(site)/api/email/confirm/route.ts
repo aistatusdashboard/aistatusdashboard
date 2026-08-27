@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { subscriptionService } from '@/lib/services/subscriptions';
-import { analyticsService } from '@/lib/services/analytics';
 
 function getRequestOrigin(request: NextRequest): string {
   const forwardedProto = request.headers.get('x-forwarded-proto');
@@ -18,10 +17,7 @@ export async function GET(request: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Token required' }, { status: 400 });
 
   const result = await subscriptionService.confirm(token);
-  if (result.success) {
-    await analyticsService.track('email_confirm');
-  }
-  // Redirect to dashboard with status
+  // Redirect to the homepage with status
   const url = new URL('/', getRequestOrigin(request));
   url.searchParams.set('confirmed', result.success.toString());
   return NextResponse.redirect(url);

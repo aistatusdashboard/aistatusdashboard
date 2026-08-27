@@ -1,3 +1,11 @@
+# Keep compute cost minimal: scale to zero when idle, hard-cap instances.
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  cpu: 1
+  memoryMiB: 512
+  concurrency: 80
+
 env:
   - variable: NEXT_PUBLIC_SITE_URL
     value: "https://aistatusdashboard.com"
@@ -19,8 +27,6 @@ env:
     value: "1:401066429430:web:88df5e30e599ab6c3e15d7"
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     value: "G-ZV3PS0MPQ7"
-  - variable: NEXT_PUBLIC_EXPORT_DEBUG
-    value: "false"
   - variable: FIREBASE_PROJECT_ID
     value: "ai-status-dashboard"
   - variable: APP_ENABLE_EMAIL
@@ -33,12 +39,8 @@ env:
     value: "false"
   - variable: SMTP_FROM
     value: "AI Status Dashboard <hello@aistatusdashboard.com>"
-  - variable: APP_ENABLE_DEBUG_ENDPOINTS
-    value: "false"
   - variable: APP_ALLOW_OPEN_CRON
     value: "false"
-  - variable: APP_ALLOW_PUBLIC_WEBHOOKS
-    value: "true"
   - variable: PROBE_ENABLED
     value: "true"
   - variable: PROBE_REAL_ENABLED
@@ -49,40 +51,10 @@ env:
     value: "thZbMJrJpI5W61kPQCXhMn44Gt9ycmYeTX6f2xxIg68"
   - variable: GEMINI_PROBE_MODEL
     value: "gemini-2.0-flash"
-  - variable: COHERE_PROBE_MODEL
-    value: "command-r-08-2024"
-  - variable: GROQ_PROBE_MODEL
-    value: "llama-3.1-8b-instant"
   - variable: CRON_SECRET
     secret: "CRON_SECRET"
   - variable: APP_CRON_SECRET
     secret: "CRON_SECRET"
-  - variable: WEBHOOK_SECRET
-    secret: "WEBHOOK_SECRET"
-  - variable: APP_WEBHOOK_SECRET
-    secret: "WEBHOOK_SECRET"
-  - variable: APP_DEBUG_SECRET
-    secret: "APP_DEBUG_SECRET"
-  - variable: CHANGE_RADAR_SECRET
-    secret: "CHANGE_RADAR_SECRET"
-  - variable: APP_CHANGE_RADAR_SECRET
-    secret: "CHANGE_RADAR_SECRET"
-  - variable: TELEMETRY_INGEST_SECRET
-    secret: "TELEMETRY_INGEST_SECRET"
-  - variable: SYNTHETIC_INGEST_SECRET
-    secret: "SYNTHETIC_INGEST_SECRET"
-  - variable: TELEMETRY_PUBLIC_KEY
-    secret: "TELEMETRY_PUBLIC_KEY"
-  - variable: NEXT_PUBLIC_TELEMETRY_PUBLIC_KEY
-    secret: "TELEMETRY_PUBLIC_KEY"
-  - variable: TELEMETRY_SALT
-    secret: "TELEMETRY_SALT"
-  - variable: AWS_INGEST_SECRET
-    secret: "AWS_INGEST_SECRET"
-  - variable: GCP_INGEST_SECRET
-    secret: "GCP_INGEST_SECRET"
-  - variable: BETTERSTACK_INGEST_SECRET
-    secret: "BETTERSTACK_INGEST_SECRET"
   - variable: SMTP_USER
     secret: "SMTP_USER"
   - variable: SMTP_PASSWORD
@@ -95,31 +67,9 @@ env:
     secret: "OPENAI_API_KEY"
   - variable: ANTHROPIC_API_KEY
     secret: "ANTHROPIC_API_KEY"
-  - variable: COHERE_API_KEY
-    secret: "COHERE_API_KEY"
-  - variable: GROQ_API_KEY
-    secret: "GROQ_API_KEY"
   - variable: MISTRAL_API_KEY
     secret: "MISTRAL_API_KEY"
   - variable: DEEPSEEK_API_KEY
     secret: "DEEPSEEK_API_KEY"
   - variable: XAI_API_KEY
     secret: "XAI_API_KEY"
-  - variable: AZURE_OPENAI_ENDPOINT
-    value: "https://aistatusdashboard-openai.openai.azure.com"
-  - variable: AZURE_OPENAI_DEPLOYMENT
-    value: "gpt-4o"
-  - variable: AZURE_OPENAI_MODEL
-    value: "gpt-4o"
-  - variable: AZURE_OPENAI_API_KEY
-    secret: "AZURE_OPENAI_API_KEY"
-  - variable: AWS_ACCESS_KEY_ID
-    secret: "AWS_ACCESS_KEY_ID"
-  - variable: AWS_SECRET_ACCESS_KEY
-    secret: "AWS_SECRET_ACCESS_KEY"
-  - variable: AWS_REGION
-    value: "us-east-1"
-  - variable: AWS_BEDROCK_REGION
-    value: "us-east-1"
-  - variable: AWS_BEDROCK_MODEL_ID
-    value: "mistral.mistral-7b-instruct-v0:2"

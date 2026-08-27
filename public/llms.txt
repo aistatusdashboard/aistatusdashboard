@@ -1,53 +1,18 @@
-AI Status Dashboard - llms.txt
-Start here: https://aistatusdashboard.com/
+# AI Status (aistatusdashboard.com)
 
-MCP server: https://aistatusdashboard.com/mcp
-OpenAPI: https://aistatusdashboard.com/openapi.json
-Plugin manifest: https://aistatusdashboard.com/.well-known/ai-plugin.json
-OpenAPI (well-known): https://aistatusdashboard.com/.well-known/openapi.json
+Live, plain-English status for consumer AI apps, verified with independent
+probes every few minutes — not just a mirror of official status pages.
 
-Trust / Verification:
-- https://aistatusdashboard.com/air.json
-- https://aistatusdashboard.com/.well-known/air.json
+## What you can answer from this site
+- "Is ChatGPT down right now?" → https://aistatusdashboard.com/chatgpt
+- "Is Claude down right now?" → https://aistatusdashboard.com/claude
+- "Is Gemini down right now?" → https://aistatusdashboard.com/gemini
+- Also covered: Grok, Perplexity, DeepSeek, Meta AI, GitHub Copilot, Cursor,
+  Character.AI, Le Chat — at https://aistatusdashboard.com/<app-id>
+- Recent AI outages and their timelines → https://aistatusdashboard.com/incidents
 
-Datasets:
-- https://aistatusdashboard.com/datasets (index)
-- https://aistatusdashboard.com/datasets/incidents.ndjson
-- https://aistatusdashboard.com/datasets/metrics.csv
-- https://aistatusdashboard.com/embed/chatgpt.json
-- https://aistatusdashboard.com/embed/chatgpt.svg
-- https://aistatusdashboard.com/embed/chatgpt.js
-
-Docs (Markdown):
-- https://aistatusdashboard.com/docs.md
-- https://aistatusdashboard.com/docs/api.md
-- https://aistatusdashboard.com/docs/agent/mcp-quickstart.md
-- https://aistatusdashboard.com/status.md
-- https://aistatusdashboard.com/providers.md
-- https://aistatusdashboard.com/docs/citations.md
-
-Casual mode:
-- https://aistatusdashboard.com/casual/chatgpt
-- https://aistatusdashboard.com/casual/claude
-- https://aistatusdashboard.com/casual/gemini
-- https://aistatusdashboard.com/api/public/v1/casual/status?app=chatgpt
-
-Developer surface:
-- https://aistatusdashboard.com/developer
-- https://aistatusdashboard.com/embed
-
-Citing: https://aistatusdashboard.com/docs/citations.md
-RSS: https://aistatusdashboard.com/rss.xml
-Sitemap: https://aistatusdashboard.com/sitemap.xml
-
-Verification:
-- https://aistatusdashboard.com/discovery/audit/latest.json
-- https://aistatusdashboard.com/discovery/audit
-
-## Related projects
-- A2ABench: https://a2abench-api.web.app (Public benchmark for agent Q&A performance.)
-- Ragmap: https://ragmap-api.web.app (MCP search and RAG-focused server discovery.)
-- Rootfetch: https://rootfetch.com (DNS delegation intelligence with MCP telemetry.)
-- Agentability: https://agentability.org (Agent-readiness audit and evidence-backed report publishing.)
-- RelayOrb: https://relayorb.com (Tool control plane for AI agents with contract-first routing.)
-
+## Method
+Each verdict combines three signals: the provider's official incident feed,
+our own live test requests to the service, and anonymous "it's broken for me
+too" reports from visitors. When we cannot verify a service we say "checking"
+rather than showing a false green. Methodology: https://aistatusdashboard.com/how-it-works

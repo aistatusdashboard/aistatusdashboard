@@ -3,43 +3,34 @@
 import Link from 'next/link';
 import { openCookieConsentPreferences } from '@/lib/utils/cookie-consent';
 
-const REPORT_SCORE = 95;
-const REPORT_URL = 'https://agentability.org/reports/aistatusdashboard.com';
-
 export default function Footer() {
   return (
     <footer role="contentinfo" className="border-t border-slate-200/70 dark:border-slate-800/70 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <div className="text-center">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            For reference only. Verify critical production decisions against official provider sources.
-          </p>
-        </div>
-
-        <div className="text-center text-sm text-slate-600 dark:text-slate-300">
-          <a
-            href={REPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-slate-900 dark:hover:text-white transition-colors"
-          >
-            Audited by Agentability — score {REPORT_SCORE}/100 (full report →)
-          </a>
-        </div>
-
-        <div className="text-center text-xs text-slate-500 dark:text-slate-400">
-          <Link href="/stats" className="hover:text-slate-900 dark:hover:text-white transition-colors">
-            Stats
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-4 text-center">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          Independent status checks for the AI apps you use — tested by us, every few minutes.
+        </p>
+        <div className="text-xs text-slate-500 dark:text-slate-400 space-x-1">
+          <Link href="/about" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+            About
           </Link>
-          {' | '}
+          <span aria-hidden="true">·</span>
+          <Link href="/how-it-works" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+            How it works
+          </Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/incidents" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+            Outage history
+          </Link>
+          <span aria-hidden="true">·</span>
           <Link href="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">
             Terms
           </Link>
-          {' | '}
+          <span aria-hidden="true">·</span>
           <Link href="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">
             Privacy
           </Link>
-          {' | '}
+          <span aria-hidden="true">·</span>
           <button
             type="button"
             onClick={openCookieConsentPreferences}
@@ -48,13 +39,9 @@ export default function Footer() {
             Cookie preferences
           </button>
         </div>
-
-        <div className="text-center text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-slate-800/70 pt-4">
-          Part of a portfolio of agent-readiness tools.{' '}
-          <Link href="/related" className="underline text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white">
-            See related projects →
-          </Link>
-        </div>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          Not affiliated with any AI provider. Verify critical decisions against official sources.
+        </p>
       </div>
     </footer>
   );

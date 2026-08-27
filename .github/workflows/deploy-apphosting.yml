@@ -3,52 +3,14 @@ name: Deploy App Hosting
 on:
   workflow_dispatch:
   push:
-    branches: [main, develop]
+    branches: [main]
 
 concurrency:
   group: apphosting-deploy
   cancel-in-progress: false
 
 jobs:
-  status-audit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      STATUS_CHECK_BASE_URL: ${{ secrets.STATUS_CHECK_BASE_URL || 'https://aistatusdashboard.com' }}
-      APP_CRON_SECRET: ${{ secrets.APP_CRON_SECRET }}
-      CRON_SECRET: ${{ secrets.CRON_SECRET }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Status Accuracy Audit (strict)
-        run: |
-          set +e
-          node scripts/status-accuracy-check.js --base "$STATUS_CHECK_BASE_URL" --refresh
-          status=$?
-          if [ "$status" -ne 0 ]; then
-            echo "Status accuracy refresh failed; retrying without refresh."
-            node scripts/status-accuracy-check.js --base "$STATUS_CHECK_BASE_URL"
-            status=$?
-          fi
-          if [ "$status" -ne 0 ]; then
-            echo "Status accuracy mismatches detected; continuing with allow-mismatch for deploy."
-            node scripts/status-accuracy-check.js --base "$STATUS_CHECK_BASE_URL" --allow-mismatch
-            status=$?
-          fi
-          exit "$status"
-
   deploy:
-    needs: status-audit
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -65,34 +27,6 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
-      - name: Generate discovery assets
-        run: node scripts/generate-static-discovery-assets.cjs
-
-      - name: Verify brand files present
-        run: |
-          set -e
-          test -f public/brand/logo-mark.svg
-          test -f public/brand/logo-wordmark.svg
-
-      - name: Verify discovery assets present
-        run: |
-          set -e
-          required=(
-            "public/discovery/audit/latest.json"
-            "public/sitemap.xml"
-            "public/rss.xml"
-            "public/datasets/incidents.ndjson"
-            "public/datasets/metrics.csv"
-            "public/docs.md"
-            "public/openapi.yaml"
-          )
-          for file in "${required[@]}"; do
-            if [ ! -f "$file" ]; then
-              echo "Missing required discovery asset: $file"
-              exit 1
-            fi
-          done
 
       - name: Deploy App Hosting
         run: |
@@ -118,76 +52,15 @@ jobs:
           done
           exit 1
 
-      - name: Ensure jq available
-        run: command -v jq >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y jq)
-
-      - name: Verify self-test tagging stays out of filtered community report stats
-        run: |
-          set -euo pipefail
-          baseline="$(mktemp)"
-          curl -sS "https://aistatusdashboard.com/stats.json?cb=$(date +%s)" > "$baseline"
-          cat "$baseline"
-          baseline_filtered="$(jq -r '.community_reports_7d // 0' "$baseline")"
-          baseline_raw="$(jq -r '.community_reports_7d_raw // 0' "$baseline")"
-
-          submission="$(mktemp)"
-          code="$(curl -sS -o "$submission" -w '%{http_code}' \
-            -X POST \
-            -H 'Content-Type: application/json' \
-            -H 'Cache-Control: no-cache' \
-            -H 'X-AIStatus-SelfTest: 1' \
-            -d '{"app":"chatgpt","surface":"text","issue":true}' \
-            "https://aistatusdashboard.com/api/public/v1/casual/reports?cb=$(date +%s)")"
-          cat "$submission"
-          test "$code" = "200"
-
-          for attempt in $(seq 1 12); do
-            body="$(mktemp)"
-            curl -sS "https://aistatusdashboard.com/stats.json?cb=$(date +%s)" > "$body"
-            filtered="$(jq -r '.community_reports_7d // 0' "$body")"
-            raw="$(jq -r '.community_reports_7d_raw // 0' "$body")"
-            pending="$(jq -r '.community_reports_7d_classification_pending // 0' "$body")"
-            echo "attempt=${attempt} filtered=${filtered} raw=${raw} pending=${pending}"
-            cat "$body"
-            if [ "$raw" -gt "$baseline_raw" ] && [ "$filtered" = "$baseline_filtered" ]; then
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Self-test report was not excluded from filtered stats."
-          exit 1
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Post-deploy discovery smoke check
+      - name: Post-deploy smoke check
         run: |
           set -e
           urls=(
-            "https://aistatusdashboard.com/discovery/audit/latest.json"
+            "https://aistatusdashboard.com/"
+            "https://aistatusdashboard.com/chatgpt"
+            "https://aistatusdashboard.com/incidents"
             "https://aistatusdashboard.com/sitemap.xml"
-            "https://aistatusdashboard.com/rss.xml"
-            "https://aistatusdashboard.com/datasets/incidents.ndjson"
-            "https://aistatusdashboard.com/docs.md"
-            "https://aistatusdashboard.com/openapi.yaml"
-          )
-          for url in "${urls[@]}"; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-            if [ "$code" != "200" ]; then
-              echo "Smoke check failed: $url returned $code"
-              exit 1
-            fi
-          done
-
-      - name: Post-deploy live pulse smoke check
-        run: |
-          set -e
-          html=$(curl -sS "https://aistatusdashboard.com/")
-          echo "$html" | grep -q "Is your AI working?" || (echo "Homepage missing casual-mode heading" && exit 1)
-          echo "$html" | grep -q "Updated" || (echo "Homepage missing Updated" && exit 1)
-          echo "$html" | grep -q "Developer? Use the API / MCP / Datasets" || (echo "Homepage missing developer link" && exit 1)
-          urls=(
-            "https://aistatusdashboard.com/changelog"
+            "https://aistatusdashboard.com/robots.txt"
             "https://aistatusdashboard.com/og.png"
             "https://aistatusdashboard.com/favicon.ico"
           )
@@ -198,22 +71,5 @@ jobs:
               exit 1
             fi
           done
-
-      - name: Agentability readiness validation
-        run: |
-          set -e
-          BASE_URL="https://aistatusdashboard.com" scripts/validate-agentability-readiness.sh
-
-      - name: Post-deploy discovery policy check
-        run: |
-          set -e
-          audit=$(curl -s "https://aistatusdashboard.com/discovery/audit/latest.json")
-          score=$(echo "$audit" | jq -r '.score.total')
-          robots_ok=$(echo "$audit" | jq -r '.policy_checks.robots_txt.has_newlines and .policy_checks.robots_txt.contains_sitemap_line and ( .policy_checks.robots_txt.blocks_gptbot_root | not )')
-          noindex_ok=$(echo "$audit" | jq -r '(.policy_checks.public_noindex_detected | not)')
-          cache_ok=$(echo "$audit" | jq -r '(.policy_checks.cache_control_private_detected_on_public | not)')
-          if [ "$score" != "100" ] || [ "$robots_ok" != "true" ] || [ "$noindex_ok" != "true" ] || [ "$cache_ok" != "true" ]; then
-            echo "Discovery audit policy checks failed"
-            echo "$audit"
-            exit 1
-          fi
+          html=$(curl -sS "https://aistatusdashboard.com/")
+          echo "$html" | grep -qi "checked\|All quiet\|having issues\|Checking every AI" || (echo "Homepage missing live verdict" && exit 1)

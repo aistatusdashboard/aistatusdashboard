@@ -1,4 +1,3 @@
-import { analyticsService } from '@/lib/services/analytics';
 import { persistenceService } from '@/lib/services/persistence';
 import { subscriptionService } from '@/lib/services/subscriptions';
 import { getDb } from '@/lib/db/firestore';
@@ -32,18 +31,6 @@ describe('Advanced Services', () => {
             collection: jest.fn(() => mockCollection),
         };
         (getDb as jest.Mock).mockReturnValue(mockDb);
-    });
-
-    describe('AnalyticsService', () => {
-        it('should track events', async () => {
-            await analyticsService.track('test', 'openai', {});
-            expect(mockCollection.add).toHaveBeenCalled();
-        });
-
-        it('should get top providers', async () => {
-            const providers = await analyticsService.getTopProviders();
-            expect(providers.length).toBeGreaterThan(0);
-        });
     });
 
     describe('PersistenceService', () => {

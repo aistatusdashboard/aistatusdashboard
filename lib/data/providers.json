@@ -1,322 +1,369 @@
 {
-    "providers": [
-        {
-            "id": "openai",
-            "name": "OpenAI",
-            "displayName": "ChatGPT (OpenAI)",
-            "aliases": [
-                "openai",
-                "chatgpt",
-                "gpt",
-                "gpt-4",
-                "gpt-4o",
-                "gpt-3.5",
-                "gpt-4o mini",
-                "gpt-4 turbo",
-                "gpt-4.1",
-                "o1",
-                "o1-mini",
-                "o1-preview",
-                "openai api",
-                "openai platform",
-                "assistants api"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.openai.com/api/v2/status.json",
-            "statusPageUrl": "https://status.openai.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "anthropic",
-            "name": "Anthropic",
-            "displayName": "Claude (Anthropic)",
-            "aliases": [
-                "anthropic",
-                "claude",
-                "claude 2",
-                "claude 3",
-                "claude 3.5",
-                "claude 3 opus",
-                "claude 3 sonnet",
-                "claude 3 haiku",
-                "claude-3-opus",
-                "claude-3-sonnet",
-                "claude-3-haiku",
-                "claude-3.5-sonnet",
-                "claude-3.5-haiku",
-                "claude api"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.anthropic.com/api/v2/status.json",
-            "statusPageUrl": "https://status.anthropic.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "google-ai",
-            "name": "Google Gemini / AI Studio",
-            "displayName": "Gemini (Google)",
+  "providers": [
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "displayName": "ChatGPT (OpenAI)",
+      "aliases": [
+        "openai",
+        "chatgpt",
+        "gpt",
+        "gpt-4",
+        "gpt-4o",
+        "gpt-3.5",
+        "gpt-4o mini",
+        "gpt-4 turbo",
+        "gpt-4.1",
+        "o1",
+        "o1-mini",
+        "o1-preview",
+        "openai api",
+        "openai platform",
+        "assistants api"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.openai.com/api/v2/status.json",
+      "statusPageUrl": "https://status.openai.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "displayName": "Claude (Anthropic)",
+      "aliases": [
+        "anthropic",
+        "claude",
+        "claude 2",
+        "claude 3",
+        "claude 3.5",
+        "claude 3 opus",
+        "claude 3 sonnet",
+        "claude 3 haiku",
+        "claude-3-opus",
+        "claude-3-sonnet",
+        "claude-3-haiku",
+        "claude-3.5-sonnet",
+        "claude-3.5-haiku",
+        "claude api"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.anthropic.com/api/v2/status.json",
+      "statusPageUrl": "https://status.anthropic.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "google-ai",
+      "name": "Google Gemini / AI Studio",
+      "displayName": "Gemini (Google)",
       "aliases": [
         "gemini",
         "google",
         "google gemini",
         "ai studio",
         "google ai studio",
-                "google ai",
-                "google cloud ai",
-                "vertex ai",
-                "gemini pro",
-                "gemini flash",
-                "palm",
-                "bard"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.cloud.google.com/incidents.json",
-            "statusPageUrl": "https://status.cloud.google.com",
-            "format": "google-cloud",
-            "enabled": true
-        },
-        {
-            "id": "mistral",
-            "name": "Mistral AI",
-            "displayName": "Mistral AI",
-            "aliases": [
-                "mistral",
-                "mistral ai",
-                "mistral api",
-                "mistral chat",
-                "mixtral",
-                "mistral small",
-                "mistral large"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.mistral.ai/api/v2/status.json",
-            "statusPageUrl": "https://status.mistral.ai",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "cohere",
-            "name": "Cohere",
-            "displayName": "Cohere",
-            "aliases": [
-                "cohere",
-                "cohere api",
-                "command",
-                "command-r",
-                "command r+"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.cohere.com/api/v2/status.json",
-            "statusPageUrl": "https://status.cohere.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "meta",
-            "name": "Meta AI (Meta Status)",
-            "displayName": "Meta AI",
-            "aliases": [
-                "meta",
-                "meta ai",
-                "llama",
-                "llama 2",
-                "llama 3"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://metastatus.com/data/orgs.json",
-            "statusPageUrl": "https://metastatus.com",
-            "format": "meta",
-            "enabled": true
-        },
-        {
-            "id": "perplexity",
-            "name": "Perplexity",
-            "displayName": "Perplexity",
-            "aliases": [
-                "perplexity",
-                "perplexity ai"
-            ],
-            "category": "Search",
-            "statusUrl": "https://perplexity.instatus.com/summary.json",
-            "statusPageUrl": "https://status.perplexity.com",
-            "format": "instatus",
-            "enabled": true
-        },
-        {
-            "id": "groq",
-            "name": "Groq",
-            "displayName": "Groq",
-            "aliases": [
-                "groq",
-                "groq cloud",
-                "groqcloud"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://groqstatus.com/api/v2/status.json",
-            "statusPageUrl": "https://groqstatus.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "deepseek",
-            "name": "DeepSeek",
-            "displayName": "DeepSeek",
-            "aliases": [
-                "deepseek",
-                "deep seek"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.deepseek.com/api/v2/status.json",
-            "statusPageUrl": "https://status.deepseek.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "ai21",
-            "name": "AI21 Labs",
-            "displayName": "AI21 Labs",
-            "aliases": [
-                "ai21",
-                "ai21 labs",
-                "jamba",
-                "jurassic",
-                "jurassic-2",
-                "j2"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.ai21.com/api/v2/status.json",
-            "statusPageUrl": "https://status.ai21.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "stability",
-            "name": "Stability AI",
-            "displayName": "Stability AI",
-            "aliases": [
-                "stability",
-                "stability ai",
-                "stable diffusion",
-                "sdxl"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.stability.ai/api/v2/status.json",
-            "statusPageUrl": "https://status.stability.ai",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "cerebras",
-            "name": "Cerebras",
-            "displayName": "Cerebras",
-            "aliases": [
-                "cerebras",
-                "cerebras inference"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.cerebras.ai/api/v2/status.json",
-            "statusPageUrl": "https://status.cerebras.ai",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "runway",
-            "name": "Runway",
-            "displayName": "Runway",
-            "aliases": [
-                "runway",
-                "runwayml",
-                "runway ml"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://status.runwayml.com/api/v2/status.json",
-            "statusPageUrl": "https://status.runwayml.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "huggingface",
-            "name": "Hugging Face",
-            "displayName": "Hugging Face",
-            "aliases": [
-                "hugging face",
-                "huggingface",
-                "hf",
-                "hugging face hub"
-            ],
-            "category": "Ecosystem",
-            "statusUrl": "https://status.huggingface.co/index.json",
-            "statusPageUrl": "https://status.huggingface.co",
-            "format": "betterstack",
-            "enabled": true
-        },
-        {
-            "id": "replicate",
-            "name": "Replicate",
-            "displayName": "Replicate",
-            "aliases": [
-                "replicate",
-                "replicate api"
-            ],
-            "category": "Deployment",
-            "statusUrl": "https://status.replicate.com/api/v2/status.json",
-            "statusPageUrl": "https://status.replicate.com",
-            "format": "statuspage",
-            "enabled": true
-        },
-        {
-            "id": "xai",
-            "name": "xAI (Grok)",
-            "displayName": "Grok (xAI)",
-            "aliases": [
-                "xai",
-                "x ai",
-                "grok",
-                "grok ai"
-            ],
-            "category": "LLM",
-            "statusUrl": "https://xai.instatus.com/summary.json",
-            "statusPageUrl": "https://xai.instatus.com",
-            "format": "instatus",
-            "enabled": true
-        },
-        {
-            "id": "aws",
-            "name": "AWS Bedrock",
-            "displayName": "Amazon Bedrock (AWS)",
-            "aliases": [
-                "bedrock",
-                "amazon bedrock",
-                "aws bedrock",
-                "aws",
-                "amazon",
-                "amazon aws"
-            ],
-            "category": "Cloud",
-            "statusUrl": "https://status.aws.amazon.com/rss/all.rss",
-            "statusPageUrl": "https://status.aws.amazon.com",
-            "format": "rss",
-            "enabled": true
-        },
-        {
-            "id": "azure",
-            "name": "Azure OpenAI",
-            "displayName": "Azure OpenAI",
-            "aliases": [
-                "azure openai",
-                "microsoft openai",
-                "azure ai",
-                "azure ai studio",
-                "azure openai service",
-                "azure"
-            ],
-            "category": "Cloud",
-            "statusUrl": "https://azure.status.microsoft/en-us/status/feed/",
-            "statusPageUrl": "https://azure.status.microsoft/en-us/status/",
-            "format": "rss",
-            "enabled": true
-        }
-    ]
+        "google ai",
+        "google cloud ai",
+        "vertex ai",
+        "gemini pro",
+        "gemini flash",
+        "palm",
+        "bard"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.cloud.google.com/incidents.json",
+      "statusPageUrl": "https://status.cloud.google.com",
+      "format": "google-cloud",
+      "enabled": true
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral AI",
+      "displayName": "Mistral AI",
+      "aliases": [
+        "mistral",
+        "mistral ai",
+        "mistral api",
+        "mistral chat",
+        "mixtral",
+        "mistral small",
+        "mistral large"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.mistral.ai/api/v2/status.json",
+      "statusPageUrl": "https://status.mistral.ai",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "cohere",
+      "name": "Cohere",
+      "displayName": "Cohere",
+      "aliases": [
+        "cohere",
+        "cohere api",
+        "command",
+        "command-r",
+        "command r+"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.cohere.com/api/v2/status.json",
+      "statusPageUrl": "https://status.cohere.com",
+      "format": "statuspage",
+      "enabled": false
+    },
+    {
+      "id": "meta",
+      "name": "Meta AI (Meta Status)",
+      "displayName": "Meta AI",
+      "aliases": [
+        "meta",
+        "meta ai",
+        "llama",
+        "llama 2",
+        "llama 3"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://metastatus.com/data/orgs.json",
+      "statusPageUrl": "https://metastatus.com",
+      "format": "meta",
+      "enabled": true
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "displayName": "Perplexity",
+      "aliases": [
+        "perplexity",
+        "perplexity ai"
+      ],
+      "category": "Search",
+      "statusUrl": "https://perplexity.instatus.com/summary.json",
+      "statusPageUrl": "https://status.perplexity.com",
+      "format": "instatus",
+      "enabled": true
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "displayName": "Groq",
+      "aliases": [
+        "groq",
+        "groq cloud",
+        "groqcloud"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://groqstatus.com/api/v2/status.json",
+      "statusPageUrl": "https://groqstatus.com",
+      "format": "statuspage",
+      "enabled": false
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "displayName": "DeepSeek",
+      "aliases": [
+        "deepseek",
+        "deep seek"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.deepseek.com/api/v2/status.json",
+      "statusPageUrl": "https://status.deepseek.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "ai21",
+      "name": "AI21 Labs",
+      "displayName": "AI21 Labs",
+      "aliases": [
+        "ai21",
+        "ai21 labs",
+        "jamba",
+        "jurassic",
+        "jurassic-2",
+        "j2"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.ai21.com/api/v2/status.json",
+      "statusPageUrl": "https://status.ai21.com",
+      "format": "statuspage",
+      "enabled": false
+    },
+    {
+      "id": "stability",
+      "name": "Stability AI",
+      "displayName": "Stability AI",
+      "aliases": [
+        "stability",
+        "stability ai",
+        "stable diffusion",
+        "sdxl"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.stability.ai/api/v2/status.json",
+      "statusPageUrl": "https://status.stability.ai",
+      "format": "statuspage",
+      "enabled": false
+    },
+    {
+      "id": "cerebras",
+      "name": "Cerebras",
+      "displayName": "Cerebras",
+      "aliases": [
+        "cerebras",
+        "cerebras inference"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.cerebras.ai/api/v2/status.json",
+      "statusPageUrl": "https://status.cerebras.ai",
+      "format": "statuspage",
+      "enabled": false
+    },
+    {
+      "id": "runway",
+      "name": "Runway",
+      "displayName": "Runway",
+      "aliases": [
+        "runway",
+        "runwayml",
+        "runway ml"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://status.runwayml.com/api/v2/status.json",
+      "statusPageUrl": "https://status.runwayml.com",
+      "format": "statuspage",
+      "enabled": false
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "displayName": "Hugging Face",
+      "aliases": [
+        "hugging face",
+        "huggingface",
+        "hf",
+        "hugging face hub"
+      ],
+      "category": "Ecosystem",
+      "statusUrl": "https://status.huggingface.co/index.json",
+      "statusPageUrl": "https://status.huggingface.co",
+      "format": "betterstack",
+      "enabled": false
+    },
+    {
+      "id": "replicate",
+      "name": "Replicate",
+      "displayName": "Replicate",
+      "aliases": [
+        "replicate",
+        "replicate api"
+      ],
+      "category": "Deployment",
+      "statusUrl": "https://status.replicate.com/api/v2/status.json",
+      "statusPageUrl": "https://status.replicate.com",
+      "format": "statuspage",
+      "enabled": false
+    },
+    {
+      "id": "xai",
+      "name": "xAI (Grok)",
+      "displayName": "Grok (xAI)",
+      "aliases": [
+        "xai",
+        "x ai",
+        "grok",
+        "grok ai"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://xai.instatus.com/summary.json",
+      "statusPageUrl": "https://xai.instatus.com",
+      "format": "instatus",
+      "enabled": true
+    },
+    {
+      "id": "aws",
+      "name": "AWS Bedrock",
+      "displayName": "Amazon Bedrock (AWS)",
+      "aliases": [
+        "bedrock",
+        "amazon bedrock",
+        "aws bedrock",
+        "aws",
+        "amazon",
+        "amazon aws"
+      ],
+      "category": "Cloud",
+      "statusUrl": "https://status.aws.amazon.com/rss/all.rss",
+      "statusPageUrl": "https://status.aws.amazon.com",
+      "format": "rss",
+      "enabled": false
+    },
+    {
+      "id": "azure",
+      "name": "Azure OpenAI",
+      "displayName": "Azure OpenAI",
+      "aliases": [
+        "azure openai",
+        "microsoft openai",
+        "azure ai",
+        "azure ai studio",
+        "azure openai service",
+        "azure"
+      ],
+      "category": "Cloud",
+      "statusUrl": "https://azure.status.microsoft/en-us/status/feed/",
+      "statusPageUrl": "https://azure.status.microsoft/en-us/status/",
+      "format": "rss",
+      "enabled": false
+    },
+    {
+      "id": "github",
+      "name": "GitHub Copilot",
+      "displayName": "GitHub Copilot",
+      "aliases": [
+        "github copilot",
+        "copilot",
+        "gh copilot",
+        "github"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://www.githubstatus.com/api/v2/status.json",
+      "statusPageUrl": "https://www.githubstatus.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "displayName": "Cursor",
+      "aliases": [
+        "cursor",
+        "cursor ai",
+        "cursor editor"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.cursor.com/api/v2/status.json",
+      "statusPageUrl": "https://status.cursor.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "character-ai",
+      "name": "Character.AI",
+      "displayName": "Character.AI",
+      "aliases": [
+        "character ai",
+        "character.ai",
+        "c.ai",
+        "cai"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://characteraistatus.statuspage.io/api/v2/status.json",
+      "statusPageUrl": "https://characteraistatus.statuspage.io",
+      "format": "statuspage",
+      "enabled": true
+    }
+  ]
 }

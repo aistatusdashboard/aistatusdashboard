@@ -2,20 +2,9 @@ import { getDb } from '@/lib/db/firestore';
 import { providerService } from '@/lib/services/providers';
 import { statusService } from '@/lib/services/status';
 import { intelligenceService } from '@/lib/services/intelligence';
-import { insightsService } from '@/lib/services/insights';
-import { persistenceService } from '@/lib/services/persistence';
-import modelsCatalog from '@/lib/data/models.json';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import type { NormalizedIncident } from '@/lib/types/ingestion';
-import type { ModelMatrixTile } from '@/lib/types/insights';
 import type { EvidenceItem } from '@/lib/utils/public-api';
-import { queryMetricSeries, type MetricName } from '@/lib/services/metrics';
-
-export type CatalogModel = {
-  id: string;
-  tier: string;
-  streaming: boolean;
-};
 
 export type ProviderCatalog = {
   id: string;
@@ -27,25 +16,39 @@ export type ProviderCatalog = {
 };
 
 const DEFAULT_WINDOW_SECONDS = 1800;
-type HealthSignal = ModelMatrixTile['signal'];
 const INACTIVE_INCIDENT_STATUSES = new Set(['resolved', 'completed', 'cancelled']);
+const STALE_INCIDENT_MS = 24 * 60 * 60 * 1000;
+
+function isIncidentActive(incident: {
+  status?: string;
+  severity?: string;
+  resolvedAt?: string | null;
+  updatedAt?: string;
+}): boolean {
+  if (INACTIVE_INCIDENT_STATUSES.has(normalizeIncidentStatus(incident.status, incident.severity, incident.resolvedAt))) {
+    return false;
+  }
+  // A never-resolved incident with no update in 24h is a zombie; don't count it.
+  const updated = Date.parse(incident.updatedAt || '');
+  if (Number.isFinite(updated) && Date.now() - updated > STALE_INCIDENT_MS) return false;
+  return true;
+}
 
 function normalizeIncidentStatus(
   status: string | undefined,
-  severity: string | undefined
+  severity: string | undefined,
+  resolvedAt?: string | null
 ): string {
   const raw = String(status || '').toLowerCase();
+  // A resolution timestamp settles it, whatever the status field says — some
+  // feeds (e.g. Google Cloud) leave status as "unknown" on resolved incidents.
+  if (resolvedAt && (!raw || raw === 'unknown')) return 'resolved';
   if (raw && raw !== 'unknown') return raw;
   // Active incidents should never surface as "unknown".
   if (severity === 'major_outage' || severity === 'degraded' || severity === 'partial_outage') {
     return 'investigating';
   }
   return 'identified';
-}
-
-function resolveCatalog(providerId: string) {
-  const catalog = (modelsCatalog as Record<string, any>)[providerId] || (modelsCatalog as any)._default;
-  return catalog;
 }
 
 export function listProviders(): ProviderCatalog[] {
@@ -56,27 +59,6 @@ export function listProviders(): ProviderCatalog[] {
     category: provider.category,
     status_url: provider.statusUrl,
     status_page_url: provider.statusPageUrl,
-  }));
-}
-
-export function listProviderSurfaces(providerId: string): string[] {
-  const catalog = resolveCatalog(providerId);
-  const surfaces = new Set<string>(['status']);
-  (catalog.endpoints || []).forEach((endpoint: string) => surfaces.add(endpoint));
-  return Array.from(surfaces);
-}
-
-export function listProviderRegions(providerId: string): string[] {
-  const catalog = resolveCatalog(providerId);
-  return (catalog.regions || ['global']).slice();
-}
-
-export function listProviderModels(providerId: string): CatalogModel[] {
-  const catalog = resolveCatalog(providerId);
-  return (catalog.models || []).map((model: any) => ({
-    id: model.id,
-    tier: model.tier || 'unknown',
-    streaming: Boolean(model.streaming),
   }));
 }
 
@@ -142,9 +124,7 @@ export async function getStatusSummary(options: {
     (acc, row) => acc + Number(row.active_incident_count || 0),
     0
   );
-  const activeIncidentCountTotalFromFeed = activeIncidents.filter(
-    (incident) => !INACTIVE_INCIDENT_STATUSES.has(normalizeIncidentStatus(incident.status, incident.severity))
-  ).length;
+  const activeIncidentCountTotalFromFeed = activeIncidents.filter(isIncidentActive).length;
   const activeIncidentCountTotal = Math.max(
     activeIncidentCountTotalFromProviders,
     activeIncidentCountTotalFromFeed
@@ -204,56 +184,6 @@ export async function getStatusSummary(options: {
   };
 }
 
-export async function getHealthMatrix(options: {
-  providerId: string;
-  windowSeconds?: number;
-  lens?: string;
-}) {
-  const windowSeconds = options.windowSeconds || DEFAULT_WINDOW_SECONDS;
-  const windowMinutes = Math.max(1, Math.round(windowSeconds / 60));
-  const matrix = await insightsService.getModelMatrix({
-    providerId: options.providerId,
-    windowMinutes,
-  });
-  const provider = providerService.getProvider(options.providerId);
-  const sourceUrl = provider?.statusPageUrl || provider?.statusUrl;
-
-  const evidence: EvidenceItem[] = matrix.tiles.slice(0, 6).map((tile) => ({
-    source_url: sourceUrl,
-    note: tile.evidence?.snapshot,
-    metric_window: {
-      since: new Date(Date.now() - windowSeconds * 1000).toISOString(),
-      until: new Date().toISOString(),
-    },
-    ids: [
-      `${tile.providerId}:${tile.model}:${tile.region}:${tile.endpoint}`,
-    ],
-  }));
-
-  const confidence = matrix.tiles.length
-    ? Math.min(
-        1,
-        matrix.tiles.reduce((acc, tile) => {
-          if (tile.confidence === 'high') return acc + 1;
-          if (tile.confidence === 'medium') return acc + 0.6;
-          if (tile.confidence === 'low') return acc + 0.3;
-          return acc + 0.2;
-        }, 0) / matrix.tiles.length
-      )
-    : 0.3;
-
-  return {
-    data: {
-      provider_id: matrix.providerId,
-      window_seconds: windowSeconds,
-      lens: options.lens || 'observed',
-      tiles: matrix.tiles,
-    },
-    evidence,
-    confidence,
-  };
-}
-
 export async function searchIncidents(options: {
   providerId?: string;
   severity?: string;
@@ -276,10 +206,8 @@ export async function searchIncidents(options: {
 
   const filtered = incidents.filter((incident) => {
     if (options.severity && incident.severity !== options.severity) return false;
-    if (options.activeOnly) {
-      if (INACTIVE_INCIDENT_STATUSES.has(normalizeIncidentStatus(incident.status, incident.severity))) {
-        return false;
-      }
+    if (options.activeOnly && !isIncidentActive(incident)) {
+      return false;
     }
     if (options.region) {
       const regions = incident.impactedRegions || [];
@@ -324,7 +252,7 @@ export async function searchIncidents(options: {
     const normalized = normalizeIncidentDates(incident);
     return {
     ...normalized,
-    status: normalizeIncidentStatus(normalized.status, normalized.severity),
+    status: normalizeIncidentStatus(normalized.status, normalized.severity, normalized.resolvedAt),
     incident_id: `${incident.providerId}:${incident.id}`,
     permalink: `/incidents/${incident.providerId}:${incident.id}`,
   };
@@ -416,188 +344,8 @@ export async function getIncidentById(incidentId: string) {
   const normalized = normalizeIncidentDates(incident);
   return {
     ...normalized,
-    status: normalizeIncidentStatus(normalized.status, normalized.severity),
+    status: normalizeIncidentStatus(normalized.status, normalized.severity, normalized.resolvedAt),
     incident_id: `${normalized.providerId}:${normalized.id}`,
     permalink: `/incidents/${normalized.providerId}:${normalized.id}`,
-  };
-}
-
-export async function queryMetrics(options: {
-  metric: MetricName;
-  providerId?: string;
-  surface?: string;
-  model?: string;
-  region?: string;
-  tier?: string;
-  streaming?: boolean;
-  since?: string;
-  until?: string;
-  granularitySeconds?: number;
-}) {
-  const since = options.since ? new Date(options.since) : new Date(Date.now() - DEFAULT_WINDOW_SECONDS * 1000);
-  const until = options.until ? new Date(options.until) : new Date();
-  const granularitySeconds = Math.max(options.granularitySeconds || 300, 60);
-
-  const series = await queryMetricSeries({
-    metric: options.metric,
-    providerId: options.providerId,
-    surface: options.surface,
-    model: options.model,
-    region: options.region,
-    tier: options.tier,
-    streaming: options.streaming,
-    since,
-    until,
-    granularitySeconds,
-  });
-
-  const evidence: EvidenceItem[] = [
-    {
-      source_url: 'https://aistatusdashboard.com/api/public/v1/metrics',
-      metric_window: { since: since.toISOString(), until: until.toISOString() },
-      ids: [options.providerId || 'all'],
-      note: `granularity:${granularitySeconds}s`,
-    },
-  ];
-
-  const sampleCount = series.series.reduce((acc, point) => acc + point.sample_count, 0);
-  const confidence = sampleCount > 30 ? 0.85 : sampleCount > 10 ? 0.7 : sampleCount > 0 ? 0.55 : 0.3;
-
-  return {
-    data: series,
-    evidence,
-    confidence,
-  };
-}
-
-export async function buildFallbackPlan(options: {
-  providerId?: string;
-  model: string;
-  endpoint: string;
-  region: string;
-  tier?: string;
-  streaming?: boolean;
-  signal?: string;
-  latencyP50?: number;
-  latencyP95?: number;
-  latencyP99?: number;
-  http5xxRate?: number;
-  http429Rate?: number;
-  tokensPerSec?: number;
-  streamDisconnectRate?: number;
-}) {
-  const normalizedSignal: HealthSignal = (() => {
-    if (!options.signal) return 'no-data';
-    switch (options.signal.toLowerCase()) {
-      case 'healthy':
-        return 'healthy';
-      case 'degraded':
-        return 'degraded';
-      case 'down':
-        return 'down';
-      case 'no-data':
-        return 'no-data';
-      default:
-        return 'no-data';
-    }
-  })();
-
-  const plan = insightsService.buildFallbackPlan({
-    providerId: options.providerId,
-    model: options.model,
-    endpoint: options.endpoint,
-    region: options.region,
-    tier: options.tier || 'unknown',
-    streaming: Boolean(options.streaming),
-    signal: normalizedSignal,
-    latencyP50: options.latencyP50,
-    latencyP95: options.latencyP95,
-    latencyP99: options.latencyP99,
-    http5xxRate: options.http5xxRate,
-    http429Rate: options.http429Rate,
-    tokensPerSec: options.tokensPerSec,
-    streamDisconnectRate: options.streamDisconnectRate,
-  });
-
-  const windowMs = plan.evidence?.windowMinutes ? plan.evidence.windowMinutes * 60 * 1000 : undefined;
-  return {
-    data: plan,
-    evidence: plan.evidence
-      ? [
-          {
-            source_url: 'https://aistatusdashboard.com/api/public/v1/recommendations/fallback_plan',
-            ids: [
-              `${options.providerId || 'global'}:${options.model}:${options.region}:${options.endpoint}`,
-            ],
-            metric_window: windowMs
-              ? { since: new Date(Date.now() - windowMs).toISOString(), until: new Date().toISOString() }
-              : undefined,
-            note: plan.evidence.snapshot,
-          },
-        ]
-      : [],
-    confidence: normalizedSignal !== 'no-data' ? 0.75 : 0.6,
-  };
-}
-
-export async function generatePolicy(options: {
-  providerId?: string;
-  model: string;
-  endpoint: string;
-  region: string;
-  tier?: string;
-  streaming?: boolean;
-  objective?: string;
-}) {
-  const plan = await buildFallbackPlan({
-    providerId: options.providerId,
-    model: options.model,
-    endpoint: options.endpoint,
-    region: options.region,
-    tier: options.tier,
-    streaming: options.streaming,
-  });
-
-  const policy = {
-    policy_id: `policy-${options.providerId || 'global'}-${options.model}-${options.region}`,
-    summary: `Routing policy for ${options.model} in ${options.region}.`,
-    objective: options.objective || 'Maintain low-latency, high-availability routing.',
-    rules: [
-      {
-        match: {
-          provider_id: options.providerId || 'any',
-          model: options.model,
-          region: options.region,
-          endpoint: options.endpoint,
-        },
-        actions: plan.data.actions,
-        thresholds: plan.data.jsonPolicy?.thresholds,
-        cooldown_minutes: plan.data.jsonPolicy?.cooldownMinutes,
-      },
-    ],
-  };
-
-  return {
-    data: policy,
-    evidence: plan.evidence,
-    confidence: plan.confidence,
-  };
-}
-
-export async function getStatusHistorySummary(options: { providerId?: string; days?: number }) {
-  const summary = await persistenceService.getSummary({
-    providerId: options.providerId,
-    days: options.days || 7,
-  });
-
-  return {
-    data: summary,
-    evidence: [
-      {
-        note: `history window: ${summary.period}`,
-        ids: options.providerId ? [options.providerId] : undefined,
-      },
-    ],
-    confidence: summary.totalchecks > 0 ? 0.75 : 0.4,
   };
 }
