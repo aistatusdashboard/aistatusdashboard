@@ -97,6 +97,8 @@ export function shortName(appId: string, label: string): string {
     cursor: 'Cursor',
     'character-ai': 'Character.AI',
     'le-chat': 'Le Chat',
+    elevenlabs: 'ElevenLabs',
+    lovable: 'Lovable',
   };
   return names[appId] || label.replace(' Status', '');
 }
@@ -113,4 +115,6 @@ export const APP_LOGOS: Record<string, string> = {
   cursor: '/logos/cursor.svg',
   'character-ai': '/logos/character-ai.svg',
   'le-chat': '/logos/mistral.svg',
+  elevenlabs: '/logos/elevenlabs.svg',
+  lovable: '/logos/lovable.svg',
 };

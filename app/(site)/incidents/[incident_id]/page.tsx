@@ -76,8 +76,16 @@ export async function generateMetadata({
   const incidentId = await resolveIncidentId(params);
   const safeId = incidentId || 'unknown';
   const incident = incidentId ? await getIncidentById(incidentId) : null;
-  const title = incident?.title || `Incident ${safeId}`;
-  const description = summarizeIncident(incident);
+  // Title in the words people search during an outage: app name + what broke + when.
+  const startedDate = incident?.startedAt
+    ? new Date(incident.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+    : null;
+  const title = incident
+    ? `${providerLabel(incident.providerId)} outage: ${incident.title}${startedDate ? ` (${startedDate})` : ''}`
+    : `Incident ${safeId}`;
+  const description = incident
+    ? `${incident.resolvedAt ? 'Resolved' : 'Ongoing'} ${providerLabel(incident.providerId)} incident${startedDate ? ` from ${startedDate}` : ''}: ${summarizeIncident(incident)}`
+    : summarizeIncident(incident);
 
   return {
     title,

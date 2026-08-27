@@ -1,6 +1,12 @@
 import sourcesConfig from '@/lib/data/sources.json';
+import appsConfig from '@/lib/casual/apps.json';
 import { getDb } from '@/lib/db/firestore';
+import { pingIndexNow } from '@/lib/utils/indexnow';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+
+const APP_ID_BY_PROVIDER = new Map<string, string>(
+  (appsConfig.apps as Array<{ id: string; providerId: string }>).map((app) => [app.providerId, app.id])
+);
 import type {
   SourceDefinition,
   PlatformType,
@@ -307,7 +313,39 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
     );
   });
 
+  // Detect incidents we have not stored before (only recent ones, to keep the
+  // existence check to at most a couple of reads per ingest) so fresh outage
+  // pages can be pushed to search engines the moment they exist.
+  const freshCutoff = Date.now() - 48 * 60 * 60 * 1000;
+  const candidates = summary.incidents.filter((incident) => {
+    const started = Date.parse(incident.startedAt);
+    return Number.isFinite(started) && started >= freshCutoff;
+  });
+  let newIncidentIds: string[] = [];
+  if (candidates.length) {
+    try {
+      const refs = candidates.map((incident) =>
+        db.collection('incidents').doc(`${summary.providerId}:${incident.id}`)
+      );
+      const existing = await db.getAll(...refs);
+      newIncidentIds = candidates
+        .filter((_, index) => !existing[index]?.exists)
+        .map((incident) => `${summary.providerId}:${incident.id}`);
+    } catch {
+      newIncidentIds = [];
+    }
+  }
+
   await batch.commit();
+
+  if (newIncidentIds.length) {
+    const appId = APP_ID_BY_PROVIDER.get(summary.providerId);
+    const paths = newIncidentIds.map((id) => `/incidents/${id}`);
+    paths.push('/incidents');
+    if (appId) paths.push(`/${appId}`);
+    // Fire-and-forget: indexing pings must never slow ingestion down.
+    void pingIndexNow(paths);
+  }
 }
 
 export class SourceIngestionService {

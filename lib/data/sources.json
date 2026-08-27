@@ -186,6 +186,22 @@
       "baseUrl": "https://characteraistatus.statuspage.io",
       "platform": "statuspage",
       "pollIntervalSeconds": 90
+    },
+    {
+      "id": "elevenlabs-statuspage",
+      "providerId": "elevenlabs",
+      "name": "ElevenLabs Statuspage",
+      "baseUrl": "https://status.elevenlabs.io",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
+    },
+    {
+      "id": "lovable-statuspage",
+      "providerId": "lovable",
+      "name": "Lovable Statuspage",
+      "baseUrl": "https://status.lovable.dev",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 90
     }
   ]
 }

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps } from '@/lib/services/casual';
+import { getProbeReceipt } from '@/lib/services/probe-receipt';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
@@ -55,7 +56,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const app = getCasualApp(appId);
   if (!app) return notFound();
 
-  const status = await getCasualStatus({ appId: app.id }).catch(() => null);
+  const [status, receipt] = await Promise.all([
+    getCasualStatus({ appId: app.id }).catch(() => null),
+    getProbeReceipt(app.providerId),
+  ]);
   const name = shortName(app.id, app.label);
 
   if (!status) {
@@ -144,6 +148,64 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             <p className="text-base text-slate-700 dark:text-slate-200 max-w-xl mx-auto">{status.headline}</p>
           )}
         </header>
+
+        {/* The receipt: proof we actually tested it, plus a citable plain-text answer. */}
+        <section className="surface-card p-5 space-y-3">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            {receipt?.kind === 'real' ? 'Last independent test' : 'Last check'}
+          </p>
+          {receipt ? (
+            <>
+              <p className="text-sm text-slate-700 dark:text-slate-200">
+                {formatTimeAgo(receipt.at)} —{' '}
+                {receipt.kind === 'real'
+                  ? receipt.ok
+                    ? `we sent ${app.providerDisplay} a real request; it answered in ${(receipt.latencyMs / 1000).toFixed(1)}s`
+                    : `we sent ${app.providerDisplay} a real request; it returned an error (${receipt.errorCode})`
+                  : receipt.ok
+                    ? `we read ${app.providerDisplay}'s official status feed in ${receipt.latencyMs}ms`
+                    : `we could not read ${app.providerDisplay}'s official status feed (${receipt.errorCode})`}{' '}
+                <span className={receipt.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} aria-hidden="true">
+                  {receipt.ok ? '✓' : '✗'}
+                </span>
+              </p>
+              <div className="flex items-end gap-[2px]" aria-label={`Test results over the last 24 hours: ${receipt.ticks.filter((t) => t.ok).length} of ${receipt.ticks.length} passed`}>
+                {receipt.ticks.map((tick) => (
+                  <span
+                    key={tick.at}
+                    className={`h-3 w-1 rounded-sm ${tick.ok ? 'bg-emerald-400/80' : 'bg-rose-500'}`}
+                    title={`${new Date(tick.at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC — ${tick.ok ? 'OK' : 'failed'}`}
+                  />
+                ))}
+                <span className="ml-2 font-mono text-[10px] text-slate-400 dark:text-slate-500">24h</span>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              No test results recorded in the last 24 hours.
+            </p>
+          )}
+          <p className="text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-slate-700/60 pt-3">
+            As of{' '}
+            {new Date(status.updated_at).toLocaleString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZone: 'UTC',
+            })}{' '}
+            UTC on{' '}
+            {new Date(status.updated_at).toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+              timeZone: 'UTC',
+            })}
+            , {name} is{' '}
+            {key === 'up' ? 'operational' : key === 'wobbly' ? 'having issues' : key === 'down' ? 'experiencing an outage' : 'unverified'}
+            {receipt
+              ? ` — our last independent test ${receipt.ok ? 'succeeded' : 'failed'} ${formatTimeAgo(receipt.at)}.`
+              : '.'}
+          </p>
+        </section>
 
         {/* Is it just me? */}
         <section className="surface-card-strong p-6 space-y-4">

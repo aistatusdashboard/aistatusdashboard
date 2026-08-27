@@ -153,6 +153,31 @@
       ],
       "defaultModel": "mistral-small-latest",
       "defaultRegion": "eu-west"
+    },
+    {
+      "id": "elevenlabs",
+      "label": "ElevenLabs Status",
+      "providerId": "elevenlabs",
+      "providerDisplay": "ElevenLabs",
+      "surfaces": [
+        "voice",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
+    },
+    {
+      "id": "lovable",
+      "label": "Lovable Status",
+      "providerId": "lovable",
+      "providerDisplay": "Lovable",
+      "surfaces": [
+        "text",
+        "tools",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global"
     }
   ]
 }

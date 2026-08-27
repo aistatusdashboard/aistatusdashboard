@@ -364,6 +364,36 @@
       "statusPageUrl": "https://characteraistatus.statuspage.io",
       "format": "statuspage",
       "enabled": true
+    },
+    {
+      "id": "elevenlabs",
+      "name": "ElevenLabs",
+      "displayName": "ElevenLabs",
+      "aliases": [
+        "elevenlabs",
+        "eleven labs",
+        "11labs"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.elevenlabs.io/api/v2/status.json",
+      "statusPageUrl": "https://status.elevenlabs.io",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "lovable",
+      "name": "Lovable",
+      "displayName": "Lovable",
+      "aliases": [
+        "lovable",
+        "lovable dev",
+        "lovable.dev"
+      ],
+      "category": "AI app",
+      "statusUrl": "https://status.lovable.dev/api/v2/status.json",
+      "statusPageUrl": "https://status.lovable.dev",
+      "format": "statuspage",
+      "enabled": true
     }
   ]
 }
