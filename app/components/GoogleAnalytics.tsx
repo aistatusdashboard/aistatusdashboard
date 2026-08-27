@@ -27,6 +27,16 @@ export default function GoogleAnalytics(_props: { measurementId?: string }) {
   useEffect(() => {
     applyGaConsent(getCookieConsentDecision());
 
+    // Conversion: the email-confirm endpoint redirects to /?confirmed=true|false.
+    try {
+      const confirmed = new URLSearchParams(window.location.search).get('confirmed');
+      if (confirmed !== null && window.gtag) {
+        window.gtag('event', 'alert_confirmed', { success: confirmed === 'true' });
+      }
+    } catch {
+      /* never break the page */
+    }
+
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<{ decision?: CookieConsentDecision }>).detail;
       applyGaConsent(detail?.decision || getCookieConsentDecision());

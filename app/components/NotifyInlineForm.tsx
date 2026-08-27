@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { trackEvent } from '@/lib/utils/analytics-client';
 
 type NotifyInlineFormProps = {
   providerIds: string[];
@@ -37,11 +38,13 @@ export default function NotifyInlineForm({
       if (!response.ok || payload?.success === false) {
         setStatus('error');
         setMessage(payload?.message || 'Could not start subscription.');
+        trackEvent('alert_subscribe_submit', { metadata: { ok: false, providers: providerIds.join(',') } });
         return;
       }
       setStatus('success');
       setMessage('Check your inbox to confirm.');
       setEmail('');
+      trackEvent('alert_subscribe_submit', { metadata: { ok: true, providers: providerIds.join(',') } });
     } catch {
       setStatus('error');
       setMessage('Could not reach subscription service.');
