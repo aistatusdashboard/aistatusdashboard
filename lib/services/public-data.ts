@@ -198,10 +198,14 @@ export async function searchIncidents(options: {
 }) {
   const limit = Math.min(Math.max(options.limit || 50, 1), 200);
   const startDate = options.since || undefined;
+  // Read only what the caller can actually use. Post-query filters (severity,
+  // region, model, text) can discard rows, so fetch a small multiple of the
+  // limit as headroom — never a flat 200, which turned a limit=1 request into
+  // 200 document reads and dominated the Firestore bill.
   const incidents = await intelligenceService.getIncidents({
     providerId: options.providerId,
     startDate,
-    limit: Math.max(200, limit * 3),
+    limit: Math.min(200, Math.max(limit * 3, 10)),
   });
 
   const filtered = incidents.filter((incident) => {

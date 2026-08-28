@@ -163,6 +163,9 @@ async function loadRecentCasualReportDocs(secondsAgo: number) {
       .collection('casual_reports')
       .where('createdAt', '>=', Timestamp.fromDate(since))
       .orderBy('createdAt', 'desc')
+      // Guard: a report spike must not turn this 5-minute cron into a
+      // collection scan.
+      .limit(2000)
       .get();
   } catch (error: any) {
     if (error?.code === 9 || error?.message?.includes('index')) {

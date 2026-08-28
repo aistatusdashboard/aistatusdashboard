@@ -10,6 +10,21 @@ import { log } from '@/lib/utils/logger';
 import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils/google-cloud';
 import { normalizeIncidentDates, normalizeMaintenanceDates } from '@/lib/utils/normalize-dates';
 
+// Short-lived read cache for the incidents collection. Automated clients poll
+// the public routes continuously; without this, each poll was a fresh Firestore
+// query (20.8M reads in two days, ~95% of the project's bill).
+const INCIDENTS_CACHE_TTL_MS = 60_000;
+const INCIDENTS_CACHE_MAX_ENTRIES = 100;
+const incidentsCache = new Map<string, { at: number; data: NormalizedIncident[] }>();
+
+function rememberIncidents(key: string, data: NormalizedIncident[]): void {
+  if (incidentsCache.size >= INCIDENTS_CACHE_MAX_ENTRIES) {
+    const oldest = incidentsCache.keys().next().value;
+    if (oldest !== undefined) incidentsCache.delete(oldest);
+  }
+  incidentsCache.set(key, { at: Date.now(), data: [...data] });
+}
+
 export type ProviderStatusSummary = {
   providerId: string;
   status: ProviderStatus | string;
@@ -115,6 +130,15 @@ class IntelligenceService {
   }
 
   async getIncidents(options: { providerId?: string; startDate?: string; limit?: number } = {}) {
+    // Incidents change at most once per ingest cycle (5 min), but this read is
+    // reachable from public routes that automated clients poll continuously.
+    // A short in-process cache keeps that traffic off Firestore entirely.
+    const cacheKey = JSON.stringify([options.providerId || '', options.startDate || '', options.limit || 0]);
+    const cached = incidentsCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < INCIDENTS_CACHE_TTL_MS) {
+      return [...cached.data];
+    }
+
     const db = getDb();
     let query: FirebaseFirestore.Query = db.collection('incidents').orderBy('updatedAt', 'desc');
     if (options.providerId) {
@@ -135,6 +159,7 @@ class IntelligenceService {
       if (options.providerId === 'google-ai') {
         incidents = filterGoogleCloudIncidentsForAi(incidents, GOOGLE_AI_KEYWORDS);
       }
+      rememberIncidents(cacheKey, incidents);
       return incidents;
     } catch (error) {
       log('warn', 'Incidents query failed, falling back to basic query', { error, options });
