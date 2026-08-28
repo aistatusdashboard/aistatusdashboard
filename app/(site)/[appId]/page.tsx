@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getCasualApp, getCasualStatus, listCasualApps } from '@/lib/services/casual';
+import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
 import { getProbeReceipt } from '@/lib/services/probe-receipt';
 import { getOpenGap } from '@/lib/services/gap-detector';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
@@ -104,19 +104,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const lastSimilar = status.history.last_similar_event;
 
   // "What's still working" — the thing you actually want mid-outage.
-  const otherApps = listCasualApps().filter((item) => item.id !== app.id);
-  const alternatives = (
-    await Promise.all(
-      otherApps.map(async (item) => {
-        const s = await getCasualStatus({ appId: item.id }).catch(() => null);
-        return s && verdictKey(s.overall_status) === 'up'
-          ? { id: item.id, name: shortName(item.id, item.label) }
-          : null;
-      })
-    )
-  )
-    .filter(Boolean)
-    .slice(0, 4) as Array<{ id: string; name: string }>;
+  const alternatives = (await listUpAlternatives(app.id, 4)).map((item) => ({
+    id: item.id,
+    name: shortName(item.id, item.label),
+  }));
 
   const troubledSurfaces = status.surfaces.filter((s) => s.status !== 'operational');
 

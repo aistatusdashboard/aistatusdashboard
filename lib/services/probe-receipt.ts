@@ -1,6 +1,7 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import { getDb } from '@/lib/db/firestore';
 import { TtlCache } from '@/lib/utils/ttl-cache';
+import { readProbeRollup } from '@/lib/services/probe-store';
 
 export type ProbeTick = {
   at: string;
@@ -35,18 +36,28 @@ async function loadProbeReceipt(providerId: string): Promise<ProbeReceipt | null
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
     // Ascending order matches the existing (providerId, timestamp) index;
     // a descending query would need its own composite index.
-    const snapshot = await db
-      .collection('synthetic_probes')
-      .where('providerId', '==', providerId)
-      .where('timestamp', '>=', Timestamp.fromDate(since))
-      .orderBy('timestamp', 'asc')
-      .limit(500)
-      .get();
+    // Prefer the per-provider rollup: one read instead of up to 500.
+    const rollup = await readProbeRollup(providerId).catch(() => null);
+    let ascending: FirebaseFirestore.DocumentData[];
+    if (rollup) {
+      ascending = rollup.filter((event) => {
+        const ms = event?.timestamp?.toDate?.()?.getTime?.() ?? 0;
+        return ms >= since.getTime();
+      });
+    } else {
+      const snapshot = await db
+        .collection('synthetic_probes')
+        .where('providerId', '==', providerId)
+        .where('timestamp', '>=', Timestamp.fromDate(since))
+        .orderBy('timestamp', 'asc')
+        .limit(500)
+        .get();
+      ascending = snapshot.docs.map((doc) => doc.data());
+    }
 
-    if (snapshot.empty) return null;
+    if (!ascending.length) return null;
 
-    const rows = snapshot.docs.reverse().map((doc) => {
-      const data = doc.data();
+    const rows = ascending.reverse().map((data) => {
       const ts = data.timestamp?.toDate?.() as Date | undefined;
       return {
         at: ts ? ts.toISOString() : '',

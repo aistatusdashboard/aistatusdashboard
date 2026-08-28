@@ -1,7 +1,9 @@
 import { TtlCache } from '@/lib/utils/ttl-cache';
+import { readProbeRollup } from '@/lib/services/probe-store';
 import { getDb } from '@/lib/db/firestore';
 import { config } from '@/lib/config';
 import { intelligenceService } from '@/lib/services/intelligence';
+import { getOpenGaps } from '@/lib/services/gap-detector';
 import { providerService } from '@/lib/services/providers';
 import type { NormalizedIncident } from '@/lib/types/ingestion';
 import type {
@@ -323,6 +325,15 @@ async function loadRecentSynthetic(providerId: string, since: Date, until: Date)
 }
 
 async function loadRecentSyntheticUncached(providerId: string, since: Date, until: Date) {
+  // One document instead of a windowed scan of the probe collection.
+  const rollup = await readProbeRollup(providerId).catch(() => null);
+  if (rollup) {
+    return rollup.filter((event) => {
+      const ms = event?.timestamp?.toDate?.()?.getTime?.() ?? 0;
+      return ms >= since.getTime() && ms <= until.getTime();
+    });
+  }
+
   const db = getDb();
   let query: FirebaseFirestore.Query = db
     .collection('synthetic_probes')
@@ -411,7 +422,7 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
     const [telemetryEvents, syntheticEvents, incidents] = await Promise.all([
       loadRecentTelemetry(app.providerId, since, now),
       loadRecentSynthetic(app.providerId, since, now),
-      intelligenceService.getIncidents({ providerId: app.providerId, limit: 50 }),
+      intelligenceService.getIncidents({ providerId: app.providerId, limit: 20 }),
     ]);
 
     const STALE_INCIDENT_MS = 24 * 60 * 60 * 1000;
@@ -694,4 +705,32 @@ export async function submitCasualReport(options: {
   });
 
   return { ok: true, status: 200 };
+}
+
+// "What's still working" only needs a yes/no per app. Computing a full verdict
+// for all 25 other apps (the old approach) meant thousands of document reads on
+// every app-page render; provider_status is one query and is the same source
+// the verdicts are built from.
+export async function listUpAlternatives(
+  excludeAppId: string,
+  limit = 4
+): Promise<Array<{ id: string; label: string }>> {
+  const [summaries, openGaps] = await Promise.all([
+    intelligenceService.getProviderSummaries().catch(() => []),
+    getOpenGaps().catch(() => []),
+  ]);
+  const byProvider = new Map(summaries.map((summary) => [summary.providerId, summary]));
+  const gapped = new Set(openGaps.map((gap) => gap.providerId));
+
+  return listCasualApps()
+    .filter((app) => app.id !== excludeAppId)
+    .filter((app) => {
+      const summary = byProvider.get(app.providerId);
+      if (!summary || summary.status !== 'operational') return false;
+      if (summary.activeIncidentCount) return false;
+      // Our own probes disagreeing with the official page also disqualifies it.
+      return !gapped.has(app.providerId);
+    })
+    .slice(0, limit)
+    .map((app) => ({ id: app.id, label: app.label }));
 }
