@@ -3,6 +3,8 @@ import { getDb } from '@/lib/db/firestore';
 import { log } from '@/lib/utils/logger';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
+const STATUS_HISTORY_TTL_DAYS = 30;
+
 export class PersistenceService {
     async saveStatus(result: StatusResult): Promise<void> {
         try {
@@ -11,6 +13,10 @@ export class PersistenceService {
                 ...result,
                 checkedAt: Timestamp.fromDate(new Date(result.lastChecked)),
                 createdAt: FieldValue.serverTimestamp(),
+                // Firestore TTL deletes this row once expiresAt passes. Only the
+                // most recent rows are ever read, so history beyond a month is
+                // pure storage cost.
+                expiresAt: Timestamp.fromDate(new Date(Date.now() + STATUS_HISTORY_TTL_DAYS * 86400_000)),
             });
         } catch (error) {
             log('error', 'Failed to save status', { error, providerId: result.id });

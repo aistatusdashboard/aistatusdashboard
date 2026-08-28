@@ -35,6 +35,30 @@ import { sourceRegistryService } from '@/lib/services/source-registry';
 import { getGcpProductCatalog } from '@/lib/services/gcp-product-catalog';
 import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils/google-cloud';
 
+// Ingest re-reads every feed in full every 5 minutes, and feeds return their
+// whole recent history. Upserting all of it unconditionally rewrote ~1,300
+// unchanged documents per run (~390k Firestore writes/day). We remember what
+// we last wrote for each document and skip writes whose content is identical.
+// A process restart clears this, which simply costs one full write cycle.
+const lastWrittenSignatures = new Map<string, string>();
+const MAX_TRACKED_SIGNATURES = 20_000;
+
+function hasChangedSinceLastWrite(docId: string, source: unknown): boolean {
+  let signature: string;
+  try {
+    signature = JSON.stringify(source);
+  } catch {
+    return true; // Unserializable payload: always write.
+  }
+  if (lastWrittenSignatures.get(docId) === signature) return false;
+  if (lastWrittenSignatures.size >= MAX_TRACKED_SIGNATURES) {
+    const oldest = lastWrittenSignatures.keys().next().value;
+    if (oldest !== undefined) lastWrittenSignatures.delete(oldest);
+  }
+  lastWrittenSignatures.set(docId, signature);
+  return true;
+}
+
 const DEFAULT_HEADERS = {
   'User-Agent': 'AI-Status-Dashboard/1.0',
 };
@@ -240,6 +264,7 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
 
   summary.components.forEach((component) => {
     const docId = `${summary.providerId}:${component.id}`;
+    if (!hasChangedSinceLastWrite(`components/${docId}`, component)) return;
     const ref = db.collection('components').doc(docId);
     batch.set(
       ref,
@@ -283,6 +308,7 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
 
   summary.incidents.forEach((incident) => {
     const docId = `${summary.providerId}:${incident.id}`;
+    if (!hasChangedSinceLastWrite(`incidents/${docId}`, incident)) return;
     const ref = db.collection('incidents').doc(docId);
     batch.set(
       ref,
@@ -299,6 +325,7 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
 
   summary.maintenances.forEach((maintenance) => {
     const docId = `${summary.providerId}:${maintenance.id}`;
+    if (!hasChangedSinceLastWrite(`maintenances/${docId}`, maintenance)) return;
     const ref = db.collection('maintenances').doc(docId);
     batch.set(
       ref,

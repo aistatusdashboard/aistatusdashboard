@@ -3,6 +3,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import type { SourceRegistryEntry } from '@/lib/types/ingestion';
 
 const MAX_PAYLOAD_CHARS = 50000;
+const PAYLOAD_TTL_DAYS = 7;
 
 class SourceRegistryService {
   async getEntry(sourceId: string): Promise<SourceRegistryEntry | null> {
@@ -48,6 +49,9 @@ class SourceRegistryService {
       body: safeBody || null,
       headers,
       fetchedAt: FieldValue.serverTimestamp(),
+      // Only the newest payload per source is ever read; a TTL policy on this
+      // field keeps the raw-body archive from growing without bound.
+      expiresAt: Timestamp.fromDate(new Date(Date.now() + PAYLOAD_TTL_DAYS * 86400_000)),
     });
   }
 
