@@ -1,5 +1,6 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import { getDb } from '@/lib/db/firestore';
+import { TtlCache } from '@/lib/utils/ttl-cache';
 
 export type ProbeTick = {
   at: string;
@@ -18,7 +19,17 @@ export type ProbeReceipt = {
 
 // The proof behind "we test it ourselves": the latest probe result for a
 // provider plus a 24h strip of pass/fail ticks, straight from synthetic_probes.
+const receiptCache = new TtlCache<ProbeReceipt | null>(60_000);
+
 export async function getProbeReceipt(providerId: string): Promise<ProbeReceipt | null> {
+  const cached = receiptCache.get(providerId);
+  if (cached !== undefined) return cached;
+  const receipt = await loadProbeReceipt(providerId);
+  receiptCache.set(providerId, receipt);
+  return receipt;
+}
+
+async function loadProbeReceipt(providerId: string): Promise<ProbeReceipt | null> {
   try {
     const db = getDb();
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);

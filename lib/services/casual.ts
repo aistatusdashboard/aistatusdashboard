@@ -1,3 +1,4 @@
+import { TtlCache } from '@/lib/utils/ttl-cache';
 import { getDb } from '@/lib/db/firestore';
 import { config } from '@/lib/config';
 import { intelligenceService } from '@/lib/services/intelligence';
@@ -312,7 +313,16 @@ async function loadRecentTelemetry(providerId: string, since: Date, until: Date)
   }
 }
 
+const syntheticCache = new TtlCache<Array<FirebaseFirestore.DocumentData>>(60_000);
+
 async function loadRecentSynthetic(providerId: string, since: Date, until: Date) {
+  // Probes are written every 15 minutes; a 60s cache cannot go stale but keeps
+  // repeated page renders from re-reading up to 800 documents each time.
+  const cacheKey = `${providerId}:${Math.floor(since.getTime() / 60_000)}:${Math.floor(until.getTime() / 60_000)}`;
+  return syntheticCache.wrap(cacheKey, () => loadRecentSyntheticUncached(providerId, since, until));
+}
+
+async function loadRecentSyntheticUncached(providerId: string, since: Date, until: Date) {
   const db = getDb();
   let query: FirebaseFirestore.Query = db
     .collection('synthetic_probes')

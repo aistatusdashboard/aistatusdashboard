@@ -50,7 +50,7 @@ function parseLatestUpdated(providers: Array<Record<string, any>>): string | nul
   return dates.length ? new Date(dates[0]).toISOString() : null;
 }
 
-export const getLivePulseSnapshot = cache(async (): Promise<LivePulseSnapshot> => {
+const computeLivePulseSnapshot = async (): Promise<LivePulseSnapshot> => {
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return {
       status: 'unknown',
@@ -103,4 +103,19 @@ export const getLivePulseSnapshot = cache(async (): Promise<LivePulseSnapshot> =
     recentIncidents: incidents.slice(0, 3),
     communityReports,
   };
+};
+
+// The navbar renders this on every page, so without a cross-request cache each
+// page render (and each ISR regeneration) re-read ~400 documents. React's
+// cache() only dedupes within one render pass; this TTL layer spans requests.
+const LIVE_PULSE_TTL_MS = 60_000;
+let livePulseCache: { at: number; data: LivePulseSnapshot } | null = null;
+
+export const getLivePulseSnapshot = cache(async (): Promise<LivePulseSnapshot> => {
+  if (livePulseCache && Date.now() - livePulseCache.at < LIVE_PULSE_TTL_MS) {
+    return livePulseCache.data;
+  }
+  const data = await computeLivePulseSnapshot();
+  livePulseCache = { at: Date.now(), data };
+  return data;
 });
