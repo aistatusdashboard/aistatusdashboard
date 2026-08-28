@@ -4,8 +4,9 @@
 // for data that only changes when a cron runs (every 5-15 minutes). React's
 // cache() only dedupes inside a single render pass, so identical reads were
 // billed over and over — the dominant line item on this project's bill.
-// Wrapping a read in `cached()` keeps repeated calls off Firestore for a short
-// window, which is always shorter than the interval at which the data changes.
+// Wrapping a read in a TtlCache keeps repeated calls off Firestore for a
+// window shorter than the cron cadence that changes the data (5-15 min), so
+// cached values are never staler than the source itself.
 
 type Entry<T> = { at: number; value: T };
 

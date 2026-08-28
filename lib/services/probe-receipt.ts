@@ -19,7 +19,7 @@ export type ProbeReceipt = {
 
 // The proof behind "we test it ourselves": the latest probe result for a
 // provider plus a 24h strip of pass/fail ticks, straight from synthetic_probes.
-const receiptCache = new TtlCache<ProbeReceipt | null>(60_000);
+const receiptCache = new TtlCache<ProbeReceipt | null>(240_000);
 
 export async function getProbeReceipt(providerId: string): Promise<ProbeReceipt | null> {
   const cached = receiptCache.get(providerId);

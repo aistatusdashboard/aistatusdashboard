@@ -313,7 +313,7 @@ async function loadRecentTelemetry(providerId: string, since: Date, until: Date)
   }
 }
 
-const syntheticCache = new TtlCache<Array<FirebaseFirestore.DocumentData>>(60_000);
+const syntheticCache = new TtlCache<Array<FirebaseFirestore.DocumentData>>(240_000);
 
 async function loadRecentSynthetic(providerId: string, since: Date, until: Date) {
   // Probes are written every 15 minutes; a 60s cache cannot go stale but keeps

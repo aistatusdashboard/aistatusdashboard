@@ -108,7 +108,7 @@ const computeLivePulseSnapshot = async (): Promise<LivePulseSnapshot> => {
 // The navbar renders this on every page, so without a cross-request cache each
 // page render (and each ISR regeneration) re-read ~400 documents. React's
 // cache() only dedupes within one render pass; this TTL layer spans requests.
-const LIVE_PULSE_TTL_MS = 60_000;
+const LIVE_PULSE_TTL_MS = 240_000;
 let livePulseCache: { at: number; data: LivePulseSnapshot } | null = null;
 
 export const getLivePulseSnapshot = cache(async (): Promise<LivePulseSnapshot> => {

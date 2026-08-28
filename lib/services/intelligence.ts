@@ -14,7 +14,7 @@ import { normalizeIncidentDates, normalizeMaintenanceDates } from '@/lib/utils/n
 // Short-lived read cache for the incidents collection. Automated clients poll
 // the public routes continuously; without this, each poll was a fresh Firestore
 // query (20.8M reads in two days, ~95% of the project's bill).
-const incidentsCache = new TtlCache<NormalizedIncident[]>(60_000, 100);
+const incidentsCache = new TtlCache<NormalizedIncident[]>(240_000, 100);
 
 function rememberIncidents(key: string, data: NormalizedIncident[]): void {
   incidentsCache.set(key, [...data]);
