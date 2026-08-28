@@ -50,8 +50,12 @@ jobs:
             fi
             if echo "$output" | grep -q 'HTTP Error: 409, unable to queue the operation'; then
               if [ "$attempt" -lt 5 ]; then
-                echo "App Hosting queue busy (409). Retrying in 30s..."
-                sleep 30
+                # App Hosting derives a per-day build id; a 409 means that id is
+                # already taken by an earlier deploy today, so an immediate retry
+                # collides again. Back off long enough for the queue to drain.
+                backoff=$((attempt * 120))
+                echo "App Hosting queue busy (409). Retrying in ${backoff}s..."
+                sleep "$backoff"
                 continue
               fi
             fi
