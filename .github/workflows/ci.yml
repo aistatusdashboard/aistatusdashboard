@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Rapid consecutive pushes supersede each other instead of running a full test
+# matrix per commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest

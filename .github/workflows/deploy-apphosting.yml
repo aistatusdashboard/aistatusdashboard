@@ -4,6 +4,13 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    # Documentation-only commits must not trigger a build: every App Hosting
+    # build prerenders the site and therefore costs Firestore reads.
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - 'LICENSE'
 
 concurrency:
   group: apphosting-deploy
