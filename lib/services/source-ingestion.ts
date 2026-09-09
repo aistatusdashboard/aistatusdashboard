@@ -1,6 +1,7 @@
 import sourcesConfig from '@/lib/data/sources.json';
 import appsConfig from '@/lib/casual/apps.json';
 import { getDb } from '@/lib/db/firestore';
+import { log } from '@/lib/utils/logger';
 import { pingIndexNow } from '@/lib/utils/indexnow';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
@@ -42,6 +43,9 @@ import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils
 // A process restart clears this, which simply costs one full write cycle.
 const lastWrittenSignatures = new Map<string, string>();
 const MAX_TRACKED_SIGNATURES = 20_000;
+
+// How many sources to fetch at once inside one ingest cycle.
+const INGEST_CONCURRENCY = 8;
 
 function hasChangedSinceLastWrite(docId: string, source: unknown): boolean {
   let signature: string;
@@ -387,14 +391,26 @@ export class SourceIngestionService {
     let skipped = 0;
     const force = options.force === true;
 
-    for (const source of this.sources) {
-      const didRun = await this.ingestSource(source, force);
-      if (didRun) {
-        processed += 1;
-      } else {
-        skipped += 1;
+    // Fetching every source one after another made each run take 35-250s of
+    // billed Cloud Run time for what is almost entirely network wait. The work
+    // per source is independent, so run a bounded number at once: bounded
+    // rather than unbounded so we don't hammer a provider's status page or
+    // open 35 sockets at once.
+    const queue = [...this.sources];
+    const workers = Array.from({ length: Math.min(INGEST_CONCURRENCY, queue.length) }, async () => {
+      for (let source = queue.shift(); source; source = queue.shift()) {
+        try {
+          const didRun = await this.ingestSource(source, force);
+          if (didRun) processed += 1;
+          else skipped += 1;
+        } catch (error) {
+          // One unreachable status page must not abort the whole cycle.
+          skipped += 1;
+          log('warn', 'Source ingestion failed', { sourceId: source.id, error });
+        }
       }
-    }
+    });
+    await Promise.all(workers);
 
     return { processed, skipped };
   }

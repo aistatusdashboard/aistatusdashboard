@@ -3,6 +3,12 @@ import { getDb } from '@/lib/db/firestore';
 import { log } from '@/lib/utils/logger';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
+// status_history holds millions of rows. getHistory/getIncidents both accept an
+// optional limit, and an omitted one previously meant "scan the collection".
+// Any caller that forgets a limit now gets a bounded page instead of a bill.
+const MAX_HISTORY_SCAN = 500;
+
+
 const STATUS_HISTORY_TTL_DAYS = 30;
 
 export class PersistenceService {
@@ -99,9 +105,7 @@ export class PersistenceService {
                 query = query.where('checkedAt', '<=', Timestamp.fromDate(options.endDate));
             }
 
-            if (options.limit) {
-                query = query.limit(options.limit);
-            }
+            query = query.limit(Math.min(options.limit || MAX_HISTORY_SCAN, MAX_HISTORY_SCAN));
 
             const snapshot = await query.get();
 
@@ -198,9 +202,7 @@ export class PersistenceService {
                 query = query.where('id', '==', options.providerId);
             }
 
-            if (options.limit) {
-                query = query.limit(options.limit);
-            }
+            query = query.limit(Math.min(options.limit || MAX_HISTORY_SCAN, MAX_HISTORY_SCAN));
 
             const snapshot = await query.get();
             return this.mapDocs(snapshot.docs);
@@ -212,7 +214,7 @@ export class PersistenceService {
                     // Fallback: No ordering, just where. User will see items, just not sorted perfectly.
                     const snapshot = await db.collection('status_history')
                         .where('status', '!=', 'operational')
-                        .limit(1000)
+                        .limit(MAX_HISTORY_SCAN)
                         .get();
                     return this.mapDocs(snapshot.docs);
                 } catch (innerError) {

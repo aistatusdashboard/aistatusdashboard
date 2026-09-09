@@ -20,7 +20,11 @@ import {
 
 type AppParams = { appId: string };
 
-export const revalidate = 60;
+// Regenerating every 60s was pure waste: every field on this page comes from
+// crons that only write every 5 minutes, so four of every five regenerations
+// re-read Firestore for data that had not changed. 300s matches the slowest
+// cron that feeds this page.
+export const revalidate = 300;
 export const dynamicParams = false;
 
 export function generateStaticParams() {

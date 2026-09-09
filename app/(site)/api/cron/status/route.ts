@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { statusOrchestrator } from '@/lib/services/orchestrator';
 import { log } from '@/lib/utils/logger';
+import { drainEmailQueue } from '@/lib/services/email-queue';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,9 +39,16 @@ export async function GET(request: NextRequest) {
 
     try {
         const stats = await statusOrchestrator.runCycle();
+        // The cycle above is the only thing that queues notifications, so drain
+        // the queue here rather than from a scheduled job of its own.
+        const emails = await drainEmailQueue().catch((error) => {
+            log('error', 'Email queue drain failed', { error });
+            return null;
+        });
         return NextResponse.json({
             success: true,
             timestamp: new Date().toISOString(),
+            emails,
             ...stats,
             message: `Status check complete. Checked ${stats.providersChecked} providers, detected ${stats.changesDetected} changes.`
         });

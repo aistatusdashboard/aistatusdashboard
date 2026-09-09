@@ -14,7 +14,29 @@ function getCanonicalHost(): string | null {
   }
 }
 
+// Two API paths that were never implemented here take ~50k requests a day
+// (`/api/public/v1/status/summary`, `/api/public/v1/incidents`). Falling
+// through to Next's 404 rendered a ~5KB HTML page with no cache headers, so
+// every one of them woke the container and none were ever cached. Answering
+// with a small, cacheable JSON 404 lets the CDN absorb the repeats; the live
+// public API lives under /api/public/v1/casual/.
+const GONE_API_PREFIXES = [
+  '/api/public/v1/status',
+  '/api/public/v1/incidents',
+];
+
 export function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  if (GONE_API_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
+    return NextResponse.json(
+      { error: 'Not found', hint: 'The public API lives under /api/public/v1/casual/.' },
+      {
+        status: 404,
+        headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' },
+      }
+    );
+  }
+
   const canonicalHost = getCanonicalHost();
   const currentHost = request.headers.get('host');
   const currentHostname = currentHost ? currentHost.split(':')[0] : null;
