@@ -292,17 +292,7 @@ export function classifyCasualReport(headers: Headers, ip: string, ua: string): 
   };
 }
 
-const telemetryCache = new TtlCache<Array<FirebaseFirestore.DocumentData>>(240_000);
-
 async function loadRecentTelemetry(providerId: string, since: Date, until: Date) {
-  // The last uncached windowed scan in the page-render path: every render of
-  // every app page re-read up to 800 crowd events. Crowd reports only reach
-  // the verdict through a cron cycle, so a 4-minute cache cannot go stale.
-  const cacheKey = `${providerId}:${Math.floor(since.getTime() / 60_000)}:${Math.floor(until.getTime() / 60_000)}`;
-  return telemetryCache.wrap(cacheKey, () => loadRecentTelemetryUncached(providerId, since, until));
-}
-
-async function loadRecentTelemetryUncached(providerId: string, since: Date, until: Date) {
   const db = getDb();
   let query: FirebaseFirestore.Query = db
     .collection('telemetry_events')

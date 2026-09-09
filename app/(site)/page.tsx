@@ -15,11 +15,11 @@ import {
   verdictKey,
 } from '@/lib/ui/verdict';
 
-// Regenerating every 60s was pure waste: every field on this page comes from
-// crons that only write every 5 minutes, so four of every five regenerations
-// re-read Firestore for data that had not changed. 300s matches the slowest
-// cron that feeds this page.
-export const revalidate = 300;
+// Deliberately shorter than the 5-minute cron that feeds this page. A longer
+// window would stack page staleness on top of data staleness, and "is it down
+// right now" is the whole product — surfacing a fresh verdict late is worse
+// than any read this saves.
+export const revalidate = 60;
 
 const DESCRIPTION =
   'Is ChatGPT down? Is Claude down? Live, plain-English status for the AI apps you use — checked with our own tests every few minutes, not just the official status pages.';
