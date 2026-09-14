@@ -86,6 +86,23 @@ function providerHasOfficialFeed(providerId: string): boolean {
   return sources.some((source) => source.providerId === providerId);
 }
 
+// What the provider said about its open incidents: title as the headline,
+// the latest update of each as the detail. Nothing paraphrased.
+function describeIncidents(incidents: NormalizedIncident[]): { headline: string; symptoms: string[] } {
+  if (!incidents.length) return { headline: '', symptoms: [] };
+  const newest = [...incidents].sort((a, b) => Date.parse(b.updatedAt || '') - Date.parse(a.updatedAt || ''));
+  const label = (incident: NormalizedIncident) => {
+    const word = incident.status === 'monitoring' ? 'monitoring' : incident.status === 'identified' ? 'identified' : 'investigating';
+    return `${incident.title.trim().replace(/\.$/, '')} (${word}).`;
+  };
+  const symptoms = newest.slice(0, 3).map((incident) => {
+    const latest = [...(incident.updates || [])].sort((a, b) => Date.parse(b.createdAt || '') - Date.parse(a.createdAt || ''))[0];
+    const body = latest?.body?.replace(/\s+/g, ' ').trim();
+    return body ? `${incident.title.trim()}: ${body}` : incident.title.trim();
+  });
+  return { headline: label(newest[0]), symptoms };
+}
+
 function pickTranslation(signalType: string | null, surface: ExperienceSurfaceId) {
   if (!signalType) {
     return translationRules.defaults;
@@ -356,8 +373,12 @@ export async function getCasualStatus(options: { appId: string }): Promise<Exper
 
       const translation = pickTranslation(signalType, surface);
       const guidance = pickGuidance(surface, signalType);
-      const symptoms = translation.symptoms.slice();
       const actions = translation.actions.concat(guidance).slice(0, 5);
+      // The provider's own words when they have said something; the generic
+      // description only when the page is degraded without naming anything.
+      const spoken = describeIncidents(matchingIncidents);
+      const headline = spoken.headline || (status === 'operational' ? translationRules.defaults.headline : translation.headline);
+      const symptoms = spoken.symptoms.length ? spoken.symptoms : status === 'operational' ? [] : translation.symptoms.slice();
 
       const evidence: ExperienceEvidence[] = buildEvidence(app.providerId, matchingIncidents);
 
@@ -365,7 +386,7 @@ export async function getCasualStatus(options: { appId: string }): Promise<Exper
         id: surface,
         label: surfaceConfig?.label || surface,
         status,
-        headline: translation.headline,
+        headline,
         symptoms,
         actions,
         confidence: officialAlive ? 0.9 : 0.2,
