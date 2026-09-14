@@ -83,3 +83,47 @@ describe('casual verdict with thin samples', () => {
     expect(status?.overall_status).toBe('unknown');
   });
 });
+
+describe('casual verdict with mixed endpoints', () => {
+  let getCasualStatus: typeof import('@/lib/services/casual').getCasualStatus;
+  beforeEach(() => {
+    rollup.length = 0;
+    jest.resetModules();
+    getCasualStatus = require('@/lib/services/casual').getCasualStatus;
+  });
+
+  it('does not call ChatGPT down when the front door timed out once but the API answers', async () => {
+    rollup.push(
+      probe(5, { providerId: 'openai', errorCode: 'timeout' }),
+      probe(5, { providerId: 'openai', endpoint: 'chat', model: 'gpt-4o-mini' }),
+      probe(5, { providerId: 'openai', endpoint: 'models', model: 'models' }),
+      probe(20, { providerId: 'openai' }),
+      probe(20, { providerId: 'openai', endpoint: 'chat', model: 'gpt-4o-mini' }),
+      probe(20, { providerId: 'openai', endpoint: 'models', model: 'models' })
+    );
+    const status = await getCasualStatus({ appId: 'chatgpt' });
+    expect(status?.overall_status).toBe('operational');
+  });
+
+  it('calls it degraded when the front door fails twice in a row while the API answers', async () => {
+    rollup.push(
+      probe(5, { providerId: 'openai', errorCode: 'timeout' }),
+      probe(5, { providerId: 'openai', endpoint: 'chat', model: 'gpt-4o-mini' }),
+      probe(20, { providerId: 'openai', errorCode: 'http-503', http5xxRate: 1 }),
+      probe(20, { providerId: 'openai', endpoint: 'chat', model: 'gpt-4o-mini' })
+    );
+    const status = await getCasualStatus({ appId: 'chatgpt' });
+    expect(status?.overall_status).toBe('degraded');
+  });
+
+  it('calls it down when every endpoint fails twice in a row', async () => {
+    rollup.push(
+      probe(5, { providerId: 'openai', errorCode: 'timeout' }),
+      probe(5, { providerId: 'openai', endpoint: 'chat', model: 'gpt-4o-mini', errorCode: 'http-500', http5xxRate: 1 }),
+      probe(20, { providerId: 'openai', errorCode: 'http-503', http5xxRate: 1 }),
+      probe(20, { providerId: 'openai', endpoint: 'chat', model: 'gpt-4o-mini', errorCode: 'http-500', http5xxRate: 1 })
+    );
+    const status = await getCasualStatus({ appId: 'chatgpt' });
+    expect(status?.overall_status).toBe('down');
+  });
+});

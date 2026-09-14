@@ -34,7 +34,6 @@ const SELF_TEST_HEADER = 'x-aistatus-selftest';
 
 const LATENCY_DEGRADED_MS = 4000;
 const LATENCY_WARNING_MS = 2000;
-const ERROR_RATE_DEGRADED = 0.05;
 const THROTTLE_RATE_DEGRADED = 0.08;
 const STREAM_DISCONNECT_DEGRADED = 0.03;
 
@@ -80,9 +79,13 @@ type MetricSummary = {
   http429Rate?: number;
   http5xxRate?: number;
   streamDisconnectRate?: number;
-  // Share of probes that failed outright (timeout, DNS, connection reset).
-  // Those carry no HTTP status, so the 5xx rate alone would read them as fine.
-  failureRate?: number;
+  // Endpoints whose last two probes both failed (5xx, timeout, DNS, reset)
+  // versus endpoints we probed at all. One failed request among passing ones
+  // is a blip, not an outage; a front door that timed out twice in a row is.
+  failingEndpoints: number;
+  // Endpoints whose single latest probe failed: not proof of anything yet.
+  freshlyFailedEndpoints: number;
+  probedEndpoints: number;
   sampleCount: number;
   sources: string[];
 };
@@ -105,6 +108,33 @@ function mapLatencyValue(event: any): number | undefined {
   return typeof event.latencyMs === 'number' ? event.latencyMs : undefined;
 }
 
+function eventTime(event: any): number {
+  const ts = event?.timestamp;
+  if (typeof ts?.toMillis === 'function') return ts.toMillis();
+  const ms = Date.parse(ts || '');
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function persistentFailures(
+  records: any[]
+): { failingEndpoints: number; freshlyFailedEndpoints: number; probedEndpoints: number } {
+  const byEndpoint = new Map<string, any[]>();
+  for (const record of records) {
+    if (record.source === 'crowd') continue;
+    const key = `${record.endpoint || ''}:${record.model || ''}`;
+    byEndpoint.set(key, [...(byEndpoint.get(key) || []), record]);
+  }
+  let failingEndpoints = 0;
+  let freshlyFailedEndpoints = 0;
+  for (const events of byEndpoint.values()) {
+    const latest = events.sort((a, b) => eventTime(b) - eventTime(a)).slice(0, 2);
+    if (!isOutageEvidence(latest[0]?.errorCode)) continue;
+    if (latest.length === 2 && isOutageEvidence(latest[1].errorCode)) failingEndpoints += 1;
+    else freshlyFailedEndpoints += 1;
+  }
+  return { failingEndpoints, freshlyFailedEndpoints, probedEndpoints: byEndpoint.size };
+}
+
 function summarizeMetrics(input: Array<any>): MetricSummary {
   // A probe that failed because of OUR account (no credit, bad key, quota)
   // says nothing about the provider and must not tilt the verdict.
@@ -120,9 +150,7 @@ function summarizeMetrics(input: Array<any>): MetricSummary {
     http429Rate: average(records.map((r) => r.http429Rate)),
     http5xxRate: average(records.map((r) => r.http5xxRate)),
     streamDisconnectRate: average(records.map((r) => r.streamDisconnectRate)),
-    failureRate: records.length
-      ? records.filter((r) => isOutageEvidence(r.errorCode)).length / records.length
-      : undefined,
+    ...persistentFailures(records),
     sampleCount: records.length,
     sources: Array.from(new Set(records.map((r) => r.source).filter(Boolean))),
   };
@@ -136,10 +164,7 @@ function resolveSignalType(summary: MetricSummary, surface: ExperienceSurfaceId)
   if (summary.http429Rate !== undefined && summary.http429Rate >= THROTTLE_RATE_DEGRADED) {
     return 'rate_limit';
   }
-  if (summary.http5xxRate !== undefined && summary.http5xxRate >= ERROR_RATE_DEGRADED) {
-    return 'errors';
-  }
-  if (summary.failureRate !== undefined && summary.failureRate >= ERROR_RATE_DEGRADED) {
+  if (summary.failingEndpoints > 0) {
     return 'errors';
   }
   if (summary.streamDisconnectRate !== undefined && summary.streamDisconnectRate >= STREAM_DISCONNECT_DEGRADED) {
@@ -156,8 +181,12 @@ function resolveSignalType(summary: MetricSummary, surface: ExperienceSurfaceId)
 
 function resolveSignalStatus(summary: MetricSummary): ExperienceSignal {
   if (!summary.sampleCount) return 'unknown';
-  if ((summary.http5xxRate || 0) >= ERROR_RATE_DEGRADED) return 'down';
-  if ((summary.failureRate || 0) >= ERROR_RATE_DEGRADED) return 'down';
+  // Every endpoint we test is failing persistently: down. Some of them: the
+  // service is reachable but part of it is broken.
+  if (summary.failingEndpoints > 0 && summary.failingEndpoints === summary.probedEndpoints) return 'down';
+  if (summary.failingEndpoints > 0) return 'degraded';
+  // Everything we test just failed once: too early to call, but not "up".
+  if (summary.probedEndpoints > 0 && summary.freshlyFailedEndpoints === summary.probedEndpoints) return 'unknown';
   if ((summary.http429Rate || 0) >= THROTTLE_RATE_DEGRADED) return 'degraded';
   if ((summary.streamDisconnectRate || 0) >= STREAM_DISCONNECT_DEGRADED) return 'degraded';
   if ((summary.latencyP95 || 0) >= LATENCY_DEGRADED_MS) return 'degraded';
