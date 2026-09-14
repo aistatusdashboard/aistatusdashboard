@@ -66,8 +66,16 @@ async function readRootly(page, source) {
       name: text(summary.querySelector('h2')),
       status: text(summary.querySelector(':scope > span:last-child')),
     }));
-    return { overall: text(banner), components, title: document.title };
+    return {
+      overall: text(banner),
+      components,
+      title: document.title,
+      excerpt: text(document.body).slice(0, 240),
+    };
   });
+  if (!main.overall && !main.components.length) {
+    throw new Error(`Page rendered without a status banner or services (title "${main.title}", body "${main.excerpt}")`);
+  }
 
   await settle(page, source.metadata?.historyUrl || `${base}/history`);
   const history = await page.evaluate(() => {
@@ -129,9 +137,6 @@ async function main() {
         const kind = source.metadata?.browser || 'rootly';
         if (kind !== 'rootly') throw new Error(`Unsupported browser feed kind: ${kind}`);
         const snapshot = await readRootly(page, source);
-        if (!snapshot.overall && !snapshot.components.length) {
-          throw new Error('Page rendered without a status banner or services');
-        }
         snapshots.push(snapshot);
         console.log(`${source.id}: "${snapshot.overall}", ${snapshot.components.length} services, ${snapshot.incidents.length} incidents`);
       } catch (error) {
