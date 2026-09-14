@@ -35,7 +35,8 @@ import { parseHtmlResponse, parseMetaStatusResponse } from '@/lib/utils/status-p
 import { sourceRegistryService } from '@/lib/services/source-registry';
 import { parseFlashcatActive, parseFlashcatChange } from '@/lib/utils/flashcat-parser';
 import { parseRootlySnapshot } from '@/lib/utils/rootly-parser';
-import { readFeedSnapshot } from '@/lib/services/feed-snapshots';
+import { readFeedSnapshot, writeFeedSnapshot, type BrowserFeedSnapshot } from '@/lib/services/feed-snapshots';
+import { snapshotFromRootlyHtml } from '@/lib/utils/rootly-html';
 import { getGcpProductCatalog } from '@/lib/services/gcp-product-catalog';
 import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils/google-cloud';
 
@@ -69,6 +70,20 @@ function hasChangedSinceLastWrite(docId: string, source: unknown): boolean {
 const DEFAULT_HEADERS = {
   'User-Agent': 'AI-Status-Dashboard/1.0',
 };
+
+// Jina's reader renders a URL in a real browser and returns the result to a
+// plain GET (20 requests/min without a key; we make two every five minutes).
+const RENDER_ENDPOINT = process.env.RENDER_ENDPOINT || 'https://r.jina.ai/';
+
+async function fetchRendered(url: string): Promise<string> {
+  const response = await fetch(`${RENDER_ENDPOINT}${url}`, {
+    headers: { ...DEFAULT_HEADERS, 'X-Return-Format': 'html' },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!response.ok) throw new Error(`renderer returned HTTP ${response.status} for ${url}`);
+  return response.text();
+}
 
 function computeProviderStatus(
   components: NormalizedComponent[],
@@ -654,11 +669,17 @@ export class SourceIngestionService {
     };
   }
 
-  // The page is rendered by a scheduled browser job (see
-  // .github/workflows/browser-feeds.yml) that posts a snapshot; a snapshot
-  // older than an hour counts as an unreachable feed.
+  // Pages behind a JavaScript challenge (Mistral on Rootly) can't be fetched
+  // directly. A hosted renderer returns the page as plain HTML to a normal
+  // GET, so this runs every cycle like any other feed; if the renderer is
+  // down, the snapshot posted by the scheduled browser job stands in (stale
+  // after an hour, which then counts as an unreachable feed).
   private async fetchBrowserSnapshot(source: SourceDefinition): Promise<NormalizedProviderSummary | null> {
-    const snapshot = await readFeedSnapshot(source.id).catch(() => null);
+    const snapshot =
+      (await this.renderRootly(source).catch((error) => {
+        log('warn', 'Hosted render failed; using stored snapshot', { sourceId: source.id, error: String(error) });
+        return null;
+      })) || (await readFeedSnapshot(source.id).catch(() => null));
     if (!snapshot) return null;
     if (snapshot.platform !== 'rootly') return null;
     const parsed = parseRootlySnapshot(snapshot);
@@ -673,6 +694,21 @@ export class SourceIngestionService {
       incidents: parsed.incidents,
       maintenances: [],
     };
+  }
+
+  private async renderRootly(source: SourceDefinition): Promise<BrowserFeedSnapshot | null> {
+    if (source.metadata?.browser !== 'rootly') return null;
+    const base = source.baseUrl.replace(/\/$/, '');
+    const historyUrl = source.metadata?.historyUrl || `${base}/history`;
+    const [main, history] = await Promise.all([fetchRendered(`${base}/`), fetchRendered(historyUrl)]);
+    const snapshot = snapshotFromRootlyHtml(source.id, source.providerId, main, history);
+    if (!snapshot.overall && !snapshot.components.length) {
+      throw new Error('rendered page had no status banner or services');
+    }
+    // Keep the stored copy fresh for the status check and for the next cycle
+    // should the renderer be down then.
+    await writeFeedSnapshot(snapshot).catch(() => undefined);
+    return snapshot;
   }
 
   private async fetchGoogleCloud(source: SourceDefinition): Promise<NormalizedProviderSummary | null> {
