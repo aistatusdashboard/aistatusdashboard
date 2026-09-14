@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getIncidentById } from '@/lib/services/public-data';
 import { providerService } from '@/lib/services/providers';
+import { intelligenceService } from '@/lib/services/intelligence';
+import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { log } from '@/lib/utils/logger';
 
@@ -120,6 +122,26 @@ export default async function IncidentDetailPage({
     notFound();
   }
 
+  const providerName = providerLabel(incident.providerId);
+  const appId = appIdForProvider(incident.providerId);
+  const appName = appNameForProvider(incident.providerId);
+  const latestUpdate = [...(incident.updates || [])]
+    .filter((u) => u.body?.trim())
+    .sort((a, b) => Date.parse(b.createdAt || '') - Date.parse(a.createdAt || ''))[0]?.body?.trim();
+
+  // Other incidents for the same service — internal links that give Google a
+  // reason to crawl deeper and keep a visitor on the site.
+  let related: Array<{ id: string; title: string; startedAt: string; resolvedAt?: string }> = [];
+  try {
+    const rows = await intelligenceService.getIncidents({ providerId: incident.providerId, limit: 8 });
+    related = rows
+      .filter((row) => `${row.providerId}:${row.id}` !== incident.incident_id)
+      .slice(0, 6)
+      .map((row) => ({ id: `${row.providerId}:${row.id}`, title: row.title, startedAt: row.startedAt, resolvedAt: row.resolvedAt }));
+  } catch {
+    related = [];
+  }
+
   const statusMap: Record<string, string> = {
     resolved: 'https://schema.org/EventCompleted',
     monitoring: 'https://schema.org/EventScheduled',
@@ -133,7 +155,7 @@ export default async function IncidentDetailPage({
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: incident.title,
-    description: incident.title,
+    description: latestUpdate || incident.title,
     startDate: incident.startedAt,
     endDate: incident.resolvedAt || undefined,
     eventStatus,
@@ -154,6 +176,9 @@ export default async function IncidentDetailPage({
   const resolved =
     ['resolved', 'completed', 'cancelled'].includes(String(incident.status || '').toLowerCase()) ||
     Boolean(incident.resolvedAt);
+  const startedLabel = incident.startedAt
+    ? new Date(incident.startedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+    : null;
   const impactedParts = [
     incident.impactedComponentNames?.length
       ? incident.impactedComponentNames.join(', ')
@@ -169,7 +194,7 @@ export default async function IncidentDetailPage({
       <div className="max-w-3xl mx-auto space-y-6">
         <header className="pt-4 space-y-3">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-            {providerLabel(incident.providerId)} · {formatTimeAgo(incident.updatedAt)}
+            <Link href={`/${appId}`} className="hover:underline">{providerName}</Link> · {formatTimeAgo(incident.updatedAt)}
           </p>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
             {incident.title}
@@ -185,6 +210,18 @@ export default async function IncidentDetailPage({
               {resolved ? 'Resolved' : 'Ongoing'}
             </span>
           </span>
+          {/* The plain-English answer, in the words people search during an outage. */}
+          <p className="text-base text-slate-700 dark:text-slate-200">
+            {resolved
+              ? `Yes — ${appName} had a problem${startedLabel ? ` on ${startedLabel}` : ''}, and ${providerName} has since marked it resolved.`
+              : `Yes — ${appName} is having a problem right now. ${providerName} currently reports this incident as ${incident.status}.`}
+            {latestUpdate ? ` ${providerName}'s latest word: “${latestUpdate}”` : ''}
+          </p>
+          <p className="text-sm">
+            <Link href={`/${appId}`} className="underline text-slate-700 dark:text-slate-200">
+              See {appName}&apos;s live status →
+            </Link>
+          </p>
         </header>
 
         <section className="surface-card p-6 space-y-2 text-sm text-slate-600 dark:text-slate-300">
@@ -222,9 +259,31 @@ export default async function IncidentDetailPage({
           </section>
         )}
 
-        <p className="text-sm">
+        {related.length > 0 && (
+          <section className="surface-card p-6 space-y-3">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">More {providerName} incidents</h2>
+            <ul className="space-y-2 text-sm">
+              {related.map((row) => (
+                <li key={row.id}>
+                  <Link href={`/incidents/${row.id}`} className="text-slate-700 dark:text-slate-200 hover:underline">
+                    {row.title}
+                  </Link>
+                  <span className="text-slate-500 dark:text-slate-400">
+                    {' '}— {row.resolvedAt ? 'resolved' : 'ongoing'}
+                    {row.startedAt ? `, ${formatTimeAgo(row.startedAt)}` : ''}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <p className="flex flex-wrap gap-4 text-sm">
+          <Link href={`/${appId}`} className="underline text-slate-700 dark:text-slate-200">
+            Is {appName} down right now?
+          </Link>
           <Link href="/incidents" className="underline text-slate-700 dark:text-slate-200">
-            ← All outage history
+            All outage history →
           </Link>
         </p>
 

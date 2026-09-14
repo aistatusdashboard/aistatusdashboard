@@ -433,26 +433,36 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
     const started = Date.parse(incident.startedAt);
     return Number.isFinite(started) && started >= freshCutoff;
   });
-  let newIncidentIds: string[] = [];
+  // Ping both brand-new incidents and recent ones whose status or update count
+  // changed. An open incident gets its most useful updates while it's trending;
+  // re-indexing then is exactly when we can rank for the fresh error text.
+  let pingIncidentIds: string[] = [];
   if (candidates.length) {
     try {
       const refs = candidates.map((incident) =>
         db.collection('incidents').doc(`${summary.providerId}:${incident.id}`)
       );
       const existing = await db.getAll(...refs);
-      newIncidentIds = candidates
-        .filter((_, index) => !existing[index]?.exists)
+      pingIncidentIds = candidates
+        .filter((incident, index) => {
+          const prev = existing[index];
+          if (!prev?.exists) return true; // brand new
+          const before = prev.data() || {};
+          const statusChanged = String(before.status || '') !== String(incident.status || '');
+          const updatesGrew = (before.updates?.length || 0) !== (incident.updates?.length || 0);
+          return statusChanged || updatesGrew;
+        })
         .map((incident) => `${summary.providerId}:${incident.id}`);
     } catch {
-      newIncidentIds = [];
+      pingIncidentIds = [];
     }
   }
 
   await batch.commit();
 
-  if (newIncidentIds.length) {
+  if (pingIncidentIds.length) {
     const appId = APP_ID_BY_PROVIDER.get(summary.providerId);
-    const paths = newIncidentIds.map((id) => `/incidents/${id}`);
+    const paths = pingIncidentIds.map((id) => `/incidents/${id}`);
     paths.push('/incidents');
     if (appId) paths.push(`/${appId}`);
     // Fire-and-forget: indexing pings must never slow ingestion down.
