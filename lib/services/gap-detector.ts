@@ -2,6 +2,58 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getDb } from '@/lib/db/firestore';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { log } from '@/lib/utils/logger';
+import { isOutageEvidence, isProbeMisconfiguration } from '@/lib/services/probe-signal';
+
+// If a probe keeps failing for reasons that are ours (no credit, bad key,
+// quota), nobody should learn that from a wrong verdict on the site. Email the
+// owner once an hour-long streak is confirmed, at most once a day per provider.
+const MISCONFIG_STREAK_TO_ALERT = 4; // probes run every 15 min
+const MISCONFIG_ALERT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+async function noteProbeHealth(
+  db: FirebaseFirestore.Firestore,
+  providerId: string,
+  errorCode: string | undefined,
+  state: Record<string, any>
+): Promise<void> {
+  const ref = db.collection('gap_state').doc(providerId);
+  if (!isProbeMisconfiguration(errorCode)) {
+    if (state.misconfigStreak) await ref.set({ misconfigStreak: 0, misconfigCode: null }, { merge: true });
+    return;
+  }
+  const streak = Number(state.misconfigStreak || 0) + 1;
+  const lastAlert = state.misconfigAlertedAt ? Date.parse(state.misconfigAlertedAt) : 0;
+  const shouldAlert = streak >= MISCONFIG_STREAK_TO_ALERT && Date.now() - lastAlert > MISCONFIG_ALERT_COOLDOWN_MS;
+  await ref.set(
+    {
+      misconfigStreak: streak,
+      misconfigCode: errorCode,
+      ...(shouldAlert ? { misconfigAlertedAt: new Date().toISOString() } : {}),
+    },
+    { merge: true }
+  );
+  if (!shouldAlert) return;
+  const to = process.env.ALERT_SIGNUP_NOTIFY_EMAIL || process.env.CONTACT_EMAIL || process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+  if (!to) return;
+  const hint =
+    errorCode === 'http-400' || errorCode === 'http-402'
+      ? 'Usually an exhausted credit balance or a rejected request body.'
+      : errorCode === 'http-401' || errorCode === 'http-403'
+        ? 'Usually an invalid or revoked API key.'
+        : errorCode === 'http-429'
+          ? 'The key is rate-limited or over its plan quota.'
+          : 'Check the probe configuration for this provider.';
+  await db.collection('emailQueue').add({
+    to,
+    subject: `Probe for ${providerId} is failing on our side (${errorCode})`,
+    html: `<p>The real-API probe for <b>${providerId}</b> has returned <code>${errorCode}</code> ${streak} times in a row.</p>
+<p>${hint}</p>
+<p>These failures are no longer shown to visitors as an outage, but until fixed the site has no independent signal for this provider.</p>`,
+    status: 'pending',
+    createdAt: new Date(),
+  });
+  log('warn', 'Probe misconfiguration alert queued', { providerId, errorCode, streak });
+}
 
 // The "caught it first" detector: an open gap means our real API probes are
 // failing while the provider's official status page still claims operational.
@@ -53,7 +105,8 @@ export async function updateGapState(outcomes: ProbeOutcome[]): Promise<void> {
       const stateRef = db.collection('gap_state').doc(outcome.providerId);
       const stateDoc = await stateRef.get();
       const state = stateDoc.exists ? stateDoc.data() || {} : {};
-      const failed = Boolean(outcome.errorCode);
+      const failed = isOutageEvidence(outcome.errorCode);
+      await noteProbeHealth(db, outcome.providerId, outcome.errorCode, state);
       const nowIso = new Date().toISOString();
 
       if (failed) {

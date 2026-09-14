@@ -67,6 +67,28 @@ describe('gap detector', () => {
     expect(store['gap_state/openai'].openGapId).toBeNull();
   });
 
+  it('never opens a gap for failures that are ours (no credit, bad key, quota)', async () => {
+    // The six-day false "Claude is having issues": Anthropic returned 400 for
+    // an empty credit balance and Mistral 429 for a rate-limited key.
+    store['provider_status/anthropic'] = { status: 'operational', activeIncidentCount: 0 };
+    for (let i = 0; i < 6; i++) {
+      await updateGapState([{ providerId: 'anthropic', errorCode: 'http-400' }]);
+    }
+    expect(store['gap_state/anthropic'].openGapId ?? null).toBeNull();
+    expect(store['gap_state/anthropic'].consecutiveFails ?? 0).toBe(0);
+    expect(store['gap_state/anthropic'].misconfigStreak).toBe(6);
+  });
+
+  it('closes an already-open gap once the failures turn out to be ours', async () => {
+    store['provider_status/anthropic'] = { status: 'operational', activeIncidentCount: 0 };
+    await updateGapState([{ providerId: 'anthropic', errorCode: 'http-500' }]);
+    await updateGapState([{ providerId: 'anthropic', errorCode: 'http-500' }]);
+    const gapId = store['gap_state/anthropic'].openGapId;
+    expect(gapId).toBeTruthy();
+    await updateGapState([{ providerId: 'anthropic', errorCode: 'http-400' }]);
+    expect(store[`gap_events/${gapId}`].open).toBe(false);
+  });
+
   it('closes the gap when a probe succeeds again', async () => {
     store['provider_status/openai'] = { status: 'operational', activeIncidentCount: 0 };
     await updateGapState([{ providerId: 'openai', errorCode: 'http-500' }]);

@@ -1,5 +1,6 @@
 import { TtlCache } from '@/lib/utils/ttl-cache';
 import { readProbeRollup } from '@/lib/services/probe-store';
+import { isProbeMisconfiguration } from '@/lib/services/probe-signal';
 import { getDb } from '@/lib/db/firestore';
 import { config } from '@/lib/config';
 import { intelligenceService } from '@/lib/services/intelligence';
@@ -99,7 +100,10 @@ function mapLatencyValue(event: any): number | undefined {
   return typeof event.latencyMs === 'number' ? event.latencyMs : undefined;
 }
 
-function summarizeMetrics(records: Array<any>): MetricSummary {
+function summarizeMetrics(input: Array<any>): MetricSummary {
+  // A probe that failed because of OUR account (no credit, bad key, quota)
+  // says nothing about the provider and must not tilt the verdict.
+  const records = input.filter((r) => !isProbeMisconfiguration(r.errorCode));
   const latency = records.map(mapLatencyValue).filter((v): v is number => typeof v === 'number');
   return {
     latencyP95: percentile(latency, 95),
@@ -315,6 +319,9 @@ async function loadRecentTelemetry(providerId: string, since: Date, until: Date)
   }
 }
 
+// A feed that has not updated in this long is treated as silent, not green.
+const OFFICIAL_FEED_STALE_MS = 2 * 60 * 60 * 1000;
+
 const syntheticCache = new TtlCache<Array<FirebaseFirestore.DocumentData>>(240_000);
 
 async function loadRecentSynthetic(providerId: string, since: Date, until: Date) {
@@ -419,11 +426,19 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
     const now = new Date();
     const since = new Date(Date.now() - windowMinutes * 60 * 1000);
 
-    const [telemetryEvents, syntheticEvents, incidents] = await Promise.all([
+    const [telemetryEvents, syntheticEvents, incidents, summaries] = await Promise.all([
       loadRecentTelemetry(app.providerId, since, now),
       loadRecentSynthetic(app.providerId, since, now),
       intelligenceService.getIncidents({ providerId: app.providerId, limit: 20 }),
+      intelligenceService.getProviderSummaries().catch(() => []),
     ]);
+
+    // "Up" is only an honest default when something is actually reporting.
+    // Character.AI deleted its status page and we have no probe for it; the
+    // site kept saying "up" on no evidence at all.
+    const official = summaries.find((s) => s.providerId === app.providerId);
+    const officialAgeMs = official?.lastUpdated ? now.getTime() - Date.parse(official.lastUpdated) : Infinity;
+    const officialAlive = Boolean(official) && official!.status !== 'unknown' && officialAgeMs < OFFICIAL_FEED_STALE_MS;
 
     const STALE_INCIDENT_MS = 24 * 60 * 60 * 1000;
     const activeIncidents = incidents.filter((incident) => {
@@ -477,12 +492,9 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
         }
       }
 
-      if (summary.sampleCount < 3 && !incidentSignal) {
-        status = 'operational';
+      if ((summary.sampleCount < 3 || status === 'unknown') && !incidentSignal) {
+        status = officialAlive ? 'operational' : 'unknown';
         signalType = null;
-      }
-      if (status === 'unknown' && !incidentSignal) {
-        status = 'operational';
       }
 
       const translation = pickTranslation(signalType, surface);
@@ -517,7 +529,9 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       ? 'down'
       : surfaceStatuses.some((s) => s.status === 'degraded')
         ? 'degraded'
-        : 'operational';
+        : surfaceStatuses.some((s) => s.status === 'operational')
+          ? 'operational'
+          : 'unknown';
 
     const worstSurface = surfaceStatuses.find((s) => s.status === 'down') ||
       surfaceStatuses.find((s) => s.status === 'degraded') ||

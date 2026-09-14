@@ -15,6 +15,7 @@ import { normalizeIncidentDates, normalizeMaintenanceDates } from '@/lib/utils/n
 // the public routes continuously; without this, each poll was a fresh Firestore
 // query (20.8M reads in two days, ~95% of the project's bill).
 const incidentsCache = new TtlCache<NormalizedIncident[]>(240_000, 100);
+const summariesCache = new TtlCache<ProviderStatusSummary[]>(240_000, 1);
 
 function rememberIncidents(key: string, data: NormalizedIncident[]): void {
   incidentsCache.set(key, [...data]);
@@ -35,6 +36,14 @@ export type ProviderStatusSummary = {
 
 class IntelligenceService {
   async getProviderSummaries(): Promise<ProviderStatusSummary[]> {
+    const cached = summariesCache.get('all');
+    if (cached) return cached;
+    const summaries = await this.loadProviderSummaries();
+    if (summaries.length) summariesCache.set('all', summaries);
+    return summaries;
+  }
+
+  private async loadProviderSummaries(): Promise<ProviderStatusSummary[]> {
     const db = getDb();
     try {
       const snapshot = await db.collection('provider_status').get();

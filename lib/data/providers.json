@@ -168,9 +168,9 @@
         "deep seek"
       ],
       "category": "LLM",
-      "statusUrl": "https://status.deepseek.com/api/v2/status.json",
+      "statusUrl": "https://status.deepseek.com/api/status-page/6410630422455/summary/active",
       "statusPageUrl": "https://status.deepseek.com",
-      "format": "statuspage",
+      "format": "flashcat",
       "enabled": true
     },
     {

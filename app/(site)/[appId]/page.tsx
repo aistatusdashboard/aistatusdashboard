@@ -25,7 +25,10 @@ type AppParams = { appId: string };
 // right now" is the whole product — surfacing a fresh verdict late is worse
 // than any read this saves.
 export const revalidate = 60;
-export const dynamicParams = false;
+// Unknown slugs (scanner bots, old links) used to surface as Next's internal
+// NoFallbackError — ~700 logged errors a day burying real ones. They still 404,
+// but through notFound() below, which is silent.
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return listCasualApps().map((app) => ({ appId: app.id }));

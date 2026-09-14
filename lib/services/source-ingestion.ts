@@ -33,6 +33,7 @@ import {
 } from '@/lib/utils/platform-parsers';
 import { parseHtmlResponse, parseMetaStatusResponse } from '@/lib/utils/status-parsers';
 import { sourceRegistryService } from '@/lib/services/source-registry';
+import { parseFlashcatActive, parseFlashcatChange } from '@/lib/utils/flashcat-parser';
 import { getGcpProductCatalog } from '@/lib/services/gcp-product-catalog';
 import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils/google-cloud';
 
@@ -464,6 +465,8 @@ export class SourceIngestionService {
         return this.fetchStatuspage(source, base);
       case 'instatus':
         return this.fetchInstatus(source, base);
+      case 'flashcat':
+        return this.fetchFlashcat(source, base);
       case 'meta':
         return this.fetchMeta(source, base);
       case 'google-cloud':
@@ -575,6 +578,37 @@ export class SourceIngestionService {
       components: parsed.components,
       incidents: parsed.incidents,
       maintenances: parsed.maintenances,
+    };
+  }
+
+  private async fetchFlashcat(source: SourceDefinition, base: string): Promise<NormalizedProviderSummary | null> {
+    const pageId = source.metadata?.flashcatPageId;
+    if (!pageId) return null;
+    const now = Math.floor(Date.now() / 1000);
+    const activeUrl = `${base}/api/status-page/${pageId}/summary/active`;
+    const changesUrl = `${base}/api/status-page/${pageId}/change/list?start_at_seconds=${now - 30 * 86400}&end_at_seconds=${now + 86400}`;
+
+    const [active, changes] = await Promise.all([
+      fetchWithCache(`${source.id}:active`, activeUrl, source.providerId, 'flashcat'),
+      fetchWithCache(`${source.id}:changes`, changesUrl, source.providerId, 'flashcat'),
+    ]);
+    if (!active.ok || !active.json) return null;
+
+    const parsed = parseFlashcatActive(source.providerId, active.json);
+    const items: any[] = Array.isArray(changes.json?.data?.items) ? changes.json.data.items : [];
+    const incidents = items
+      .map((item) => parseFlashcatChange(source.providerId, source.id, item))
+      .filter((incident): incident is NormalizedIncident => incident !== null);
+
+    return {
+      providerId: source.providerId,
+      sourceId: source.id,
+      status: parsed.status,
+      description: typeof active.json?.data?.page?.name === 'string' ? `${active.json.data.page.name} status page` : undefined,
+      lastUpdated: new Date().toISOString(),
+      components: parsed.components,
+      incidents,
+      maintenances: [],
     };
   }
 

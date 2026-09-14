@@ -2,6 +2,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { getDb } from '@/lib/db/firestore';
 import { TtlCache } from '@/lib/utils/ttl-cache';
 import { readProbeRollup } from '@/lib/services/probe-store';
+import { isOutageEvidence } from '@/lib/services/probe-signal';
 
 export type ProbeTick = {
   at: string;
@@ -76,13 +77,13 @@ async function loadProbeReceipt(providerId: string): Promise<ProbeReceipt | null
     const ticks = source
       .slice(0, 96)
       .reverse()
-      .map((row) => ({ at: row.at, ok: !row.errorCode }));
+      .map((row) => ({ at: row.at, ok: !isOutageEvidence(row.errorCode) }));
 
     return {
       kind: real.length ? 'real' : 'feed',
       at: latest.at,
       latencyMs: latest.latencyMs,
-      ok: !latest.errorCode,
+      ok: !isOutageEvidence(latest.errorCode),
       errorCode: latest.errorCode,
       ticks,
     };

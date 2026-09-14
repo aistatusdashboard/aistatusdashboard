@@ -1,4 +1,5 @@
 import { Provider, StatusResult, ProviderStatus } from '@/lib/types';
+import { parseFlashcatActive } from '@/lib/utils/flashcat-parser';
 import { log } from '@/lib/utils/logger';
 import { config } from '@/lib/config';
 import {
@@ -128,6 +129,7 @@ export class StatusService {
             format === 'google-cloud' ||
             format === 'statuspage' ||
             format === 'instatus' ||
+            format === 'flashcat' ||
             format === 'meta' ||
             format === 'betterstack'
         ) {
@@ -162,6 +164,15 @@ export class StatusService {
                 });
                 return {
                     status,
+                };
+            }
+
+            if (format === 'flashcat') {
+                const parsed = parseFlashcatActive(provider.id, data);
+                const active = Array.isArray(data?.data?.active_changes) ? data.data.active_changes.length : 0;
+                return {
+                    status: parsed.status as ProviderStatus,
+                    details: active ? `active_changes:${active}` : 'no active changes',
                 };
             }
 

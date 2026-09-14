@@ -108,12 +108,15 @@
       "pollIntervalSeconds": 90
     },
     {
-      "id": "deepseek-statuspage",
+      "id": "deepseek-flashcat",
       "providerId": "deepseek",
-      "name": "DeepSeek Statuspage",
+      "name": "DeepSeek Status (Flashcat)",
       "baseUrl": "https://status.deepseek.com",
-      "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "platform": "flashcat",
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "flashcatPageId": "6410630422455"
+      }
     },
     {
       "id": "ai21-statuspage",

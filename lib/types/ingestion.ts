@@ -20,6 +20,7 @@ export type NormalizedIncidentStatus =
 export type PlatformType =
   | 'statuspage'
   | 'instatus'
+  | 'flashcat'
   | 'betterstack'
   | 'statusio'
   | 'cachet'
