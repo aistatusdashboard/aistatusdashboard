@@ -20,6 +20,10 @@ export interface Provider {
     priority?: number;
     fallbackUrls?: string[];
     aliases?: string[];
+    // For shared dashboards (Google's), only incidents mentioning these count.
+    keywords?: string[];
+    // For 'endpoint' sources: HTTP status codes that mean the service answered.
+    expectStatus?: number[];
 }
 
 export interface StatusResult {

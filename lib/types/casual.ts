@@ -81,6 +81,15 @@ export type ExperienceStatus = {
   history: ExperienceHistorySummary;
   evidence: ExperienceEvidence[];
   official_notices: OfficialNotice[];
+  // The provider's own page: whether one exists, and what it said when we
+  // last read it. The verdict is nothing more than this.
+  official_page: {
+    exists: boolean;
+    url?: string;
+    read_at?: string;
+    says?: string;
+    status?: string;
+  };
 };
 
 export type CasualAppConfig = {

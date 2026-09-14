@@ -38,7 +38,7 @@
     {
       "id": "gemini",
       "label": "Gemini Status",
-      "providerId": "google-ai",
+      "providerId": "gemini",
       "providerDisplay": "Google",
       "surfaces": [
         "text",
@@ -81,8 +81,7 @@
       ],
       "defaultModel": "sonar",
       "defaultRegion": "us-east",
-      "webUrl": "https://www.perplexity.ai",
-      "probeUrl": "https://www.perplexity.ai/api/auth/session"
+      "webUrl": "https://www.perplexity.ai"
     },
     {
       "id": "deepseek",
@@ -109,11 +108,7 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://www.meta.ai",
-      "probeUrl": "https://www.meta.ai/api/graphql",
-      "probeExpect": [
-        405
-      ]
+      "webUrl": "https://www.meta.ai"
     },
     {
       "id": "copilot",
@@ -154,8 +149,7 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://character.ai",
-      "probeUrl": "https://neo.character.ai/health"
+      "webUrl": "https://character.ai"
     },
     {
       "id": "le-chat",
@@ -169,11 +163,7 @@
       ],
       "defaultModel": "mistral-small-latest",
       "defaultRegion": "eu-west",
-      "webUrl": "https://chat.mistral.ai",
-      "probeUrl": "https://api.mistral.ai/v1/models",
-      "probeExpect": [
-        401
-      ]
+      "webUrl": "https://chat.mistral.ai"
     },
     {
       "id": "elevenlabs",
@@ -200,8 +190,7 @@
         "rate_limits"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://lovable.dev",
-      "probeUrl": "https://api.lovable.dev/health"
+      "webUrl": "https://lovable.dev"
     },
     {
       "id": "sora",
@@ -240,8 +229,7 @@
         "rate_limits"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://poe.com",
-      "probeUrl": "https://poe.com/api/settings"
+      "webUrl": "https://poe.com"
     },
     {
       "id": "windsurf",
@@ -255,8 +243,7 @@
         "rate_limits"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://windsurf.com",
-      "probeUrl": "https://windsurf.com/api/health"
+      "webUrl": "https://windsurf.com"
     },
     {
       "id": "v0",
@@ -306,11 +293,7 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://ideogram.ai",
-      "probeUrl": "https://api.ideogram.ai/generate",
-      "probeExpect": [
-        405
-      ]
+      "webUrl": "https://ideogram.ai"
     },
     {
       "id": "grammarly",
@@ -376,11 +359,7 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://www.canva.com",
-      "probeUrl": "https://api.canva.com/rest/v1/users/me",
-      "probeExpect": [
-        401
-      ]
+      "webUrl": "https://www.canva.com"
     }
   ]
 }

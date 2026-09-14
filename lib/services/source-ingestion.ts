@@ -9,6 +9,7 @@ const APP_ID_BY_PROVIDER = new Map<string, string>(
   (appsConfig.apps as Array<{ id: string; providerId: string }>).map((app) => [app.providerId, app.id])
 );
 import type {
+  NormalizedSeverity,
   SourceDefinition,
   PlatformType,
   NormalizedProviderSummary,
@@ -37,6 +38,7 @@ import { parseFlashcatActive, parseFlashcatChange } from '@/lib/utils/flashcat-p
 import { parseRootlySnapshot } from '@/lib/utils/rootly-parser';
 import { readFeedSnapshot, writeFeedSnapshot, type BrowserFeedSnapshot } from '@/lib/services/feed-snapshots';
 import { snapshotFromRootlyHtml } from '@/lib/utils/rootly-html';
+import { parseIncidentIoIncident, parseIncidentIoSummary } from '@/lib/utils/incidentio-parser';
 import { getGcpProductCatalog } from '@/lib/services/gcp-product-catalog';
 import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils/google-cloud';
 
@@ -70,6 +72,32 @@ function hasChangedSinceLastWrite(docId: string, source: unknown): boolean {
 const DEFAULT_HEADERS = {
   'User-Agent': 'AI-Status-Dashboard/1.0',
 };
+
+// One plain request to a provider's public endpoint, judged by status code.
+// Exported so the status check reads the same endpoint the same way.
+export async function probeEndpoint(
+  url: string,
+  expected: number[]
+): Promise<{ status: NormalizedSeverity; description: string; httpStatus?: number }> {
+  try {
+    const response = await fetch(url, {
+      headers: { 'User-Agent': BROWSER_USER_AGENT, Accept: '*/*' },
+      cache: 'no-store',
+      redirect: 'follow',
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (expected.includes(response.status)) {
+      return { status: 'operational', description: `Public endpoint answered HTTP ${response.status}`, httpStatus: response.status };
+    }
+    return { status: 'major_outage', description: `Public endpoint returned HTTP ${response.status}`, httpStatus: response.status };
+  } catch (error) {
+    const reason = error instanceof Error ? error.name === 'TimeoutError' ? 'timed out' : error.message : String(error);
+    return { status: 'major_outage', description: `Public endpoint did not answer (${reason})` };
+  }
+}
+
+const BROWSER_USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36';
 
 // Jina's reader renders a URL in a real browser and returns the result to a
 // plain GET (20 requests/min without a key; we make two every five minutes).
@@ -524,6 +552,10 @@ export class SourceIngestionService {
         return this.fetchFlashcat(source, base);
       case 'browser':
         return this.fetchBrowserSnapshot(source);
+      case 'incidentio':
+        return this.fetchIncidentIo(source, base);
+      case 'endpoint':
+        return this.fetchEndpoint(source);
       case 'meta':
         return this.fetchMeta(source, base);
       case 'google-cloud':
@@ -696,6 +728,50 @@ export class SourceIngestionService {
     };
   }
 
+  // Providers that publish no status page but do expose a public endpoint
+  // (Character.AI's health check, Meta AI's API front door). The endpoint's
+  // answer is their status: the expected code means up, anything else down.
+  private async fetchEndpoint(source: SourceDefinition): Promise<NormalizedProviderSummary | null> {
+    const url = source.statusUrl || source.baseUrl;
+    const expected = (source.metadata?.expect || '200').split(',').map((v) => Number(v.trim()));
+    const summary = await probeEndpoint(url, expected);
+    return {
+      providerId: source.providerId,
+      sourceId: source.id,
+      status: summary.status,
+      description: summary.description,
+      lastUpdated: new Date().toISOString(),
+      components: [],
+      incidents: [],
+      maintenances: [],
+    };
+  }
+
+  private async fetchIncidentIo(source: SourceDefinition, base: string): Promise<NormalizedProviderSummary | null> {
+    const host = new URL(base).host;
+    const [summary, incidents] = await Promise.all([
+      fetchWithCache(`${source.id}:summary`, `${base}/proxy/${host}`, source.providerId, 'incidentio'),
+      fetchWithCache(`${source.id}:incidents`, `${base}/proxy/${host}/incidents`, source.providerId, 'incidentio'),
+    ]);
+    if (!summary.ok || !summary.json) return null;
+    const parsed = parseIncidentIoSummary(source.providerId, summary.json);
+    const names = new Map(parsed.components.map((c) => [c.id, c.name]));
+    const items: any[] = Array.isArray(incidents.json?.incidents) ? incidents.json.incidents : [];
+    const normalized = items
+      .map((item) => parseIncidentIoIncident(source.providerId, source.id, names, item, base))
+      .filter((incident): incident is NormalizedIncident => incident !== null);
+    return {
+      providerId: source.providerId,
+      sourceId: source.id,
+      status: parsed.status,
+      description: parsed.ongoing ? `${parsed.ongoing} ongoing incident${parsed.ongoing === 1 ? '' : 's'}` : 'All systems operational',
+      lastUpdated: new Date().toISOString(),
+      components: parsed.components,
+      incidents: normalized.filter((i) => i.severity !== 'maintenance'),
+      maintenances: [],
+    };
+  }
+
   private async renderRootly(source: SourceDefinition): Promise<BrowserFeedSnapshot | null> {
     if (source.metadata?.browser !== 'rootly') return null;
     const base = source.baseUrl.replace(/\/$/, '');
@@ -718,8 +794,15 @@ export class SourceIngestionService {
 
     const catalog = await getGcpProductCatalog();
     let incidents = parseGoogleCloudIncidents(source.providerId, source.id, response.json, catalog);
-    if (source.providerId === 'google-ai') {
-      incidents = filterGoogleCloudIncidentsForAi(incidents, GOOGLE_AI_KEYWORDS);
+    // Google publishes one dashboard per surface (Cloud, Workspace); each
+    // source narrows it to the product it stands for.
+    const keywords = source.metadata?.keywords
+      ? source.metadata.keywords.split(',').map((k) => k.trim()).filter(Boolean)
+      : source.providerId === 'google-ai'
+        ? GOOGLE_AI_KEYWORDS
+        : undefined;
+    if (keywords) {
+      incidents = filterGoogleCloudIncidentsForAi(incidents, keywords);
     }
     const status = computeProviderStatus([], incidents, []);
 
@@ -727,10 +810,9 @@ export class SourceIngestionService {
       providerId: source.providerId,
       sourceId: source.id,
       status,
-      description:
-        source.providerId === 'google-ai'
+      description: source.metadata?.description || (source.providerId === 'google-ai'
           ? 'Google Cloud Service Health (Vertex AI / Gemini only)'
-          : 'Google Cloud Service Health',
+          : 'Google Cloud Service Health'),
       lastUpdated: new Date().toISOString(),
       components: [],
       incidents,

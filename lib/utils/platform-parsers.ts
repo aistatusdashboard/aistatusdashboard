@@ -207,6 +207,16 @@ export function parseInstatusSummary(
   };
 }
 
+// Workspace dashboard descriptions open with markdown labels ("**Summary:**",
+// "**Title**") followed by the actual sentence; the first real line is the title.
+function cleanGoogleTitle(desc: unknown): string {
+  const lines = String(desc || '')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\*\*/g, '').replace(/^(summary|title|description)\s*:?\s*$/i, '').trim())
+    .filter(Boolean);
+  return (lines[0] || '').replace(/^(summary|title)\s*:\s*/i, '').trim();
+}
+
 export function parseGoogleCloudIncidents(
   providerId: string,
   sourceId: string,
@@ -246,7 +256,7 @@ export function parseGoogleCloudIncidents(
       id: incident.id || incident.number,
       providerId,
       sourceId,
-      title: incident.external_desc || incident.service_name || 'Incident',
+      title: cleanGoogleTitle(incident.external_desc) || incident.service_name || 'Incident',
       status: normalizeIncidentStatus(incident.status_impact || incident.status),
       severity: normalizeSeverity(severityRaw),
       startedAt: incident.begin || incident.created || new Date().toISOString(),

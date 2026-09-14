@@ -125,10 +125,14 @@
         "llama 3"
       ],
       "category": "LLM",
-      "statusUrl": "https://metastatus.com/data/orgs.json",
-      "statusPageUrl": "https://metastatus.com",
-      "format": "meta",
-      "enabled": true
+      "statusUrl": "https://www.meta.ai/api/graphql",
+      "statusPageUrl": "https://www.meta.ai",
+      "format": "endpoint",
+      "enabled": true,
+      "expectStatus": [
+        405,
+        200
+      ]
     },
     {
       "id": "perplexity",
@@ -139,9 +143,9 @@
         "perplexity ai"
       ],
       "category": "Search",
-      "statusUrl": "https://perplexity.instatus.com/summary.json",
+      "statusUrl": "https://status.perplexity.com/proxy/status.perplexity.com",
       "statusPageUrl": "https://status.perplexity.com",
-      "format": "instatus",
+      "format": "incidentio",
       "enabled": true
     },
     {
@@ -360,10 +364,13 @@
         "cai"
       ],
       "category": "AI app",
-      "statusUrl": "https://characteraistatus.statuspage.io/api/v2/status.json",
-      "statusPageUrl": "https://characteraistatus.statuspage.io",
-      "format": "statuspage",
-      "enabled": true
+      "statusUrl": "https://neo.character.ai/health",
+      "statusPageUrl": "https://character.ai",
+      "format": "endpoint",
+      "enabled": true,
+      "expectStatus": [
+        200
+      ]
     },
     {
       "id": "elevenlabs",
@@ -549,6 +556,25 @@
       "statusUrl": "https://www.canvastatus.com/api/v2/status.json",
       "statusPageUrl": "https://www.canvastatus.com",
       "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "gemini",
+      "name": "Google Gemini",
+      "displayName": "Gemini",
+      "aliases": [
+        "gemini",
+        "gemini app",
+        "google gemini",
+        "bard"
+      ],
+      "category": "LLM",
+      "statusUrl": "https://www.google.com/appsstatus/dashboard/incidents.json",
+      "statusPageUrl": "https://www.google.com/appsstatus/dashboard/",
+      "format": "google-cloud",
+      "keywords": [
+        "gemini"
+      ],
       "enabled": true
     }
   ]

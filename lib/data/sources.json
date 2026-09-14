@@ -87,20 +87,11 @@
       "pollIntervalSeconds": 120
     },
     {
-      "id": "meta-status",
-      "providerId": "meta",
-      "name": "Meta Status",
-      "baseUrl": "https://metastatus.com",
-      "statusUrl": "https://metastatus.com/data/orgs.json",
-      "platform": "meta",
-      "pollIntervalSeconds": 120
-    },
-    {
-      "id": "perplexity-instatus",
+      "id": "perplexity-incidentio",
       "providerId": "perplexity",
-      "name": "Perplexity Instatus",
-      "baseUrl": "https://perplexity.instatus.com",
-      "platform": "instatus",
+      "name": "Perplexity (incident.io)",
+      "baseUrl": "https://status.perplexity.com",
+      "platform": "incidentio",
       "pollIntervalSeconds": 120
     },
     {
@@ -183,14 +174,6 @@
       "providerId": "cursor",
       "name": "Cursor Statuspage",
       "baseUrl": "https://status.cursor.com",
-      "platform": "statuspage",
-      "pollIntervalSeconds": 90
-    },
-    {
-      "id": "character-ai-statuspage",
-      "providerId": "character-ai",
-      "name": "Character.AI Statuspage",
-      "baseUrl": "https://characteraistatus.statuspage.io",
       "platform": "statuspage",
       "pollIntervalSeconds": 90
     },
@@ -297,6 +280,43 @@
       "baseUrl": "https://www.canvastatus.com",
       "platform": "statuspage",
       "pollIntervalSeconds": 90
+    },
+    {
+      "id": "google-workspace-gemini",
+      "providerId": "gemini",
+      "name": "Google Workspace Status (Gemini)",
+      "baseUrl": "https://www.google.com/appsstatus/dashboard",
+      "statusUrl": "https://www.google.com/appsstatus/dashboard/incidents.json",
+      "platform": "google-cloud",
+      "pollIntervalSeconds": 300,
+      "metadata": {
+        "keywords": "gemini",
+        "description": "Google Workspace Status Dashboard (Gemini only)"
+      }
+    },
+    {
+      "id": "character-ai-health",
+      "providerId": "character-ai",
+      "name": "Character.AI public health endpoint",
+      "baseUrl": "https://neo.character.ai",
+      "statusUrl": "https://neo.character.ai/health",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200"
+      }
+    },
+    {
+      "id": "meta-ai-frontdoor",
+      "providerId": "meta",
+      "name": "Meta AI public API endpoint",
+      "baseUrl": "https://www.meta.ai",
+      "statusUrl": "https://www.meta.ai/api/graphql",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "405,200"
+      }
     }
   ]
 }

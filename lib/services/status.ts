@@ -1,7 +1,9 @@
 import { Provider, StatusResult, ProviderStatus } from '@/lib/types';
 import { parseFlashcatActive } from '@/lib/utils/flashcat-parser';
+import { parseIncidentIoSummary } from '@/lib/utils/incidentio-parser';
 import { parseRootlySnapshot } from '@/lib/utils/rootly-parser';
 import { readFeedSnapshot } from '@/lib/services/feed-snapshots';
+import { probeEndpoint } from '@/lib/services/source-ingestion';
 import sourcesConfig from '@/lib/data/sources.json';
 import type { SourceDefinition } from '@/lib/types/ingestion';
 import { log } from '@/lib/utils/logger';
@@ -27,6 +29,23 @@ export class StatusService {
 
         const startTime = Date.now();
         let lastError: string | undefined;
+
+        if (provider.format === 'endpoint') {
+            const probe = await probeEndpoint(provider.statusUrl, provider.expectStatus || [200]);
+            const result: StatusResult = {
+                id: provider.id,
+                name: provider.name,
+                displayName: provider.displayName || provider.name,
+                aliases: provider.aliases,
+                status: probe.status === 'operational' ? 'operational' : 'down',
+                responseTime: Date.now() - startTime,
+                lastChecked: new Date().toISOString(),
+                statusPageUrl: provider.statusPageUrl,
+                details: probe.description,
+            };
+            this.setCached(provider.id, result);
+            return result;
+        }
 
         if (provider.format === 'browser') {
             const result = await this.checkFromBrowserSnapshot(provider, startTime);
@@ -166,6 +185,7 @@ export class StatusService {
             format === 'statuspage' ||
             format === 'instatus' ||
             format === 'flashcat' ||
+            format === 'incidentio' ||
             format === 'meta' ||
             format === 'betterstack'
         ) {
@@ -196,7 +216,7 @@ export class StatusService {
                     provider.id === 'google-ai' ? await getGcpProductCatalog() : undefined;
                 const status = parseGoogleCloudResponse(data, {
                     productCatalog: catalog,
-                    keywords: provider.id === 'google-ai' ? GOOGLE_AI_KEYWORDS : undefined,
+                    keywords: provider.keywords || (provider.id === 'google-ai' ? GOOGLE_AI_KEYWORDS : undefined),
                 });
                 return {
                     status,
@@ -209,6 +229,14 @@ export class StatusService {
                 return {
                     status: parsed.status as ProviderStatus,
                     details: active ? `active_changes:${active}` : 'no active changes',
+                };
+            }
+
+            if (format === 'incidentio') {
+                const parsed = parseIncidentIoSummary(provider.id, data);
+                return {
+                    status: parsed.status as ProviderStatus,
+                    details: parsed.ongoing ? `ongoing_incidents:${parsed.ongoing}` : 'no ongoing incidents',
                 };
             }
 

@@ -1,7 +1,7 @@
 # AI Status (aistatusdashboard.com)
 
-Live, plain-English status for 26 consumer AI apps, verified with independent
-probes every few minutes — not just a mirror of official status pages.
+The official status of 26 consumer AI apps in one place, in plain English —
+each provider's own status page, read every five minutes.
 
 ## What you can answer from this site
 - "Is ChatGPT down right now?" → https://aistatusdashboard.com/chatgpt
@@ -34,9 +34,9 @@ probes every few minutes — not just a mirror of official status pages.
 - Recent AI outages and their timelines → https://aistatusdashboard.com/incidents
 
 ## Method
-Each verdict combines three signals: the provider's official incident feed,
-our own live test requests to the service, and anonymous "it's broken for me
-too" reports from visitors. When we cannot verify a service we say "checking"
-rather than showing a false green. When our probes fail while the official
-page still says operational, the page says "not yet acknowledged".
+Each verdict is the provider's own official status, read from their status
+page (or, where none exists, their public endpoint) every five minutes and
+translated into plain English. Anonymous "it's broken for me too" reports from
+visitors are shown alongside, never mixed in. When a page cannot be read we say
+"unknown" rather than showing a false green.
 Methodology: https://aistatusdashboard.com/how-it-works

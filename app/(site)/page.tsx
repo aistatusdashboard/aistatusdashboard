@@ -5,7 +5,6 @@ import Link from 'next/link';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import SubscriptionNotice from '@/app/components/SubscriptionNotice';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
-import { getOpenGaps, getRecentCaughtEvents } from '@/lib/services/gap-detector';
 import { searchIncidents } from '@/lib/services/public-data';
 import { formatTimeAgo } from '@/lib/utils/time';
 import {
@@ -24,7 +23,7 @@ import {
 export const revalidate = 60;
 
 const DESCRIPTION =
-  'Is ChatGPT down? Is Claude down? Live, plain-English status for the AI apps you use — checked with our own tests every few minutes, not just the official status pages.';
+  'Is ChatGPT down? Is Claude down? The official status of every major AI app, in one place and in plain English — read from each provider\'s own status page every 5 minutes.';
 
 export const metadata: Metadata = {
   description: DESCRIPTION,
@@ -46,7 +45,7 @@ export default async function HomePage() {
   const apps = listCasualApps();
   const sevenDaysAgoIso = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [statuses, incidentPayload, openGaps, caughtEvents] = await Promise.all([
+  const [statuses, incidentPayload] = await Promise.all([
     Promise.all(
       apps.map(async (app) => {
         const status = await getCasualStatus({ appId: app.id }).catch(() => null);
@@ -54,18 +53,14 @@ export default async function HomePage() {
       })
     ),
     searchIncidents({ since: sevenDaysAgoIso, limit: 6 }).catch(() => ({ data: { incidents: [] } })),
-    getOpenGaps(),
-    getRecentCaughtEvents(3),
   ]);
 
-  const gapProviders = new Set(openGaps.map((gap) => gap.providerId));
   const configOrder = new Map(apps.map((app, index) => [app.id, index]));
   const board = statuses
     .map(({ app, status }) => {
-      const rawKey = status ? verdictKey(status.overall_status) : ('unknown' as const);
-      // Our failing probes outrank a green official page.
-      const key = gapProviders.has(app.providerId) && rawKey === 'up' ? ('wobbly' as const) : rawKey;
-      return { app, status, key, name: shortName(app.id, app.label) };
+      const key = status ? verdictKey(status.overall_status) : ('unknown' as const);
+      const noPage = status ? !status.official_page.exists : false;
+      return { app, status, key, noPage, name: shortName(app.id, app.label) };
     })
     .sort(
       (a, b) =>
@@ -81,7 +76,7 @@ export default async function HomePage() {
     .pop();
 
   const heroSentence = verified.length === 0
-    ? 'Checking every AI service now…'
+    ? 'Reading every status page now…'
     : troubled.length === 0
       ? 'All quiet. Every AI we watch is up.'
       : troubled.length === 1
@@ -109,22 +104,23 @@ export default async function HomePage() {
         <header className="pt-6 md:pt-10 text-center space-y-4">
           <p className="font-mono text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse mr-2 align-middle" aria-hidden="true" />
-            Live · checked {updatedAt ? formatTimeAgo(updatedAt) : 'just now'}
+            Live · official pages read {updatedAt ? formatTimeAgo(updatedAt) : 'just now'}
           </p>
           <h1 className={`text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight ${heroTone}`}>
             {heroSentence}
           </h1>
           <p className="text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            We don&apos;t just mirror the official status pages — we test these services ourselves,
-            every few minutes, and we tell you when something is off before it&apos;s acknowledged.
+            Every AI app&apos;s official status page, read every five minutes and put in one place —
+            in plain English, exactly as the provider reports it.
           </p>
         </header>
 
         {/* The board. Troubled apps float to the top. */}
         <section aria-label="AI app status board" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {board.map(({ app, status, key, name }) => {
+          {board.map(({ app, key, noPage, name }) => {
             const tone = VERDICT_TONE[key];
             const copy = VERDICT_COPY[key];
+            const label = noPage ? 'No status page' : copy.label;
             return (
               <Link
                 key={app.id}
@@ -143,7 +139,7 @@ export default async function HomePage() {
                   <span className="block text-base font-semibold text-slate-900 dark:text-white truncate">
                     {name}
                   </span>
-                  <span className={`block text-sm font-medium ${tone.text}`}>{copy.label}</span>
+                  <span className={`block text-sm font-medium ${tone.text}`}>{label}</span>
                 </span>
                 <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${tone.dot} ${key !== 'up' ? 'animate-pulse' : ''}`} aria-hidden="true" />
               </Link>
@@ -207,39 +203,12 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Receipts for the headline claim — only rendered when we have them. */}
-        {caughtEvents.length > 0 && (
-          <section className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Caught before it was announced</h2>
-            <ul className="divide-y divide-slate-200/70 dark:divide-slate-800/70 surface-card">
-              {caughtEvents.map((event) => (
-                <li key={event.incidentId}>
-                  <Link
-                    href={`/incidents/${event.incidentId}`}
-                    className="flex items-center justify-between gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
-                  >
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium text-slate-900 dark:text-white truncate">
-                        {event.incidentTitle}
-                      </span>
-                      <span className="block font-mono text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                        our tests caught this {event.leadMinutes} min before it was acknowledged
-                      </span>
-                    </span>
-                    <span className="text-slate-400 shrink-0" aria-hidden="true">→</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Why trust this. */}
+        {/* What this is. */}
         <section className="grid gap-4 sm:grid-cols-3 text-sm">
           <div className="surface-card p-5">
-            <p className="font-semibold text-slate-900 dark:text-white">We test it ourselves</p>
+            <p className="font-semibold text-slate-900 dark:text-white">Straight from the source</p>
             <p className="mt-1 text-slate-600 dark:text-slate-300">
-              Real requests to the services every few minutes — not just a copy of the official page.
+              Each verdict is the provider&apos;s own status page, read every five minutes — nothing added.
             </p>
           </div>
           <div className="surface-card p-5">
@@ -249,9 +218,9 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="surface-card p-5">
-            <p className="font-semibold text-slate-900 dark:text-white">We say when we don&apos;t know</p>
+            <p className="font-semibold text-slate-900 dark:text-white">We say when there&apos;s nothing to read</p>
             <p className="mt-1 text-slate-600 dark:text-slate-300">
-              If we can&apos;t verify a service, we show &ldquo;checking&rdquo; — never a false green light.
+              If a provider publishes no status page, or we can&apos;t reach it, we say so — never a made-up green light.
             </p>
           </div>
         </section>

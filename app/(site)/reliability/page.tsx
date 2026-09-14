@@ -8,7 +8,7 @@ import { APP_LOGOS } from '@/lib/ui/verdict';
 export const revalidate = 1800;
 
 const description =
-  'Which AI is the most reliable? A 30-day ranking of ChatGPT, Claude, Gemini, Midjourney, and 20+ other AI apps by uptime and incident history — from independent monitoring.';
+  'Which AI is the most reliable? A 30-day ranking of ChatGPT, Claude, Gemini, Midjourney, and 20+ other AI apps by uptime and incident history — from each provider\'s official incident feed.';
 
 export const metadata: Metadata = {
   title: 'Which AI is the most reliable?',
@@ -41,8 +41,8 @@ export default async function ReliabilityPage() {
             Which AI is the most reliable?
           </h1>
           <p className="text-base text-slate-600 dark:text-slate-300">
-            The last 30 days across every AI service we watch, ranked by measured uptime — computed
-            from official incident feeds and our own independent checks, not marketing pages.
+            The last 30 days across every AI service we watch, ranked by uptime — computed from
+            each provider&apos;s own official incident history.
           </p>
           {best && worst && best.appId !== worst.appId && (
             <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -125,7 +125,7 @@ export default async function ReliabilityPage() {
           </p>
           <p>
             Recently added services can show fewer incidents simply because we started watching them
-            later. Rankings refresh every 30 minutes. This is independent monitoring —{' '}
+            later. Rankings refresh every 30 minutes —{' '}
             <Link href="/how-it-works" className="underline">how it works</Link>.
           </p>
         </section>

@@ -7,9 +7,6 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const app = searchParams.get('app');
-  const windowMinutes = searchParams.get('window_minutes')
-    ? Number(searchParams.get('window_minutes'))
-    : undefined;
 
   if (!app) {
     const meta = buildResponseMeta({ evidence: [], confidence: 0 });
@@ -23,7 +20,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const payload = await getCasualStatus({ appId: app, windowMinutes });
+  const payload = await getCasualStatus({ appId: app });
   if (!payload) {
     const meta = buildResponseMeta({ evidence: [], confidence: 0 });
     return jsonResponse(

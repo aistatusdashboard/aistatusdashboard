@@ -1,10 +1,6 @@
-import { TtlCache } from '@/lib/utils/ttl-cache';
-import { readProbeRollup } from '@/lib/services/probe-store';
-import { isOutageEvidence, isProbeMisconfiguration, isUnverifiable } from '@/lib/services/probe-signal';
 import { getDb } from '@/lib/db/firestore';
 import { config } from '@/lib/config';
 import { intelligenceService } from '@/lib/services/intelligence';
-import { getOpenGaps } from '@/lib/services/gap-detector';
 import { providerService } from '@/lib/services/providers';
 import type { NormalizedIncident } from '@/lib/types/ingestion';
 import type {
@@ -25,17 +21,14 @@ import translationRules from '@/lib/casual/translation_rules.json';
 import guidanceCards from '@/lib/casual/guidance_cards.json';
 import surfacesConfig from '@/lib/casual/surfaces.json';
 import appsConfig from '@/lib/casual/apps.json';
+import sourcesConfig from '@/lib/data/sources.json';
 
-const DEFAULT_WINDOW_MINUTES = 30;
 const REPORT_WINDOW_MINUTES = 10;
 const BASELINE_WINDOW_MINUTES = 60;
 const REPORT_RATE_LIMIT_MINUTES = 5;
 const SELF_TEST_HEADER = 'x-aistatus-selftest';
-
-const LATENCY_DEGRADED_MS = 4000;
-const LATENCY_WARNING_MS = 2000;
-const THROTTLE_RATE_DEGRADED = 0.08;
-const STREAM_DISCONNECT_DEGRADED = 0.03;
+// A page we haven't managed to read for two hours is treated as unreadable.
+const OFFICIAL_FEED_STALE_MS = 2 * 60 * 60 * 1000;
 
 const SURFACE_KEYWORDS: Record<ExperienceSurfaceId, string[]> = {
   text: ['chat', 'message', 'response', 'completion', 'text'],
@@ -74,123 +67,23 @@ const REGION_ALIASES: Record<string, string> = {
   SG: 'Asia',
 };
 
-type MetricSummary = {
-  latencyP95?: number;
-  http429Rate?: number;
-  http5xxRate?: number;
-  streamDisconnectRate?: number;
-  // Endpoints whose last two probes both failed (5xx, timeout, DNS, reset)
-  // versus endpoints we probed at all. One failed request among passing ones
-  // is a blip, not an outage; a front door that timed out twice in a row is.
-  failingEndpoints: number;
-  // Endpoints whose single latest probe failed: not proof of anything yet.
-  freshlyFailedEndpoints: number;
-  probedEndpoints: number;
-  sampleCount: number;
-  sources: string[];
-};
-
-function percentile(values: number[], p: number): number | undefined {
-  if (!values.length) return undefined;
-  const sorted = [...values].sort((a, b) => a - b);
-  const idx = Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length));
-  return sorted[idx];
-}
-
-function average(values: Array<number | undefined>): number | undefined {
-  const filtered = values.filter((v): v is number => typeof v === 'number');
-  if (!filtered.length) return undefined;
-  return filtered.reduce((acc, v) => acc + v, 0) / filtered.length;
-}
-
-function mapLatencyValue(event: any): number | undefined {
-  if (typeof event.latencyP95 === 'number') return event.latencyP95;
-  return typeof event.latencyMs === 'number' ? event.latencyMs : undefined;
-}
-
-function eventTime(event: any): number {
-  const ts = event?.timestamp;
-  if (typeof ts?.toMillis === 'function') return ts.toMillis();
-  const ms = Date.parse(ts || '');
-  return Number.isFinite(ms) ? ms : 0;
-}
-
-function persistentFailures(
-  records: any[]
-): { failingEndpoints: number; freshlyFailedEndpoints: number; probedEndpoints: number } {
-  const byEndpoint = new Map<string, any[]>();
-  for (const record of records) {
-    if (record.source === 'crowd') continue;
-    const key = `${record.endpoint || ''}:${record.model || ''}`;
-    byEndpoint.set(key, [...(byEndpoint.get(key) || []), record]);
-  }
-  let failingEndpoints = 0;
-  let freshlyFailedEndpoints = 0;
-  for (const events of byEndpoint.values()) {
-    const latest = events.sort((a, b) => eventTime(b) - eventTime(a)).slice(0, 2);
-    if (!isOutageEvidence(latest[0]?.errorCode)) continue;
-    if (latest.length === 2 && isOutageEvidence(latest[1].errorCode)) failingEndpoints += 1;
-    else freshlyFailedEndpoints += 1;
-  }
-  return { failingEndpoints, freshlyFailedEndpoints, probedEndpoints: byEndpoint.size };
-}
-
-function summarizeMetrics(input: Array<any>): MetricSummary {
-  // A probe that failed because of OUR account (no credit, bad key, quota)
-  // says nothing about the provider and must not tilt the verdict.
-  const records = input.filter((r) => !isProbeMisconfiguration(r.errorCode) && !isUnverifiable(r.errorCode));
-  // Front-door page loads are slow by nature (marketing pages, redirects);
-  // only API latency says anything about the service.
-  const latency = records
-    .filter((r) => r.endpoint !== 'web')
-    .map(mapLatencyValue)
-    .filter((v): v is number => typeof v === 'number');
-  return {
-    latencyP95: percentile(latency, 95),
-    http429Rate: average(records.map((r) => r.http429Rate)),
-    http5xxRate: average(records.map((r) => r.http5xxRate)),
-    streamDisconnectRate: average(records.map((r) => r.streamDisconnectRate)),
-    ...persistentFailures(records),
-    sampleCount: records.length,
-    sources: Array.from(new Set(records.map((r) => r.source).filter(Boolean))),
-  };
-}
-
 function normalizeSurface(surface: ExperienceSurfaceId): ExperienceSurfaceId {
   return surface;
 }
 
-function resolveSignalType(summary: MetricSummary, surface: ExperienceSurfaceId): string | null {
-  if (summary.http429Rate !== undefined && summary.http429Rate >= THROTTLE_RATE_DEGRADED) {
-    return 'rate_limit';
-  }
-  if (summary.failingEndpoints > 0) {
-    return 'errors';
-  }
-  if (summary.streamDisconnectRate !== undefined && summary.streamDisconnectRate >= STREAM_DISCONNECT_DEGRADED) {
-    return 'streaming';
-  }
-  if (summary.latencyP95 !== undefined && summary.latencyP95 >= LATENCY_DEGRADED_MS) {
-    return surface === 'images' ? 'image_fail' : 'latency';
-  }
-  if (summary.latencyP95 !== undefined && summary.latencyP95 >= LATENCY_WARNING_MS) {
-    return surface === 'images' ? 'image_fail' : 'latency';
-  }
-  return null;
+// What the provider's own page says, in our three words.
+function officialSignal(status: string | undefined): ExperienceSignal {
+  const s = String(status || '').toLowerCase();
+  if (!s || s === 'unknown') return 'unknown';
+  if (s === 'operational' || s === 'maintenance' || s === 'up') return 'operational';
+  if (s.includes('major') || s === 'down' || s === 'outage') return 'down';
+  return 'degraded';
 }
 
-function resolveSignalStatus(summary: MetricSummary): ExperienceSignal {
-  if (!summary.sampleCount) return 'unknown';
-  // Every endpoint we test is failing persistently: down. Some of them: the
-  // service is reachable but part of it is broken.
-  if (summary.failingEndpoints > 0 && summary.failingEndpoints === summary.probedEndpoints) return 'down';
-  if (summary.failingEndpoints > 0) return 'degraded';
-  // Everything we test just failed once: too early to call, but not "up".
-  if (summary.probedEndpoints > 0 && summary.freshlyFailedEndpoints === summary.probedEndpoints) return 'unknown';
-  if ((summary.http429Rate || 0) >= THROTTLE_RATE_DEGRADED) return 'degraded';
-  if ((summary.streamDisconnectRate || 0) >= STREAM_DISCONNECT_DEGRADED) return 'degraded';
-  if ((summary.latencyP95 || 0) >= LATENCY_DEGRADED_MS) return 'degraded';
-  return 'operational';
+// Providers whose page we read. A provider with no source publishes nothing.
+function providerHasOfficialFeed(providerId: string): boolean {
+  const sources = (sourcesConfig as { sources: Array<{ providerId: string }> }).sources || [];
+  return sources.some((source) => source.providerId === providerId);
 }
 
 function pickTranslation(signalType: string | null, surface: ExperienceSurfaceId) {
@@ -259,15 +152,6 @@ function computeIncidentSeverity(incident: NormalizedIncident): ExperienceSignal
   return 'operational';
 }
 
-function computeConfidence(samples: number, hasOfficial: boolean, hasReports: boolean): number {
-  let confidence = 0.35;
-  if (samples >= 10) confidence += 0.35;
-  else if (samples >= 5) confidence += 0.2;
-  else if (samples >= 1) confidence += 0.1;
-  if (hasOfficial) confidence += 0.2;
-  if (hasReports) confidence += 0.1;
-  return Math.min(0.95, Math.max(0.2, confidence));
-}
 
 function summarizeRegions(reports: Array<{ region?: string }>): Array<{ region: string; count: number }> {
   const counts: Record<string, number> = {};
@@ -342,81 +226,6 @@ export function classifyCasualReport(headers: Headers, ip: string, ua: string): 
   };
 }
 
-async function loadRecentTelemetry(providerId: string, since: Date, until: Date) {
-  const db = getDb();
-  let query: FirebaseFirestore.Query = db
-    .collection('telemetry_events')
-    .where('timestamp', '>=', Timestamp.fromDate(since))
-    .where('timestamp', '<=', Timestamp.fromDate(until))
-    .where('providerId', '==', providerId)
-    .where('source', '==', 'crowd');
-  try {
-    const snapshot = await query.limit(800).get();
-    return snapshot.docs.map((doc) => doc.data());
-  } catch (error: any) {
-    if (error?.code === 9 || error?.message?.includes('index')) {
-      const fallback = await db.collection('telemetry_events').limit(300).get();
-      return fallback.docs.map((doc) => doc.data()).filter((event) => {
-        const ts = event.timestamp?.toDate?.()?.getTime?.() || 0;
-        return ts >= since.getTime() && ts <= until.getTime() && event.providerId === providerId;
-      });
-    }
-    throw error;
-  }
-}
-
-// A feed that has not updated in this long is treated as silent, not green.
-const OFFICIAL_FEED_STALE_MS = 2 * 60 * 60 * 1000;
-
-const syntheticCache = new TtlCache<Array<FirebaseFirestore.DocumentData>>(240_000);
-
-async function loadRecentSynthetic(providerId: string, since: Date, until: Date) {
-  // Probes are written every 15 minutes; a 60s cache cannot go stale but keeps
-  // repeated page renders from re-reading up to 800 documents each time.
-  const cacheKey = `${providerId}:${Math.floor(since.getTime() / 60_000)}:${Math.floor(until.getTime() / 60_000)}`;
-  return syntheticCache.wrap(cacheKey, () => loadRecentSyntheticUncached(providerId, since, until));
-}
-
-async function loadRecentSyntheticUncached(providerId: string, since: Date, until: Date) {
-  // One document instead of a windowed scan of the probe collection.
-  const rollup = await readProbeRollup(providerId).catch(() => null);
-  if (rollup) {
-    return rollup.filter((event) => {
-      const ms = event?.timestamp?.toDate?.()?.getTime?.() ?? 0;
-      return ms >= since.getTime() && ms <= until.getTime();
-    });
-  }
-
-  const db = getDb();
-  let query: FirebaseFirestore.Query = db
-    .collection('synthetic_probes')
-    .where('timestamp', '>=', Timestamp.fromDate(since))
-    .where('timestamp', '<=', Timestamp.fromDate(until))
-    .where('providerId', '==', providerId);
-  try {
-    const snapshot = await query.limit(800).get();
-    return snapshot.docs.map((doc) => doc.data());
-  } catch (error: any) {
-    if (error?.code === 9 || error?.message?.includes('index')) {
-      const fallback = await db.collection('synthetic_probes').limit(300).get();
-      return fallback.docs.map((doc) => doc.data()).filter((event) => {
-        const ts = event.timestamp?.toDate?.()?.getTime?.() || 0;
-        return ts >= since.getTime() && ts <= until.getTime() && event.providerId === providerId;
-      });
-    }
-    throw error;
-  }
-}
-
-function matchesEndpoints(record: any, endpoints: string[]) {
-  if (!endpoints.length) return true;
-  const endpoint = String(record.endpoint || '').toLowerCase();
-  return endpoints.some((value) => endpoint.includes(value));
-}
-
-function pickSurfaceEvents(events: any[], endpoints: string[]): any[] {
-  return events.filter((event) => matchesEndpoints(event, endpoints));
-}
 
 function calculateTypicalResolution(incidents: NormalizedIncident[]): number | undefined {
   const durations = incidents
@@ -464,17 +273,13 @@ export function getCasualApp(appId: string): CasualAppConfig | undefined {
   );
 }
 
-export async function getCasualStatus(options: { appId: string; windowMinutes?: number }): Promise<ExperienceStatus | null> {
+export async function getCasualStatus(options: { appId: string }): Promise<ExperienceStatus | null> {
   const app = getCasualApp(options.appId);
   if (!app) return null;
   try {
-    const windowMinutes = options.windowMinutes || DEFAULT_WINDOW_MINUTES;
     const now = new Date();
-    const since = new Date(Date.now() - windowMinutes * 60 * 1000);
 
-    const [telemetryEvents, syntheticEvents, incidents, summaries] = await Promise.all([
-      loadRecentTelemetry(app.providerId, since, now),
-      loadRecentSynthetic(app.providerId, since, now),
+    const [incidents, summaries] = await Promise.all([
       intelligenceService.getIncidents({ providerId: app.providerId, limit: 20 }),
       intelligenceService.getProviderSummaries().catch(() => []),
     ]);
@@ -485,6 +290,12 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
     const official = summaries.find((s) => s.providerId === app.providerId);
     const officialAgeMs = official?.lastUpdated ? now.getTime() - Date.parse(official.lastUpdated) : Infinity;
     const officialAlive = Boolean(official) && official!.status !== 'unknown' && officialAgeMs < OFFICIAL_FEED_STALE_MS;
+    // The site consolidates what providers publish; it does not second-guess
+    // them. The official page decides the verdict. Only a provider that
+    // publishes no status page at all (Character.AI, Meta AI) is judged by
+    // whether its app answers our reachability check.
+    const hasOfficialFeed = providerHasOfficialFeed(app.providerId);
+    const officialVerdict: ExperienceSignal | null = officialAlive ? officialSignal(official!.status) : null;
 
     const STALE_INCIDENT_MS = 24 * 60 * 60 * 1000;
     const activeIncidents = incidents.filter((incident) => {
@@ -522,14 +333,10 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
     for (const surfaceId of app.surfaces) {
       const surface = normalizeSurface(surfaceId);
       const surfaceConfig = (surfacesConfig.surfaces as any)[surface];
-      const endpoints: string[] = surfaceConfig?.endpoints || [];
-      const syntheticScoped = pickSurfaceEvents(syntheticEvents, endpoints).map((event) => ({ ...event, source: 'synthetic' }));
-      const telemetryScoped = pickSurfaceEvents(telemetryEvents, endpoints).map((event) => ({ ...event, source: 'crowd' }));
-      const combined = [...syntheticScoped, ...telemetryScoped];
-
-      const summary = summarizeMetrics(combined);
-      let signalType = resolveSignalType(summary, surface);
-      let status = resolveSignalStatus(summary);
+      let signalType: string | null = null;
+      // Surfaces the official incidents don't single out inherit the page's
+      // overall word; "unknown" means there is no page or we could not read it.
+      let status: ExperienceSignal = hasOfficialFeed ? (officialVerdict ?? 'unknown') : 'unknown';
 
       const matchingIncidents = activeIncidents.filter((incident) =>
         classifyIncidentSurface(incident).includes(surface)
@@ -546,7 +353,7 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
 
       if (incidentSignal) {
         status = incidentSignal === 'down' ? 'down' : incidentSignal === 'degraded' ? 'degraded' : status;
-        if (!signalType) {
+        if (!signalType && incidentSignal !== 'operational') {
           if (surface === 'login') signalType = 'auth';
           else if (surface === 'billing') signalType = 'billing';
           if (surface === 'images') signalType = 'image_fail';
@@ -556,15 +363,10 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
         }
       }
 
-      // A request that just succeeded is proof the service is up, even if it
-      // is the only sample in the window (probes run every 15 min, so a
-      // single-endpoint app never accumulates three). A failure or two is
-      // not yet proof of an outage; until the failures persist, fall back on
-      // the official feed and admit "unknown" if there is none.
-      const thinAndNotClean = summary.sampleCount < 3 && status !== 'operational';
-      if ((thinAndNotClean || status === 'unknown') && !incidentSignal) {
-        status = officialAlive ? 'operational' : 'unknown';
-        signalType = null;
+      // A page that says degraded without naming a surface: the generic
+      // "errors" explanation is the honest one.
+      if (hasOfficialFeed && !incidentSignal && (status === 'degraded' || status === 'down') && !signalType) {
+        signalType = 'errors';
       }
 
       const translation = pickTranslation(signalType, surface);
@@ -581,17 +383,10 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
         headline: translation.headline,
         symptoms,
         actions,
-        confidence: computeConfidence(summary.sampleCount, Boolean(incidentSignal), false),
+        confidence: officialAlive ? 0.9 : 0.2,
         updated_at: now.toISOString(),
         evidence,
-        sources: summary.sources.length ? summary.sources : ['synthetic'],
-        metrics: {
-          latency_p95_ms: summary.latencyP95,
-          http_429_rate: summary.http429Rate,
-          http_5xx_rate: summary.http5xxRate,
-          stream_disconnect_rate: summary.streamDisconnectRate,
-          sample_count: summary.sampleCount,
-        },
+        sources: ['official'],
       });
     }
 
@@ -641,6 +436,13 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       },
       evidence,
       official_notices: officialNotices,
+      official_page: {
+        exists: hasOfficialFeed,
+        url: providerService.getProvider(app.providerId)?.statusPageUrl,
+        read_at: official?.lastUpdated || undefined,
+        says: official?.description || undefined,
+        status: official?.status ? String(official.status) : undefined,
+      },
     };
   } catch (error) {
     // We could not compute a verdict. That is not evidence of "up".
@@ -679,6 +481,7 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       history: {},
       evidence: [],
       official_notices: [],
+      official_page: { exists: providerHasOfficialFeed(app.providerId) },
     };
   }
 }
@@ -803,21 +606,15 @@ export async function listUpAlternatives(
   excludeAppId: string,
   limit = 4
 ): Promise<Array<{ id: string; label: string }>> {
-  const [summaries, openGaps] = await Promise.all([
-    intelligenceService.getProviderSummaries().catch(() => []),
-    getOpenGaps().catch(() => []),
-  ]);
+  const summaries = await intelligenceService.getProviderSummaries().catch(() => []);
   const byProvider = new Map(summaries.map((summary) => [summary.providerId, summary]));
-  const gapped = new Set(openGaps.map((gap) => gap.providerId));
 
   return listCasualApps()
     .filter((app) => app.id !== excludeAppId)
     .filter((app) => {
       const summary = byProvider.get(app.providerId);
       if (!summary || summary.status !== 'operational') return false;
-      if (summary.activeIncidentCount) return false;
-      // Our own probes disagreeing with the official page also disqualifies it.
-      return !gapped.has(app.providerId);
+      return !summary.activeIncidentCount;
     })
     .slice(0, limit)
     .map((app) => ({ id: app.id, label: app.label }));

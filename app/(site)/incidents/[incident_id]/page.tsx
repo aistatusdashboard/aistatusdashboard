@@ -3,7 +3,6 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getIncidentById } from '@/lib/services/public-data';
-import { getCaughtBadgeForIncident } from '@/lib/services/gap-detector';
 import { providerService } from '@/lib/services/providers';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { log } from '@/lib/utils/logger';
@@ -155,7 +154,6 @@ export default async function IncidentDetailPage({
   const resolved =
     ['resolved', 'completed', 'cancelled'].includes(String(incident.status || '').toLowerCase()) ||
     Boolean(incident.resolvedAt);
-  const caught = await getCaughtBadgeForIncident(incident.providerId, incident.startedAt);
   const impactedParts = [
     incident.impactedComponentNames?.length
       ? incident.impactedComponentNames.join(', ')
@@ -186,11 +184,6 @@ export default async function IncidentDetailPage({
             >
               {resolved ? 'Resolved' : 'Ongoing'}
             </span>
-            {caught && (
-              <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900">
-                Our tests caught this {caught.leadMinutes} min before it was acknowledged
-              </span>
-            )}
           </span>
         </header>
 

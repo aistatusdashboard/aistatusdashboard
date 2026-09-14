@@ -22,6 +22,8 @@ export type PlatformType =
   | 'instatus'
   | 'flashcat'
   | 'browser'
+  | 'incidentio'
+  | 'endpoint'
   | 'betterstack'
   | 'statusio'
   | 'cachet'

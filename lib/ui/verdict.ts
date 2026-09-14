@@ -44,9 +44,9 @@ export const VERDICT_COPY: Record<
     label: 'Down',
   },
   unknown: {
-    word: 'Checking',
-    sentence: (name) => `We can't verify ${name} right now.`,
-    label: 'Checking',
+    word: 'Unknown',
+    sentence: (name) => `We can't read ${name}'s status right now.`,
+    label: 'Unknown',
   },
 };
 

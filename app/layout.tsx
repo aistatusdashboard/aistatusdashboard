@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: '%s | AI Status',
   },
   description:
-    'Is ChatGPT down? Is Claude down? Live, plain-English status for the AI apps you use — checked with our own tests every few minutes.',
+    'Is ChatGPT down? Is Claude down? The official status of every major AI app, in one place and in plain English — read every five minutes.',
   authors: [{ name: 'AI Status' }],
   creator: 'AI Status',
   publisher: 'AI Status',

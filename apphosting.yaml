@@ -63,15 +63,3 @@ env:
     secret: "SMTP_PASSWORD"
   - variable: FIREBASE_SERVICE_ACCOUNT_KEY
     secret: "FIREBASE_SERVICE_ACCOUNT_KEY"
-  - variable: GOOGLE_GEMINI_API_KEY
-    secret: "GOOGLE_GEMINI_API_KEY"
-  - variable: OPENAI_API_KEY
-    secret: "OPENAI_API_KEY"
-  - variable: ANTHROPIC_API_KEY
-    secret: "ANTHROPIC_API_KEY"
-  - variable: MISTRAL_API_KEY
-    secret: "MISTRAL_API_KEY"
-  - variable: DEEPSEEK_API_KEY
-    secret: "DEEPSEEK_API_KEY"
-  - variable: XAI_API_KEY
-    secret: "XAI_API_KEY"

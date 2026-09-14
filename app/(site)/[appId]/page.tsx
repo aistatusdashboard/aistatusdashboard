@@ -3,8 +3,6 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
-import { getProbeReceipt } from '@/lib/services/probe-receipt';
-import { getOpenGap } from '@/lib/services/gap-detector';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
@@ -40,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<AppParams> 
   if (!app) return { title: 'Status' };
   const name = shortName(app.id, app.label);
   const title = `Is ${name} down? Live status`;
-  const description = `Is ${name} down right now, or is it just you? Live status from our own tests, official incident reports, and user reports — in plain English.`;
+  const description = `Is ${name} down right now, or is it just you? ${app.providerDisplay}'s official status, read every five minutes and put in plain English.`;
   return {
     title,
     description,
@@ -64,11 +62,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const app = getCasualApp(appId);
   if (!app) return notFound();
 
-  const [status, receipt, openGap] = await Promise.all([
-    getCasualStatus({ appId: app.id }).catch(() => null),
-    getProbeReceipt(app.providerId),
-    getOpenGap(app.providerId),
-  ]);
+  const status = await getCasualStatus({ appId: app.id }).catch(() => null);
   const name = shortName(app.id, app.label);
 
   if (!status) {
@@ -91,11 +85,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
     );
   }
 
-  // An open gap (our probes failing, official page still green) outranks a
-  // green official verdict — that's the whole point of testing independently.
-  const rawKey = verdictKey(status.overall_status);
-  const key = openGap && rawKey === 'up' ? 'wobbly' : rawKey;
+  const key = verdictKey(status.overall_status);
   const tone = VERDICT_TONE[key];
+  const page = status.official_page;
+  const sourceKind = page.url && /status|health|api/i.test(page.url) && !/\/status|status\./i.test(page.url) ? 'public endpoint' : 'status page';
 
   const answer =
     key === 'down'
@@ -103,7 +96,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
       : key === 'wobbly'
         ? `Sort of — ${name} is having issues.`
         : key === 'unknown'
-          ? `We can't verify ${name} right now.`
+          ? `We can't read ${name}'s status right now.`
           : `No — ${name} is up.`;
 
   const reports = status.is_it_just_me;
@@ -125,13 +118,13 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const faqs: Array<{ q: string; a: string }> = [
     {
       q: `Is ${name} down right now?`,
-      a: `${answer} ${status.headline} This is based on ${provider}'s official incident feed, our own independent checks, and user reports, updated every few minutes.`,
+      a: `${answer} ${status.headline} This is ${provider}'s own reported status, read every five minutes.`,
     },
     {
       q: `Why is ${name} not working for me?`,
       a:
         key === 'up'
-          ? `${name} looks healthy on our checks right now, so a problem is likely on your side: try refreshing, logging out and back in, disabling VPNs or browser extensions, or switching networks. If others start reporting the same issue, this page will say so.`
+          ? `${provider} reports ${name} as operational right now, so a problem is likely on your side: try refreshing, logging out and back in, disabling VPNs or browser extensions, or switching networks. If others start reporting the same issue, this page will say so.`
           : `${name} is currently having service-side problems, so it is probably not you. ${status.symptoms.slice(0, 2).join('. ')}.`,
     },
     {
@@ -143,14 +136,14 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
     {
       q: `What can I use while ${name} is down?`,
       a: alternatives.length
-        ? `Right now these comparable AI services are up: ${alternatives.map((item) => item.name).join(', ')}. We check each one independently every few minutes.`
+        ? `Right now these comparable AI services report themselves as up: ${alternatives.map((item) => item.name).join(', ')}.`
         : `Check our live board at aistatusdashboard.com for AI services that are currently up.`,
     },
     {
       q: `Does ${name} have an official status page?`,
       a: statusPageHost
-        ? `Yes — ${provider} publishes an official status page at ${statusPageHost}. Official pages sometimes lag behind real problems, which is why we also run our own independent tests.`
-        : `${provider} publishes service updates through its official channels; we combine those with our own independent tests.`,
+        ? `Yes — ${provider} publishes an official status page at ${statusPageHost}; this page mirrors it.`
+        : `${provider} does not publish a status page; this page reads ${provider}'s public ${sourceKind} instead.`,
     },
   ];
 
@@ -203,61 +196,32 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
               ))}
             </ul>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Our own tests pass, so this doesn&apos;t change the verdict above — but it may affect a specific feature.
+              Left open without an update for over a day, so it no longer drives the verdict — but it may still affect a specific feature.
             </p>
           </section>
         )}
 
-        {/* Caught it first: our probes disagree with the official page. */}
-        {openGap && (
-          <section className="rounded-2xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 p-5 space-y-2">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-amber-700 dark:text-amber-400">
-              Not yet acknowledged
-            </p>
-            <p className="text-sm text-amber-900 dark:text-amber-100">
-              Our live tests have failed {openGap.failCount} times in a row since{' '}
-              {formatTimeAgo(openGap.startedAt)}
-              {openGap.lastErrorCode ? ` (${openGap.lastErrorCode})` : ''}, but{' '}
-              {app.providerDisplay}&apos;s official status page still says operational. You may be
-              seeing this before it&apos;s announced.
-            </p>
-          </section>
-        )}
-
-        {/* The receipt: proof we actually tested it, plus a citable plain-text answer. */}
+        {/* What the provider says, and when we read it. */}
         <section className="surface-card p-5 space-y-3">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-            {receipt?.kind === 'real' ? 'Last independent test' : 'Last check'}
+            {page.exists ? `${app.providerDisplay}'s ${sourceKind}` : 'No official status'}
           </p>
-          {receipt ? (
-            <>
-              <p className="text-sm text-slate-700 dark:text-slate-200">
-                {formatTimeAgo(receipt.at)} —{' '}
-                {receipt.kind === 'real'
-                  ? receipt.ok
-                    ? `we sent ${app.providerDisplay} a real request; it answered in ${(receipt.latencyMs / 1000).toFixed(1)}s`
-                    : `we sent ${app.providerDisplay} a real request; it returned an error (${receipt.errorCode})`
-                  : receipt.ok
-                    ? `we read ${app.providerDisplay}'s official status feed in ${receipt.latencyMs}ms`
-                    : `we could not read ${app.providerDisplay}'s official status feed (${receipt.errorCode})`}{' '}
-                <span className={receipt.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} aria-hidden="true">
-                  {receipt.ok ? '✓' : '✗'}
-                </span>
-              </p>
-              <div className="flex items-end gap-[2px]" aria-label={`Test results over the last 24 hours: ${receipt.ticks.filter((t) => t.ok).length} of ${receipt.ticks.length} passed`}>
-                {receipt.ticks.map((tick) => (
-                  <span
-                    key={tick.at}
-                    className={`h-3 w-1 rounded-sm ${tick.ok ? 'bg-emerald-400/80' : 'bg-rose-500'}`}
-                    title={`${new Date(tick.at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC — ${tick.ok ? 'OK' : 'failed'}`}
-                  />
-                ))}
-                <span className="ml-2 font-mono text-[10px] text-slate-400 dark:text-slate-500">24h</span>
-              </div>
-            </>
+          {page.exists ? (
+            <p className="text-sm text-slate-700 dark:text-slate-200">
+              {page.read_at ? `Read ${formatTimeAgo(page.read_at)}` : 'Not read yet'}
+              {page.says ? ` — ${page.says}` : ''}
+              {page.url && (
+                <>
+                  {' '}
+                  <a className="underline" href={page.url} rel="noopener noreferrer" target="_blank">
+                    open it
+                  </a>
+                </>
+              )}
+            </p>
           ) : (
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              No test results recorded in the last 24 hours.
+              {app.providerDisplay} publishes no status page or public endpoint we can read.
             </p>
           )}
           <p className="text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-slate-700/60 pt-3">
@@ -274,11 +238,8 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
               year: 'numeric',
               timeZone: 'UTC',
             })}
-            , {name} is{' '}
-            {key === 'up' ? 'operational' : key === 'wobbly' ? 'having issues' : key === 'down' ? 'experiencing an outage' : 'unverified'}
-            {receipt
-              ? ` — our last ${receipt.kind === 'real' ? 'independent test' : 'check'} ${receipt.ok ? 'succeeded' : 'failed'} ${formatTimeAgo(receipt.at)}.`
-              : '.'}
+            , {app.providerDisplay} reports {name} as{' '}
+            {key === 'up' ? 'operational' : key === 'wobbly' ? 'having issues' : key === 'down' ? 'experiencing an outage' : 'unknown'}.
           </p>
         </section>
 
@@ -409,8 +370,8 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             </summary>
             <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
               <p>
-                This verdict combines three signals: {app.providerDisplay}&apos;s official incident
-                feed, our own live tests against the service, and reports from people on this page.
+                This verdict is {app.providerDisplay}&apos;s own reported status, read every five
+                minutes. Reports from people on this page are shown alongside it, never mixed into it.
               </p>
               {status.evidence.length > 0 && (
                 <ul className="list-disc list-inside">
