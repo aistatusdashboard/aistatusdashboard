@@ -72,11 +72,15 @@ describe('gap detector', () => {
     // an empty credit balance and Mistral 429 for a rate-limited key.
     store['provider_status/anthropic'] = { status: 'operational', activeIncidentCount: 0 };
     for (let i = 0; i < 6; i++) {
-      await updateGapState([{ providerId: 'anthropic', errorCode: 'http-400' }]);
+      await updateGapState([
+        { providerId: 'anthropic', errorCode: 'http-400', endpoint: 'messages', model: 'claude-haiku-4-5' },
+        // The free probes pass every cycle; they must not reset the streak.
+        { providerId: 'anthropic', endpoint: 'models', model: 'models' },
+      ]);
     }
     expect(store['gap_state/anthropic'].openGapId ?? null).toBeNull();
     expect(store['gap_state/anthropic'].consecutiveFails ?? 0).toBe(0);
-    expect(store['gap_state/anthropic'].misconfigStreak).toBe(6);
+    expect(store['gap_state/anthropic'].misconfig['messages:claude-haiku-4-5'].streak).toBe(6);
   });
 
   it('closes an already-open gap once the failures turn out to be ours', async () => {

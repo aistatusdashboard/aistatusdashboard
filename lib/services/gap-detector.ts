@@ -10,25 +10,41 @@ import { isOutageEvidence, isProbeMisconfiguration, isUnverifiable } from '@/lib
 const MISCONFIG_STREAK_TO_ALERT = 4; // probes run every 15 min
 const MISCONFIG_ALERT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
+// Tracked per endpoint: the paid chat probe can fail on our account while
+// the free /models and front-door probes for the same provider pass, and a
+// per-provider streak would reset on every one of those passes.
+function probeKey(outcome: ProbeOutcome): string {
+  return `${outcome.endpoint || 'probe'}:${outcome.model || ''}`.replace(/[.$/[\]#]/g, '_');
+}
+
 async function noteProbeHealth(
   db: FirebaseFirestore.Firestore,
-  providerId: string,
-  errorCode: string | undefined,
+  outcome: ProbeOutcome,
   state: Record<string, any>
 ): Promise<void> {
+  const { providerId, errorCode } = outcome;
   const ref = db.collection('gap_state').doc(providerId);
+  const key = probeKey(outcome);
+  const entries: Record<string, { streak?: number; code?: string | null; alertedAt?: string | null }> =
+    state.misconfig && typeof state.misconfig === 'object' ? state.misconfig : {};
+  const entry = entries[key] || {};
+
   if (!isProbeMisconfiguration(errorCode)) {
-    if (state.misconfigStreak) await ref.set({ misconfigStreak: 0, misconfigCode: null }, { merge: true });
+    if (entry.streak) await ref.set({ misconfig: { [key]: { streak: 0, code: null } } }, { merge: true });
     return;
   }
-  const streak = Number(state.misconfigStreak || 0) + 1;
-  const lastAlert = state.misconfigAlertedAt ? Date.parse(state.misconfigAlertedAt) : 0;
+  const streak = Number(entry.streak || 0) + 1;
+  const lastAlert = entry.alertedAt ? Date.parse(entry.alertedAt) : 0;
   const shouldAlert = streak >= MISCONFIG_STREAK_TO_ALERT && Date.now() - lastAlert > MISCONFIG_ALERT_COOLDOWN_MS;
   await ref.set(
     {
-      misconfigStreak: streak,
-      misconfigCode: errorCode,
-      ...(shouldAlert ? { misconfigAlertedAt: new Date().toISOString() } : {}),
+      misconfig: {
+        [key]: {
+          streak,
+          code: errorCode,
+          ...(shouldAlert ? { alertedAt: new Date().toISOString() } : {}),
+        },
+      },
     },
     { merge: true }
   );
@@ -46,13 +62,13 @@ async function noteProbeHealth(
   await db.collection('emailQueue').add({
     to,
     subject: `Probe for ${providerId} is failing on our side (${errorCode})`,
-    html: `<p>The real-API probe for <b>${providerId}</b> has returned <code>${errorCode}</code> ${streak} times in a row.</p>
+    html: `<p>The <b>${outcome.endpoint || 'probe'}</b> probe for <b>${providerId}</b>${outcome.model ? ` (${outcome.model})` : ''} has returned <code>${errorCode}</code> ${streak} times in a row.</p>
 <p>${hint}</p>
-<p>These failures are no longer shown to visitors as an outage, but until fixed the site has no independent signal for this provider.</p>`,
+<p>These failures are not shown to visitors as an outage, but until fixed the site has no real inference test for this provider — only the free liveness checks.</p>`,
     status: 'pending',
     createdAt: new Date(),
   });
-  log('warn', 'Probe misconfiguration alert queued', { providerId, errorCode, streak });
+  log('warn', 'Probe misconfiguration alert queued', { providerId, endpoint: outcome.endpoint, errorCode, streak });
 }
 
 // The "caught it first" detector: an open gap means our real API probes are
@@ -82,6 +98,8 @@ export type CaughtEvent = {
 type ProbeOutcome = {
   providerId: string;
   errorCode?: string;
+  endpoint?: string;
+  model?: string;
 };
 
 async function officialLooksOperational(providerId: string): Promise<boolean> {
@@ -105,7 +123,7 @@ export async function updateGapState(outcomes: ProbeOutcome[]): Promise<void> {
       const stateRef = db.collection('gap_state').doc(outcome.providerId);
       const stateDoc = await stateRef.get();
       const state = stateDoc.exists ? stateDoc.data() || {} : {};
-      await noteProbeHealth(db, outcome.providerId, outcome.errorCode, state);
+      await noteProbeHealth(db, outcome, state);
       // A bot wall is not a result: it must neither open nor close anything.
       if (isUnverifiable(outcome.errorCode)) continue;
       const failed = isOutageEvidence(outcome.errorCode);
