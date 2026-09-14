@@ -1,6 +1,6 @@
 import { TtlCache } from '@/lib/utils/ttl-cache';
 import { readProbeRollup } from '@/lib/services/probe-store';
-import { isProbeMisconfiguration, isUnverifiable } from '@/lib/services/probe-signal';
+import { isOutageEvidence, isProbeMisconfiguration, isUnverifiable } from '@/lib/services/probe-signal';
 import { getDb } from '@/lib/db/firestore';
 import { config } from '@/lib/config';
 import { intelligenceService } from '@/lib/services/intelligence';
@@ -19,6 +19,7 @@ import type {
 } from '@/lib/types/casual';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import crypto from 'crypto';
+import { log } from '@/lib/utils/logger';
 
 import translationRules from '@/lib/casual/translation_rules.json';
 import guidanceCards from '@/lib/casual/guidance_cards.json';
@@ -79,6 +80,9 @@ type MetricSummary = {
   http429Rate?: number;
   http5xxRate?: number;
   streamDisconnectRate?: number;
+  // Share of probes that failed outright (timeout, DNS, connection reset).
+  // Those carry no HTTP status, so the 5xx rate alone would read them as fine.
+  failureRate?: number;
   sampleCount: number;
   sources: string[];
 };
@@ -116,6 +120,9 @@ function summarizeMetrics(input: Array<any>): MetricSummary {
     http429Rate: average(records.map((r) => r.http429Rate)),
     http5xxRate: average(records.map((r) => r.http5xxRate)),
     streamDisconnectRate: average(records.map((r) => r.streamDisconnectRate)),
+    failureRate: records.length
+      ? records.filter((r) => isOutageEvidence(r.errorCode)).length / records.length
+      : undefined,
     sampleCount: records.length,
     sources: Array.from(new Set(records.map((r) => r.source).filter(Boolean))),
   };
@@ -130,6 +137,9 @@ function resolveSignalType(summary: MetricSummary, surface: ExperienceSurfaceId)
     return 'rate_limit';
   }
   if (summary.http5xxRate !== undefined && summary.http5xxRate >= ERROR_RATE_DEGRADED) {
+    return 'errors';
+  }
+  if (summary.failureRate !== undefined && summary.failureRate >= ERROR_RATE_DEGRADED) {
     return 'errors';
   }
   if (summary.streamDisconnectRate !== undefined && summary.streamDisconnectRate >= STREAM_DISCONNECT_DEGRADED) {
@@ -147,6 +157,7 @@ function resolveSignalType(summary: MetricSummary, surface: ExperienceSurfaceId)
 function resolveSignalStatus(summary: MetricSummary): ExperienceSignal {
   if (!summary.sampleCount) return 'unknown';
   if ((summary.http5xxRate || 0) >= ERROR_RATE_DEGRADED) return 'down';
+  if ((summary.failureRate || 0) >= ERROR_RATE_DEGRADED) return 'down';
   if ((summary.http429Rate || 0) >= THROTTLE_RATE_DEGRADED) return 'degraded';
   if ((summary.streamDisconnectRate || 0) >= STREAM_DISCONNECT_DEGRADED) return 'degraded';
   if ((summary.latencyP95 || 0) >= LATENCY_DEGRADED_MS) return 'degraded';
@@ -516,7 +527,13 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
         }
       }
 
-      if ((summary.sampleCount < 3 || status === 'unknown') && !incidentSignal) {
+      // A request that just succeeded is proof the service is up, even if it
+      // is the only sample in the window (probes run every 15 min, so a
+      // single-endpoint app never accumulates three). A failure or two is
+      // not yet proof of an outage; until the failures persist, fall back on
+      // the official feed and admit "unknown" if there is none.
+      const thinAndNotClean = summary.sampleCount < 3 && status !== 'operational';
+      if ((thinAndNotClean || status === 'unknown') && !incidentSignal) {
         status = officialAlive ? 'operational' : 'unknown';
         signalType = null;
       }
@@ -597,12 +614,14 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       official_notices: officialNotices,
     };
   } catch (error) {
+    // We could not compute a verdict. That is not evidence of "up".
+    log('error', 'Casual verdict failed', { appId: app.id, error: error instanceof Error ? error.message : String(error) });
     const now = new Date().toISOString();
     return {
       app_id: app.id,
       app_name: app.label,
       provider_id: app.providerId,
-      overall_status: 'operational',
+      overall_status: 'unknown',
       headline: translationRules.defaults.headline,
       symptoms: translationRules.defaults.symptoms,
       actions: translationRules.defaults.actions,
@@ -611,14 +630,13 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       surfaces: app.surfaces.map((surfaceId) => ({
         id: surfaceId,
         label: (surfacesConfig.surfaces as any)[surfaceId]?.label || surfaceId,
-        status: 'operational',
+        status: 'unknown',
         headline: translationRules.defaults.headline,
         symptoms: translationRules.defaults.symptoms,
         actions: translationRules.defaults.actions,
         confidence: 0.3,
         updated_at: now,
         evidence: [],
-      official_notices: [],
         sources: [],
       })),
       is_it_just_me: {
