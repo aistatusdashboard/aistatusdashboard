@@ -36,7 +36,12 @@ export class EmailUtils {
         });
     }
 
-    static async sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+    static async sendEmail(
+        to: string,
+        subject: string,
+        html: string,
+        options: { text?: string; unsubscribeUrl?: string } = {}
+    ): Promise<boolean> {
         if (!config.email.enabled) {
             log('warn', 'Email disabled', { to, subject });
             return false;
@@ -49,11 +54,21 @@ export class EmailUtils {
         }
 
         try {
+            // A plain-text part and one-click unsubscribe headers are what
+            // Gmail/Yahoo expect from a sender; without them alert mail is
+            // far likelier to be filed as spam — and so are the confirmations.
+            const headers: Record<string, string> = {};
+            if (options.unsubscribeUrl) {
+                headers['List-Unsubscribe'] = `<${options.unsubscribeUrl}>`;
+                headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+            }
             await this.transporter.sendMail({
                 from: config.email.from,
                 to,
                 subject,
                 html,
+                text: options.text,
+                headers,
             });
             return true;
         } catch (error) {

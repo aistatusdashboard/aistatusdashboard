@@ -51,6 +51,8 @@ env:
     value: "thZbMJrJpI5W61kPQCXhMn44Gt9ycmYeTX6f2xxIg68"
   - variable: GEMINI_PROBE_MODEL
     value: "gemini-3.5-flash-lite"
+  - variable: GA_MP_API_SECRET
+    secret: "GA_MP_API_SECRET"
   - variable: CRON_SECRET
     secret: "CRON_SECRET"
   - variable: APP_CRON_SECRET

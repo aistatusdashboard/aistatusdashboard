@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
+import SubscriptionNotice from '@/app/components/SubscriptionNotice';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
 import { getOpenGaps, getRecentCaughtEvents } from '@/lib/services/gap-detector';
 import { searchIncidents } from '@/lib/services/public-data';
@@ -100,6 +102,9 @@ export default async function HomePage() {
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
       <div className="max-w-5xl mx-auto space-y-12">
+        <Suspense fallback={null}>
+          <SubscriptionNotice />
+        </Suspense>
         {/* The answer, before anything else. */}
         <header className="pt-6 md:pt-10 text-center space-y-4">
           <p className="font-mono text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">

@@ -2,6 +2,8 @@ import { StatusResult, ProviderStatus } from '@/lib/types';
 import { getDb } from '@/lib/db/firestore';
 import { log } from '@/lib/utils/logger';
 import { FieldValue } from 'firebase-admin/firestore';
+import { buildUnsubscribeUrl } from '@/lib/utils/unsubscribe-token';
+import { appIdForProvider } from '@/lib/casual/app-lookup';
 
 export class NotificationService {
     async notifyStatusChange(
@@ -9,6 +11,8 @@ export class NotificationService {
         previous: StatusResult
     ): Promise<void> {
         if (current.status === previous.status) return;
+        // "unknown" is our fetch failing, never the provider's state.
+        if (current.status === 'unknown' || previous.status === 'unknown') return;
 
         const changeType = this.getChangeType(current.status, previous.status);
         if (!changeType) return;
@@ -62,6 +66,7 @@ export class NotificationService {
     ) {
         const db = getDb();
         const batch = db.batch();
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://aistatusdashboard.com';
 
         // Get active subscriptions
         const snapshot = await db
@@ -92,6 +97,8 @@ export class NotificationService {
                         type,
                         timestamp: new Date().toISOString(),
                         statusPageUrl: current.statusPageUrl || '',
+                        appUrl: `${siteUrl}/${appIdForProvider(current.id)}`,
+                        unsubscribeUrl: buildUnsubscribeUrl(siteUrl, sub.email),
                     },
                     status: 'pending',
                     createdAt: new Date(),

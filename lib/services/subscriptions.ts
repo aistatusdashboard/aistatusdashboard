@@ -1,5 +1,7 @@
 import { getDb } from '@/lib/db/firestore';
 import { log } from '@/lib/utils/logger';
+import { appNameForProvider } from '@/lib/casual/app-lookup';
+import { sendServerEvent } from '@/lib/utils/ga-server';
 import crypto from 'crypto';
 import { Timestamp } from 'firebase-admin/firestore';
 
@@ -16,7 +18,9 @@ interface SubscriptionData {
 
 export class SubscriptionService {
     private readonly COLLECTION = 'emailSubscriptions'; // Matches NotificationService usage
-    private readonly CONFIRMATION_EXPIRY_HOURS = 24;
+    // A week: people sign up mid-outage and read the email whenever they next
+    // check mail; a 24h token was expiring under real users.
+    private readonly CONFIRMATION_EXPIRY_HOURS = 24 * 7;
     private readonly ADMIN_ALERT_ENV =
         process.env.ALERT_SIGNUP_NOTIFY_EMAIL ||
         process.env.CONTACT_EMAIL ||
@@ -76,7 +80,8 @@ export class SubscriptionService {
             };
 
             await docRef.set(subData);
-            await this.sendConfirmationEmail(email, token, options.siteUrl);
+            void sendServerEvent('subscription_created', { providers: providers.length });
+            await this.sendConfirmationEmail(email, token, options.siteUrl, providers);
             await this.queueAdminSignupEmail(email, providers, {
                 status: 'pending_confirmation',
                 siteUrl: options.siteUrl
@@ -102,6 +107,10 @@ export class SubscriptionService {
             const doc = snapshot.docs[0];
             const data = doc.data() as SubscriptionData;
 
+            // Idempotent: mail scanners prefetch links and people click twice.
+            // A second visit must read as success, not as a broken link.
+            if (data.confirmed) return { success: true, message: 'Already confirmed' };
+
             const expiry = data.confirmationTokenExpiry;
             const expiryDate =
                 expiry instanceof Date
@@ -116,12 +125,16 @@ export class SubscriptionService {
                 return { success: false, message: 'Token expired' };
             }
 
+            // The token is kept (not nulled) so a repeat click still resolves
+            // to this document and lands on the idempotent branch above.
             await doc.ref.update({
                 confirmed: true,
                 active: true,
-                confirmationToken: null,
-                confirmationTokenExpiry: null,
+                confirmedAt: new Date(),
                 updatedAt: new Date()
+            });
+            void sendServerEvent('subscription_confirmed', {
+                providers: Array.isArray(data.providers) ? data.providers.length : 0,
             });
 
             return { success: true, message: 'Email confirmed' };
@@ -155,7 +168,7 @@ export class SubscriptionService {
                 updatedAt: new Date()
             });
 
-            await this.sendConfirmationEmail(email, token, options.siteUrl);
+            await this.sendConfirmationEmail(email, token, options.siteUrl, data.providers || []);
             return { success: true, message: 'Confirmation resent' };
         } catch (e) {
             log('error', 'Resend failed', { error: e });
@@ -239,16 +252,17 @@ export class SubscriptionService {
         }
     }
 
-    private async sendConfirmationEmail(email: string, token: string, siteUrl?: string) {
+    private async sendConfirmationEmail(email: string, token: string, siteUrl?: string, providers: string[] = []) {
         const baseUrl = siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
         const link = `${baseUrl}/api/email/confirm?token=${token}`;
+        const apps = [...new Set(providers.map((id) => appNameForProvider(id)))];
 
         // Using emailQueue as per previous architecture
         const db = getDb();
         await db.collection('emailQueue').add({
             to: email,
             template: 'confirmation',
-            data: { link },
+            data: { link, apps },
             status: 'pending',
             createdAt: new Date()
         });

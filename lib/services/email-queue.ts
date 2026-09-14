@@ -56,6 +56,7 @@ export async function drainEmailQueue(): Promise<EmailQueueResult> {
 
       let subject: string | undefined = typeof data.subject === 'string' ? data.subject : undefined;
       let html: string | undefined = typeof data.html === 'string' ? data.html : undefined;
+      let text: string | undefined;
 
       if (!subject || !html) {
         const template = typeof data.template === 'string' ? data.template : undefined;
@@ -63,8 +64,11 @@ export async function drainEmailQueue(): Promise<EmailQueueResult> {
         if (rendered) {
           subject = rendered.subject;
           html = rendered.html;
+          text = rendered.text;
         }
       }
+      const unsubscribeUrl =
+        typeof data.data?.unsubscribeUrl === 'string' ? (data.data.unsubscribeUrl as string) : undefined;
 
       if (!subject || !html) {
         await doc.ref.update({
@@ -76,7 +80,7 @@ export async function drainEmailQueue(): Promise<EmailQueueResult> {
         return false;
       }
 
-      const success = await EmailUtils.sendEmail(data.to, subject, html);
+      const success = await EmailUtils.sendEmail(data.to, subject, html, { text, unsubscribeUrl });
 
       if (success) {
         await doc.ref.update({ status: 'sent', sentAt: new Date(), subject, updatedAt: new Date() });

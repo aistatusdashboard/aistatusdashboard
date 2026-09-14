@@ -1,5 +1,6 @@
 import { statusService } from './status';
 import { persistenceService } from './persistence';
+import { evaluateAlert } from './alert-state';
 import { notificationService } from './notifications';
 import { providerService } from './providers';
 import { log } from '@/lib/utils/logger';
@@ -16,13 +17,12 @@ export class StatusOrchestrator {
                 // 1. Get current status
                 const current = await statusService.checkProvider(provider);
 
-                // 2. Get previous status
-                const previous = await persistenceService.getLastStatus(provider.id);
-
-                // 3. Detect change and notify
-                if (previous && previous.status !== current.status) {
+                // 2. Decide whether this is an announceable change (persisted,
+                //    not a feed hiccup, not already announced) and notify.
+                const decision = await evaluateAlert(provider.id, current.status);
+                if (decision.notify) {
                     changesDetected++;
-                    await notificationService.notifyStatusChange(current, previous);
+                    await notificationService.notifyStatusChange(current, { ...current, status: decision.from });
                 }
 
                 // 4. Persist result
