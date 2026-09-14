@@ -16,6 +16,17 @@ export type ExperienceEvidence = {
   type: 'official' | 'observed' | 'incident' | 'metrics' | 'report';
 };
 
+// An incident the provider still lists as open but has not updated for a
+// day or more. It no longer drives the verdict (our own tests do), but a
+// visitor deserves to know the official page disagrees with "all clear".
+export type OfficialNotice = {
+  id: string;
+  title: string;
+  status: string;
+  updated_at: string;
+  url: string;
+};
+
 export type ExperienceSurfaceStatus = {
   id: ExperienceSurfaceId;
   label: string;
@@ -69,6 +80,7 @@ export type ExperienceStatus = {
   is_it_just_me: ExperienceReportSummary;
   history: ExperienceHistorySummary;
   evidence: ExperienceEvidence[];
+  official_notices: OfficialNotice[];
 };
 
 export type CasualAppConfig = {

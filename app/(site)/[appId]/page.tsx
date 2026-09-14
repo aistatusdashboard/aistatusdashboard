@@ -186,6 +186,28 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
           )}
         </header>
 
+        {/* The provider's own word, when it's open but stale: shown, not scored. */}
+        {status.official_notices.length > 0 && (
+          <section className="surface-card p-5 space-y-2">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+              Still open on {app.providerDisplay}&apos;s status page
+            </p>
+            <ul className="space-y-1.5">
+              {status.official_notices.map((notice) => (
+                <li key={notice.id} className="text-sm text-slate-700 dark:text-slate-200">
+                  <Link href={notice.url} className="underline">{notice.title}</Link>
+                  <span className="text-slate-500 dark:text-slate-400">
+                    {' '}— marked {notice.status}, no update since {formatTimeAgo(notice.updated_at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Our own tests pass, so this doesn&apos;t change the verdict above — but it may affect a specific feature.
+            </p>
+          </section>
+        )}
+
         {/* Caught it first: our probes disagree with the official page. */}
         {openGap && (
           <section className="rounded-2xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 p-5 space-y-2">

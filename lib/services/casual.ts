@@ -10,6 +10,7 @@ import type { NormalizedIncident } from '@/lib/types/ingestion';
 import type {
   CasualAppConfig,
   ExperienceEvidence,
+  OfficialNotice,
   ExperienceReportSummary,
   ExperienceSignal,
   ExperienceStatus,
@@ -459,6 +460,24 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       return true;
     });
 
+    // Open on the official page but silent for over a day: not evidence for
+    // the verdict, but shown to the visitor as the provider's own word.
+    const officialNotices: OfficialNotice[] = incidents
+      .filter((incident) => {
+        if (incident.resolvedAt) return false;
+        if (['resolved', 'completed', 'cancelled'].includes(incident.status)) return false;
+        const updated = Date.parse(incident.updatedAt || '');
+        return Number.isFinite(updated) && Date.now() - updated > STALE_INCIDENT_MS;
+      })
+      .slice(0, 3)
+      .map((incident) => ({
+        id: incident.id,
+        title: incident.title,
+        status: incident.status,
+        updated_at: incident.updatedAt,
+        url: `/incidents/${incident.providerId}:${incident.id}`,
+      }));
+
     const surfaceStatuses: ExperienceSurfaceStatus[] = [];
     for (const surfaceId of app.surfaces) {
       const surface = normalizeSurface(surfaceId);
@@ -575,6 +594,7 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
           : undefined,
       },
       evidence,
+      official_notices: officialNotices,
     };
   } catch (error) {
     const now = new Date().toISOString();
@@ -598,6 +618,7 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
         confidence: 0.3,
         updated_at: now,
         evidence: [],
+      official_notices: [],
         sources: [],
       })),
       is_it_just_me: {
@@ -610,6 +631,7 @@ export async function getCasualStatus(options: { appId: string; windowMinutes?: 
       },
       history: {},
       evidence: [],
+      official_notices: [],
     };
   }
 }
