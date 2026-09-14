@@ -50,10 +50,17 @@ export function parseDuration(text) {
 }
 
 async function settle(page, url) {
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-  // Cloudflare's non-interactive challenge swaps the document once solved.
-  await page.waitForFunction(() => !/just a moment/i.test(document.title), { timeout: 45_000 }).catch(() => {});
-  await page.waitForTimeout(2_000);
+  // The challenge occasionally stalls on a datacenter IP; one reload usually clears it.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    // Cloudflare's non-interactive challenge swaps the document once solved.
+    const solved = await page
+      .waitForFunction(() => !/just a moment/i.test(document.title), { timeout: 45_000 })
+      .then(() => true)
+      .catch(() => false);
+    await page.waitForTimeout(2_000);
+    if (solved) return;
+  }
 }
 
 async function readRootly(page, source) {
