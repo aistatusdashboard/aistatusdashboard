@@ -247,22 +247,7 @@ function pickLastSimilar(incidents: NormalizedIncident[]): NormalizedIncident | 
 }
 
 export function listCasualApps(): CasualAppConfig[] {
-  const configured = appsConfig.apps as CasualAppConfig[];
-  const byProvider = new Set(configured.map((app) => app.providerId));
-  const providerDerived: CasualAppConfig[] = providerService
-    .getProviders()
-    .filter((provider) => !byProvider.has(provider.id))
-    .map((provider) => {
-      const label = `${provider.displayName || provider.name} Status`;
-      return {
-        id: provider.id,
-        label,
-        providerId: provider.id,
-        providerDisplay: provider.displayName || provider.name,
-        surfaces: ['text', 'tools', 'login', 'rate_limits'],
-      };
-    });
-  return [...configured, ...providerDerived];
+  return appsConfig.apps as CasualAppConfig[];
 }
 
 export function getCasualApp(appId: string): CasualAppConfig | undefined {
