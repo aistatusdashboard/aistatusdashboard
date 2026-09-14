@@ -43,6 +43,12 @@ describe('rootly html extraction', () => {
     expect(incidents[1]).toMatchObject({ id: 'abc', status: 'Investigating', shownAt: '2026-07-02T07:40:00.000Z' });
   });
 
+  it('reads the status word when the icon is a self-closing <svg />', () => {
+    const html = HISTORY.replace('<svg></svg><span>Resolved</span>', '<svg class="hero-icon" width="16" />\n<span>Resolved</span>');
+    const incidents = extractRootlyIncidents(html, new Date('2026-09-14T00:00:00Z'));
+    expect(incidents[0].status).toBe('Resolved');
+  });
+
   it('assigns December to the earlier year when the quarter straddles New Year', () => {
     expect(parseRootlyDate('December 30 at 11:00 PM UTC', 'Nov 2026 - Jan 2027')).toBe('2026-12-30T23:00:00.000Z');
     expect(parseRootlyDate('January 2 at 01:00 AM UTC', 'Nov 2026 - Jan 2027')).toBe('2027-01-02T01:00:00.000Z');

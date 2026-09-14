@@ -74,8 +74,12 @@ export function extractRootlyIncidents(html: string, now = new Date()): BrowserF
     const card = part;
     const title = text(/<span class="hover:underline[^"]*">([\s\S]*?)<\/span>/.exec(card)?.[1]);
     const shown = text(/class="[^"]*hidden sm:flex">([\s\S]*?)<\/div>/.exec(card)?.[1]);
-    // The status word sits in the first span right after the status icon.
-    const status = text(/<\/svg>\s*<span>([\s\S]*?)<\/span>/.exec(card)?.[1]);
+    // The status word is a bare <span> holding one of Rootly's status
+    // labels; the icon before it renders as <svg>…</svg> or <svg … /> depending
+    // on the serializer, so don't anchor on it.
+    const status = text(
+      /<span>\s*(Resolved|Investigating|Identified|Monitoring|Scheduled|In progress|Completed|Cancelled|Verifying|Mitigated)\s*<\/span>/i.exec(card)?.[1]
+    );
     const message = text(/status-page-markdown-content">([\s\S]*?)<\/span>/.exec(card)?.[1]);
     const duration = /<p>\s*(Resolved after[^<]*)<\/p>/.exec(card)?.[1] || '';
     const shownAt = parseRootlyDate(shown, range, now);

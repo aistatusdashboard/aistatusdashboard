@@ -21,9 +21,11 @@ function worst(severities: NormalizedSeverity[]): NormalizedSeverity {
   return severities.reduce<NormalizedSeverity>((acc, s) => (rank[s] > rank[acc] ? s : acc), 'operational');
 }
 
-function incidentStatusFrom(raw: string): NormalizedIncidentStatus {
+function incidentStatusFrom(raw: string, message?: string): NormalizedIncidentStatus {
   const s = raw.toLowerCase();
-  if (s.includes('resolved') || s.includes('completed')) return 'resolved';
+  // No status word read: the latest update's wording is the next best thing.
+  if (!s && message && /\b(resolved|completed|has been fixed|is now fixed)\b/i.test(message)) return 'resolved';
+  if (s.includes('resolved') || s.includes('completed') || s.includes('cancelled')) return 'resolved';
   if (s.includes('identified')) return 'identified';
   if (s.includes('monitoring')) return 'monitoring';
   return 'investigating';
@@ -49,7 +51,7 @@ export function parseRootlySnapshot(
   const incidents: NormalizedIncident[] = snapshot.incidents
     .filter((i) => i && typeof i.title === 'string' && Number.isFinite(Date.parse(i.shownAt)))
     .map((i) => {
-      const status = incidentStatusFrom(String(i.status || ''));
+      const status = incidentStatusFrom(String(i.status || ''), i.message);
       const shown = new Date(i.shownAt).toISOString();
       const started =
         typeof i.durationMinutes === 'number' && i.durationMinutes > 0

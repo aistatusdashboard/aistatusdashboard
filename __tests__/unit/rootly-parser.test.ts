@@ -63,6 +63,14 @@ describe('parseRootlySnapshot', () => {
     expect(parsed.status).toBe('unknown');
   });
 
+  it('never counts an entry with no status word as open when its update says resolved', () => {
+    const parsed = parseRootlySnapshot(
+      snapshot({ incidents: [{ id: 'x', title: 'Console Degraded', status: '', message: 'The incident has been resolved', shownAt: '2026-09-10T16:50:00.000Z' }] })
+    );
+    expect(parsed.incidents[0].status).toBe('resolved');
+    expect(parsed.status).toBe('operational');
+  });
+
   it('drops entries whose date could not be read', () => {
     const parsed = parseRootlySnapshot(
       snapshot({ incidents: [{ id: 'bad', title: 'Broken', status: 'Resolved', shownAt: 'not a date' }] })
