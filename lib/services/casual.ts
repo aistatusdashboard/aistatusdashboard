@@ -162,14 +162,6 @@ function classifyIncidentSurface(incident: NormalizedIncident): ExperienceSurfac
   return matched.length ? matched : ['text'];
 }
 
-function computeIncidentSeverity(incident: NormalizedIncident): ExperienceSignal {
-  if (incident.severity === 'major_outage') return 'down';
-  if (incident.severity === 'partial_outage' || incident.severity === 'degraded') return 'degraded';
-  if (incident.status === 'investigating' || incident.status === 'identified') return 'degraded';
-  return 'operational';
-}
-
-
 function summarizeRegions(reports: Array<{ region?: string }>): Array<{ region: string; count: number }> {
   const counts: Record<string, number> = {};
   reports.forEach((report) => {
@@ -313,23 +305,27 @@ export async function getCasualStatus(options: { appId: string }): Promise<Exper
       return true;
     });
 
-    // Open on the official page but silent for over a day: not evidence for
-    // the verdict, but shown to the visitor as the provider's own word.
-    const officialNotices: OfficialNotice[] = incidents
-      .filter((incident) => {
-        if (incident.resolvedAt) return false;
-        if (['resolved', 'completed', 'cancelled'].includes(incident.status)) return false;
-        const updated = Date.parse(incident.updatedAt || '');
-        return Number.isFinite(updated) && Date.now() - updated > STALE_INCIDENT_MS;
-      })
-      .slice(0, 3)
-      .map((incident) => ({
-        id: incident.id,
-        title: incident.title,
-        status: incident.status,
-        updated_at: incident.updatedAt,
-        url: `/incidents/${incident.providerId}:${incident.id}`,
-      }));
+    // When the provider's own banner is green but it still has an incident
+    // open (typically one downgraded to "monitoring"), we show that incident
+    // as context — we do NOT flip the verdict past what their banner says.
+    // That would make us more alarmist than the provider itself.
+    const officialNotices: OfficialNotice[] =
+      officialVerdict === 'operational'
+        ? incidents
+            .filter((incident) => {
+              if (incident.resolvedAt) return false;
+              return !['resolved', 'completed', 'cancelled'].includes(incident.status);
+            })
+            .sort((a, b) => Date.parse(b.updatedAt || '') - Date.parse(a.updatedAt || ''))
+            .slice(0, 3)
+            .map((incident) => ({
+              id: incident.id,
+              title: incident.title,
+              status: incident.status,
+              updated_at: incident.updatedAt,
+              url: `/incidents/${incident.providerId}:${incident.id}`,
+            }))
+        : [];
 
     const surfaceStatuses: ExperienceSurfaceStatus[] = [];
     for (const surfaceId of app.surfaces) {
@@ -340,43 +336,22 @@ export async function getCasualStatus(options: { appId: string }): Promise<Exper
       // overall word; "unknown" means there is no page or we could not read it.
       let status: ExperienceSignal = hasOfficialFeed ? (officialVerdict ?? 'unknown') : 'unknown';
 
+      // The verdict is the provider's own overall status. Their banner already
+      // reflects any active incident (that is what a status indicator is for),
+      // so incidents explain the verdict — they never override it upward.
       const matchingIncidents = activeIncidents.filter((incident) =>
         classifyIncidentSurface(incident).includes(surface)
       );
-      let incidentSignal: ExperienceSignal | null = null;
-      if (matchingIncidents.length) {
-        incidentSignal = matchingIncidents.reduce<ExperienceSignal>((acc, incident) => {
-          const next = computeIncidentSeverity(incident);
-          if (next === 'down') return 'down';
-          if (next === 'degraded' && acc !== 'down') return 'degraded';
-          return acc;
-        }, 'operational');
-      }
-
-      if (incidentSignal) {
-        status = incidentSignal === 'down' ? 'down' : incidentSignal === 'degraded' ? 'degraded' : status;
-        if (!signalType && incidentSignal !== 'operational') {
-          if (surface === 'login') signalType = 'auth';
-          else if (surface === 'billing') signalType = 'billing';
-          if (surface === 'images') signalType = 'image_fail';
-          if (!signalType) {
-            signalType = incidentSignal === 'down' ? 'errors' : 'latency';
-          }
-        }
-      }
-
-      // A page that says degraded without naming a surface: the generic
-      // "errors" explanation is the honest one.
-      if (hasOfficialFeed && !incidentSignal && (status === 'degraded' || status === 'down') && !signalType) {
+      if (status === 'degraded' || status === 'down') {
         signalType = 'errors';
       }
 
       const translation = pickTranslation(signalType, surface);
       const guidance = pickGuidance(surface, signalType);
       const actions = translation.actions.concat(guidance).slice(0, 5);
-      // The provider's own words when they have said something; the generic
-      // description only when the page is degraded without naming anything.
-      const spoken = describeIncidents(matchingIncidents);
+      // When the provider reports a problem, describe it in their own words;
+      // when their banner is green, say nothing beyond the default.
+      const spoken = status === 'operational' ? { headline: '', symptoms: [] } : describeIncidents(matchingIncidents);
       const headline = spoken.headline || (status === 'operational' ? translationRules.defaults.headline : translation.headline);
       const symptoms = spoken.symptoms.length ? spoken.symptoms : status === 'operational' ? [] : translation.symptoms.slice();
 

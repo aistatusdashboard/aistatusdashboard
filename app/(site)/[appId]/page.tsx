@@ -196,7 +196,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
               ))}
             </ul>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Left open without an update for over a day, so it no longer drives the verdict — but it may still affect a specific feature.
+              {app.providerDisplay} still lists this on its status page while reporting overall service as operational — usually an incident being monitored after a fix. It may still affect a specific feature.
             </p>
           </section>
         )}
