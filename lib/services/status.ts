@@ -1,5 +1,9 @@
 import { Provider, StatusResult, ProviderStatus } from '@/lib/types';
 import { parseFlashcatActive } from '@/lib/utils/flashcat-parser';
+import { parseRootlySnapshot } from '@/lib/utils/rootly-parser';
+import { readFeedSnapshot } from '@/lib/services/feed-snapshots';
+import sourcesConfig from '@/lib/data/sources.json';
+import type { SourceDefinition } from '@/lib/types/ingestion';
 import { log } from '@/lib/utils/logger';
 import { config } from '@/lib/config';
 import {
@@ -23,6 +27,12 @@ export class StatusService {
 
         const startTime = Date.now();
         let lastError: string | undefined;
+
+        if (provider.format === 'browser') {
+            const result = await this.checkFromBrowserSnapshot(provider, startTime);
+            this.setCached(provider.id, result);
+            return result;
+        }
 
         for (let attempt = 0; attempt <= config.monitoring.defaultRetries; attempt++) {
             try {
@@ -83,6 +93,32 @@ export class StatusService {
             error: lastError,
             details: 'Unverified: status endpoint unreachable',
             statusPageUrl: provider.statusPageUrl,
+        };
+    }
+
+    // Pages we cannot fetch directly are rendered by the browser feed job;
+    // its latest snapshot stands in for the HTTP response.
+    private async checkFromBrowserSnapshot(provider: Provider, startTime: number): Promise<StatusResult> {
+        const sources = (sourcesConfig as { sources: SourceDefinition[] }).sources || [];
+        const source = sources.find((s) => s.providerId === provider.id && s.platform === 'browser');
+        const snapshot = source ? await readFeedSnapshot(source.id).catch(() => null) : null;
+        const base = {
+            id: provider.id,
+            name: provider.name,
+            displayName: provider.displayName || provider.name,
+            aliases: provider.aliases,
+            responseTime: Date.now() - startTime,
+            lastChecked: new Date().toISOString(),
+            statusPageUrl: provider.statusPageUrl,
+        };
+        if (!snapshot) {
+            return { ...base, status: 'unknown', details: 'Unverified: no recent browser snapshot of the status page' };
+        }
+        const parsed = parseRootlySnapshot(snapshot);
+        return {
+            ...base,
+            status: parsed.status as ProviderStatus,
+            details: `${snapshot.overall} (rendered ${snapshot.fetchedAt})`,
         };
     }
 

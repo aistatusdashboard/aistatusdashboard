@@ -91,9 +91,9 @@
         "mistral large"
       ],
       "category": "LLM",
-      "statusUrl": "https://status.mistral.ai/api/v2/status.json",
+      "statusUrl": "https://status.mistral.ai",
       "statusPageUrl": "https://status.mistral.ai",
-      "format": "statuspage",
+      "format": "browser",
       "enabled": true
     },
     {

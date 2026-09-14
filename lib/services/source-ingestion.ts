@@ -34,6 +34,8 @@ import {
 import { parseHtmlResponse, parseMetaStatusResponse } from '@/lib/utils/status-parsers';
 import { sourceRegistryService } from '@/lib/services/source-registry';
 import { parseFlashcatActive, parseFlashcatChange } from '@/lib/utils/flashcat-parser';
+import { parseRootlySnapshot } from '@/lib/utils/rootly-parser';
+import { readFeedSnapshot } from '@/lib/services/feed-snapshots';
 import { getGcpProductCatalog } from '@/lib/services/gcp-product-catalog';
 import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils/google-cloud';
 
@@ -505,6 +507,8 @@ export class SourceIngestionService {
         return this.fetchInstatus(source, base);
       case 'flashcat':
         return this.fetchFlashcat(source, base);
+      case 'browser':
+        return this.fetchBrowserSnapshot(source);
       case 'meta':
         return this.fetchMeta(source, base);
       case 'google-cloud':
@@ -646,6 +650,27 @@ export class SourceIngestionService {
       lastUpdated: new Date().toISOString(),
       components: parsed.components,
       incidents,
+      maintenances: [],
+    };
+  }
+
+  // The page is rendered by a scheduled browser job (see
+  // .github/workflows/browser-feeds.yml) that posts a snapshot; a snapshot
+  // older than an hour counts as an unreachable feed.
+  private async fetchBrowserSnapshot(source: SourceDefinition): Promise<NormalizedProviderSummary | null> {
+    const snapshot = await readFeedSnapshot(source.id).catch(() => null);
+    if (!snapshot) return null;
+    if (snapshot.platform !== 'rootly') return null;
+    const parsed = parseRootlySnapshot(snapshot);
+    if (parsed.status === 'unknown') return null;
+    return {
+      providerId: source.providerId,
+      sourceId: source.id,
+      status: parsed.status,
+      description: snapshot.overall || undefined,
+      lastUpdated: new Date().toISOString(),
+      components: parsed.components,
+      incidents: parsed.incidents,
       maintenances: [],
     };
   }
