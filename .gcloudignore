@@ -1,0 +1,13 @@
+# Only what the browser-feeds image needs reaches Cloud Build.
+/*
+!/ops
+/ops/*
+!/ops/browser-feeds
+!/scripts
+/scripts/*
+!/scripts/browser-feeds.mjs
+!/lib
+/lib/*
+!/lib/data
+/lib/data/*
+!/lib/data/sources.json

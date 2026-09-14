@@ -1,0 +1,11 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - ops/browser-feeds/Dockerfile
+      - -t
+      - us-central1-docker.pkg.dev/$PROJECT_ID/jobs/browser-feeds:latest
+      - .
+images:
+  - us-central1-docker.pkg.dev/$PROJECT_ID/jobs/browser-feeds:latest
