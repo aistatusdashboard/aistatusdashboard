@@ -1,6 +1,6 @@
 import { TtlCache } from '@/lib/utils/ttl-cache';
 import { readProbeRollup } from '@/lib/services/probe-store';
-import { isProbeMisconfiguration } from '@/lib/services/probe-signal';
+import { isProbeMisconfiguration, isUnverifiable } from '@/lib/services/probe-signal';
 import { getDb } from '@/lib/db/firestore';
 import { config } from '@/lib/config';
 import { intelligenceService } from '@/lib/services/intelligence';
@@ -103,8 +103,13 @@ function mapLatencyValue(event: any): number | undefined {
 function summarizeMetrics(input: Array<any>): MetricSummary {
   // A probe that failed because of OUR account (no credit, bad key, quota)
   // says nothing about the provider and must not tilt the verdict.
-  const records = input.filter((r) => !isProbeMisconfiguration(r.errorCode));
-  const latency = records.map(mapLatencyValue).filter((v): v is number => typeof v === 'number');
+  const records = input.filter((r) => !isProbeMisconfiguration(r.errorCode) && !isUnverifiable(r.errorCode));
+  // Front-door page loads are slow by nature (marketing pages, redirects);
+  // only API latency says anything about the service.
+  const latency = records
+    .filter((r) => r.endpoint !== 'web')
+    .map(mapLatencyValue)
+    .filter((v): v is number => typeof v === 'number');
   return {
     latencyP95: percentile(latency, 95),
     http429Rate: average(records.map((r) => r.http429Rate)),

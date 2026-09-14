@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { providerService } from '@/lib/services/providers';
 import { statusService } from '@/lib/services/status';
+import { runWebProbes } from '@/lib/services/web-probes';
 import { storeSyntheticProbe } from '@/lib/services/probe-store';
 import { updateGapState } from '@/lib/services/gap-detector';
 import { runRealProviderProbes } from '@/lib/services/provider-probes';
@@ -63,6 +64,20 @@ export async function GET(request: NextRequest) {
       ingested += 1;
     }
 
+    // Zero-cost web front-door / backend checks for every app (no keys needed).
+    let webIngested = 0;
+    let webEvents: Awaited<ReturnType<typeof runWebProbes>> = [];
+    try {
+      webEvents = await runWebProbes();
+      for (const result of webEvents) {
+        await storeSyntheticProbe(result.event);
+        webIngested += 1;
+      }
+      await updateGapState(webEvents.map((r) => r.event));
+    } catch (error) {
+      log('error', 'Web probe run failed', { error });
+    }
+
     let realSummary: {
       ingested: number;
       skipped: Array<{ providerId: string; reason: string }>;
@@ -84,7 +99,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, region: regionOverride || 'global', ingested, real: realSummary });
+    return NextResponse.json({ success: true, region: regionOverride || 'global', ingested, web: webIngested, real: realSummary });
   } catch (error) {
     log('error', 'Synthetic probe cron failed', { error });
     return NextResponse.json({ error: 'Internal Error' }, { status: 500 });

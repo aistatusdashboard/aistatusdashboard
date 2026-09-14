@@ -16,7 +16,8 @@
         "rate_limits"
       ],
       "defaultModel": "gpt-4o-mini",
-      "defaultRegion": "us-east"
+      "defaultRegion": "us-east",
+      "webUrl": "https://chatgpt.com"
     },
     {
       "id": "claude",
@@ -31,7 +32,8 @@
         "rate_limits"
       ],
       "defaultModel": "claude-haiku-4-5",
-      "defaultRegion": "us-east"
+      "defaultRegion": "us-east",
+      "webUrl": "https://claude.ai"
     },
     {
       "id": "gemini",
@@ -48,7 +50,8 @@
         "rate_limits"
       ],
       "defaultModel": "gemini-3.5-flash-lite",
-      "defaultRegion": "us-central"
+      "defaultRegion": "us-central",
+      "webUrl": "https://gemini.google.com"
     },
     {
       "id": "grok",
@@ -62,7 +65,8 @@
         "rate_limits"
       ],
       "defaultModel": "grok-4-fast-reasoning",
-      "defaultRegion": "us-east"
+      "defaultRegion": "us-east",
+      "webUrl": "https://grok.com"
     },
     {
       "id": "perplexity",
@@ -76,7 +80,9 @@
         "rate_limits"
       ],
       "defaultModel": "sonar",
-      "defaultRegion": "us-east"
+      "defaultRegion": "us-east",
+      "webUrl": "https://www.perplexity.ai",
+      "probeUrl": "https://www.perplexity.ai/api/auth/session"
     },
     {
       "id": "deepseek",
@@ -89,7 +95,8 @@
         "rate_limits"
       ],
       "defaultModel": "deepseek-chat",
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://chat.deepseek.com"
     },
     {
       "id": "meta-ai",
@@ -101,7 +108,12 @@
         "images",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://www.meta.ai",
+      "probeUrl": "https://www.meta.ai/api/graphql",
+      "probeExpect": [
+        405
+      ]
     },
     {
       "id": "copilot",
@@ -114,7 +126,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://github.com/features/copilot"
     },
     {
       "id": "cursor",
@@ -127,7 +140,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://cursor.com"
     },
     {
       "id": "character-ai",
@@ -139,7 +153,9 @@
         "voice",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://character.ai",
+      "probeUrl": "https://neo.character.ai/health"
     },
     {
       "id": "le-chat",
@@ -152,7 +168,12 @@
         "rate_limits"
       ],
       "defaultModel": "mistral-small-latest",
-      "defaultRegion": "eu-west"
+      "defaultRegion": "eu-west",
+      "webUrl": "https://chat.mistral.ai",
+      "probeUrl": "https://api.mistral.ai/v1/models",
+      "probeExpect": [
+        401
+      ]
     },
     {
       "id": "elevenlabs",
@@ -164,7 +185,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://elevenlabs.io"
     },
     {
       "id": "lovable",
@@ -177,7 +199,9 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://lovable.dev",
+      "probeUrl": "https://api.lovable.dev/health"
     },
     {
       "id": "sora",
@@ -189,7 +213,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "us-east"
+      "defaultRegion": "us-east",
+      "webUrl": "https://sora.chatgpt.com"
     },
     {
       "id": "midjourney",
@@ -201,7 +226,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://www.midjourney.com"
     },
     {
       "id": "poe",
@@ -213,7 +239,9 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://poe.com",
+      "probeUrl": "https://poe.com/api/settings"
     },
     {
       "id": "windsurf",
@@ -226,7 +254,9 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://windsurf.com",
+      "probeUrl": "https://windsurf.com/api/health"
     },
     {
       "id": "v0",
@@ -238,7 +268,8 @@
         "tools",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://v0.app"
     },
     {
       "id": "notion-ai",
@@ -249,7 +280,8 @@
         "text",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://www.notion.so"
     },
     {
       "id": "runway",
@@ -261,7 +293,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://runwayml.com"
     },
     {
       "id": "ideogram",
@@ -272,7 +305,12 @@
         "images",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://ideogram.ai",
+      "probeUrl": "https://api.ideogram.ai/generate",
+      "probeExpect": [
+        405
+      ]
     },
     {
       "id": "grammarly",
@@ -283,7 +321,8 @@
         "text",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://www.grammarly.com"
     },
     {
       "id": "kimi",
@@ -295,7 +334,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://www.kimi.com"
     },
     {
       "id": "manus",
@@ -308,7 +348,8 @@
         "login",
         "rate_limits"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://manus.im"
     },
     {
       "id": "minimax",
@@ -321,7 +362,8 @@
         "voice",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://www.minimax.io"
     },
     {
       "id": "canva-ai",
@@ -333,7 +375,12 @@
         "tools",
         "login"
       ],
-      "defaultRegion": "global"
+      "defaultRegion": "global",
+      "webUrl": "https://www.canva.com",
+      "probeUrl": "https://api.canva.com/rest/v1/users/me",
+      "probeExpect": [
+        401
+      ]
     }
   ]
 }

@@ -2,7 +2,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getDb } from '@/lib/db/firestore';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { log } from '@/lib/utils/logger';
-import { isOutageEvidence, isProbeMisconfiguration } from '@/lib/services/probe-signal';
+import { isOutageEvidence, isProbeMisconfiguration, isUnverifiable } from '@/lib/services/probe-signal';
 
 // If a probe keeps failing for reasons that are ours (no credit, bad key,
 // quota), nobody should learn that from a wrong verdict on the site. Email the
@@ -105,8 +105,10 @@ export async function updateGapState(outcomes: ProbeOutcome[]): Promise<void> {
       const stateRef = db.collection('gap_state').doc(outcome.providerId);
       const stateDoc = await stateRef.get();
       const state = stateDoc.exists ? stateDoc.data() || {} : {};
-      const failed = isOutageEvidence(outcome.errorCode);
       await noteProbeHealth(db, outcome.providerId, outcome.errorCode, state);
+      // A bot wall is not a result: it must neither open nor close anything.
+      if (isUnverifiable(outcome.errorCode)) continue;
+      const failed = isOutageEvidence(outcome.errorCode);
       const nowIso = new Date().toISOString();
 
       if (failed) {

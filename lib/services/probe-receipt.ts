@@ -2,7 +2,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { getDb } from '@/lib/db/firestore';
 import { TtlCache } from '@/lib/utils/ttl-cache';
 import { readProbeRollup } from '@/lib/services/probe-store';
-import { isOutageEvidence } from '@/lib/services/probe-signal';
+import { isOutageEvidence, isUnverifiable } from '@/lib/services/probe-signal';
 
 export type ProbeTick = {
   at: string;
@@ -68,7 +68,7 @@ async function loadProbeReceipt(providerId: string): Promise<ProbeReceipt | null
       };
     }).filter((row) => row.at);
 
-    const real = rows.filter((row) => row.endpoint !== 'status');
+    const real = rows.filter((row) => row.endpoint !== 'status' && !isUnverifiable(row.errorCode));
     const source = real.length ? real : rows;
     if (!source.length) return null;
 

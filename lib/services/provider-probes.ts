@@ -238,6 +238,47 @@ async function fetchJson(url: string, options: RequestInit, timeoutMs: number) {
   }
 }
 
+// Free liveness check: every provider exposes a model listing that costs
+// nothing and needs no credit balance — a $0 Anthropic account and a
+// rate-limited Mistral key both still answer it. This is the independent
+// signal that must never depend on paying for inference.
+async function probeModelList(
+  configEntry: ProbeProviderConfig,
+  apiKey: string
+): Promise<{ event: SyntheticProbeEvent } | null> {
+  const baseUrl = resolveBaseUrl(configEntry);
+  if (!baseUrl) return null;
+  const base = baseUrl.replace(/\/$/, '');
+  let url: string;
+  const headers: Record<string, string> = {};
+  switch (configEntry.type) {
+    case 'anthropic':
+      url = `${base}/models?limit=1`;
+      headers['x-api-key'] = apiKey;
+      headers['anthropic-version'] = '2023-06-01';
+      break;
+    case 'gemini':
+      url = `${base}/models?pageSize=1&key=${encodeURIComponent(apiKey)}`;
+      break;
+    case 'openai':
+    case 'cohere':
+      url = `${base}/models`;
+      headers['Authorization'] = `Bearer ${apiKey}`;
+      break;
+    default:
+      return null;
+  }
+  const { response, latencyMs } = await fetchJson(url, { method: 'GET', headers }, config.monitoring.defaultTimeout || DEFAULT_TIMEOUT_MS);
+  const event = buildEvent({ ...configEntry, endpoint: 'models' }, latencyMs);
+  event.model = 'models';
+  if (!response.ok) {
+    event.errorCode = `http-${response.status}`;
+    if (response.status === 429) event.http429Rate = 1;
+    if (response.status >= 500) event.http5xxRate = 1;
+  }
+  return { event };
+}
+
 async function probeOpenAICompatible(configEntry: ProbeProviderConfig, apiKey: string) {
   const baseUrl = resolveBaseUrl(configEntry);
   if (!baseUrl) throw new Error('Missing baseUrl');
@@ -631,6 +672,20 @@ export async function runRealProviderProbes(options?: { regionOverride?: string 
           result.event.region = eventRegion;
         }
         events.push(result.event);
+      }
+      if (apiKey) {
+        try {
+          const liveness = await probeModelList(entry, apiKey as string);
+          if (liveness?.event) {
+            if (eventRegion) liveness.event.region = eventRegion;
+            events.push(liveness.event);
+          }
+        } catch (error) {
+          const event = buildEvent({ ...entry, endpoint: 'models' }, config.monitoring.defaultTimeout || DEFAULT_TIMEOUT_MS);
+          event.model = 'models';
+          event.errorCode = classifyProbeError(error);
+          events.push(event);
+        }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';

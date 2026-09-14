@@ -242,6 +242,41 @@ async function fetchWithCache(
   }
 }
 
+// A feed we cannot read must not keep reporting its last successful reading
+// forever (Mistral's page went behind a bot wall and the site carried a
+// four-day-old "degraded" as if it were current). After the feed has failed
+// for a while, the provider's official status becomes "unknown" with a fresh
+// timestamp, so verdicts fall back to our own probes instead.
+const FEED_UNREACHABLE_AFTER_MS = 60 * 60 * 1000;
+
+async function markFeedUnreachable(source: SourceDefinition): Promise<void> {
+  const db = getDb();
+  const ref = db.collection('provider_status').doc(source.providerId);
+  try {
+    const snapshot = await ref.get();
+    const current = snapshot.exists ? snapshot.data() || {} : {};
+    if (current.status === 'unknown') return;
+    const lastUpdated = current.lastUpdated?.toDate?.()?.getTime?.() ?? 0;
+    if (Date.now() - lastUpdated < FEED_UNREACHABLE_AFTER_MS) return;
+    await ref.set(
+      {
+        providerId: source.providerId,
+        sourceId: source.id,
+        status: 'unknown',
+        description: 'Official status page unreachable',
+        lastUpdated: Timestamp.fromDate(new Date()),
+        activeIncidentCount: 0,
+        activeMaintenanceCount: 0,
+        degradedComponentCount: 0,
+      },
+      { merge: true }
+    );
+    log('warn', 'Official feed unreachable; provider status set to unknown', { providerId: source.providerId, sourceId: source.id });
+  } catch (error) {
+    log('warn', 'Failed to mark feed unreachable', { providerId: source.providerId, error });
+  }
+}
+
 async function storeNormalized(summary: NormalizedProviderSummary) {
   const db = getDb();
   const providerStatusRef = db.collection('provider_status').doc(summary.providerId);
@@ -448,7 +483,10 @@ export class SourceIngestionService {
     });
 
     const summary = await this.fetchPlatform(source, platform, base, platformInfo.statusIoPageId || source.metadata?.statusIoPageId);
-    if (!summary) return true;
+    if (!summary) {
+      await markFeedUnreachable(source);
+      return true;
+    }
 
     await storeNormalized(summary);
     return true;

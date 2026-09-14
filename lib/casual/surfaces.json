@@ -2,35 +2,75 @@
   "surfaces": {
     "text": {
       "label": "Text",
-      "endpoints": ["chat", "messages", "responses", "completions", "invoke"]
+      "endpoints": [
+        "chat",
+        "messages",
+        "responses",
+        "completions",
+        "invoke",
+        "web",
+        "models"
+      ]
     },
     "images": {
       "label": "Images",
-      "endpoints": ["images", "image", "vision", "generation"]
+      "endpoints": [
+        "images",
+        "image",
+        "vision",
+        "generation"
+      ]
     },
     "voice": {
       "label": "Voice",
-      "endpoints": ["audio", "speech", "voice"]
+      "endpoints": [
+        "audio",
+        "speech",
+        "voice"
+      ]
     },
     "browse": {
       "label": "Browse",
-      "endpoints": ["browse", "web", "search"]
+      "endpoints": [
+        "browse",
+        "web",
+        "search"
+      ]
     },
     "tools": {
       "label": "Tools",
-      "endpoints": ["tools", "function", "assistants", "connectors", "agents"]
+      "endpoints": [
+        "tools",
+        "function",
+        "assistants",
+        "connectors",
+        "agents"
+      ]
     },
     "login": {
       "label": "Login",
-      "endpoints": ["auth", "login", "session"]
+      "endpoints": [
+        "auth",
+        "login",
+        "session"
+      ]
     },
     "billing": {
       "label": "Billing",
-      "endpoints": ["billing", "subscription", "payment", "quota"]
+      "endpoints": [
+        "billing",
+        "subscription",
+        "payment",
+        "quota"
+      ]
     },
     "rate_limits": {
       "label": "Rate limits",
-      "endpoints": ["rate", "throttle", "limit"]
+      "endpoints": [
+        "rate",
+        "throttle",
+        "limit"
+      ]
     }
   }
 }
