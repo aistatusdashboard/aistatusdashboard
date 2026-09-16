@@ -23,12 +23,12 @@ export async function GET(
   return new ImageResponse(
     (
       <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '80px', background: '#0f172a' }}>
-        <div style={{ color: '#94a3b8', fontSize: 40 }}>Is {name} down right now?</div>
+        <div style={{ color: '#94a3b8', fontSize: 40 }}>{`Is ${name} down right now?`}</div>
         <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 24 }}>
           <div style={{ width: 40, height: 40, borderRadius: 20, background: accent }} />
-          <div style={{ fontSize: 84, fontWeight: 700, color: accent }}>{name} {statusText}</div>
+          <div style={{ fontSize: 84, fontWeight: 700, color: accent }}>{`${name} ${statusText}`}</div>
         </div>
-        <div style={{ marginTop: 28, fontSize: 28, color: '#64748b' }}>{app.providerDisplay}&apos;s official status, read every 5 minutes · aistatusdashboard.com/{app.id}</div>
+        <div style={{ marginTop: 28, fontSize: 28, color: '#64748b' }}>{`${app.providerDisplay}\u2019s official status, read every 5 minutes \u00b7 aistatusdashboard.com/${app.id}`}</div>
       </div>
     ),
     size

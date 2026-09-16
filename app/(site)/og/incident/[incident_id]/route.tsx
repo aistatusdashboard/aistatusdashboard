@@ -30,10 +30,10 @@ export async function GET(
       <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '80px', background: '#0f172a' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ width: 18, height: 18, borderRadius: 9, background: accent }} />
-          <div style={{ color: accent, fontSize: 32, letterSpacing: 3, textTransform: 'uppercase' }}>{name} incident · {done ? 'Resolved' : 'Ongoing'}</div>
+          <div style={{ color: accent, fontSize: 32, letterSpacing: 3, textTransform: 'uppercase' }}>{`${name} incident \u00b7 ${done ? 'Resolved' : 'Ongoing'}`}</div>
         </div>
         <div style={{ marginTop: 28, fontSize: 60, fontWeight: 700, color: '#f8fafc', lineHeight: 1.15 }}>{title}</div>
-        <div style={{ marginTop: 28, fontSize: 30, color: '#94a3b8' }}>{when ? `${when} · ` : ''}{name}&apos;s official report, in plain English · aistatusdashboard.com</div>
+        <div style={{ marginTop: 28, fontSize: 30, color: '#94a3b8' }}>{`${when ? when + ' \u00b7 ' : ''}${name}\u2019s official report, in plain English \u00b7 aistatusdashboard.com`}</div>
       </div>
     ),
     size
