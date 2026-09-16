@@ -31,13 +31,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Is your AI down right now?',
     description: DESCRIPTION,
-    images: ['https://aistatusdashboard.com/og/status-home.svg'],
+    images: [{ url: 'https://aistatusdashboard.com/og/home', width: 1200, height: 630, alt: 'Live AI status board' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Is your AI down right now?',
     description: DESCRIPTION,
-    images: ['https://aistatusdashboard.com/og/status-home.svg'],
+    images: ['https://aistatusdashboard.com/og/home'],
   },
 };
 
@@ -94,8 +94,23 @@ export default async function HomePage() {
   const recentIncidents = (incidentPayload.data?.incidents || []).slice(0, 6);
   const providerIds = Array.from(new Set(board.map((item) => item.app.providerId)));
 
+  // The live board, machine-readable — so AI Overviews and assistants that
+  // already cite us (ChatGPT, Perplexity) can read each app's current verdict.
+  const itemListLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Live status of AI apps',
+    itemListElement: board.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: `${item.name} — ${VERDICT_COPY[item.key].label}`,
+      url: `https://aistatusdashboard.com/${item.app.id}`,
+    })),
+  };
+
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
       <div className="max-w-5xl mx-auto space-y-12">
         <Suspense fallback={null}>
           <SubscriptionNotice />

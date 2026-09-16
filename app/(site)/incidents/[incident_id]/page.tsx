@@ -98,10 +98,13 @@ export async function generateMetadata({
     openGraph: {
       title: `${title} | AI Status Dashboard`,
       description,
+      images: [{ url: `https://aistatusdashboard.com/og/incident/${encodeURIComponent(safeId)}`, width: 1200, height: 630 }],
     },
     twitter: {
+      card: 'summary_large_image',
       title: `${title} | AI Status Dashboard`,
       description,
+      images: [`https://aistatusdashboard.com/og/incident/${encodeURIComponent(safeId)}`],
     },
   };
 }
