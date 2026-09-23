@@ -203,6 +203,16 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
           {key !== 'up' && (
             <p className="text-base text-slate-700 dark:text-slate-200 max-w-xl mx-auto">{status.headline}</p>
           )}
+          {key !== 'up' && (
+            <div className="max-w-md mx-auto pt-2">
+              <NotifyInlineForm
+                providerIds={[app.providerId]}
+                prompt=""
+                ctaLabel={`Email me when ${name} is back`}
+                className="space-y-2"
+              />
+            </div>
+          )}
         </header>
 
         {/* The provider's own word, when it's open but stale: shown, not scored. */}
@@ -350,20 +360,23 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
           </section>
         )}
 
-        {/* The one CTA. */}
-        <section id="alerts" className="surface-card-strong p-6 text-center space-y-3">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            {key === 'up'
-              ? `Get an email the next time ${name} breaks`
-              : `Get an email when ${name} is back`}
-          </h2>
-          <NotifyInlineForm
-            providerIds={[app.providerId]}
-            prompt=""
-            ctaLabel="Alert me"
-            className="space-y-2 max-w-md mx-auto"
-          />
-        </section>
+        {/* Quiet-state CTA: the outage case is captured inline under the hero. */}
+        {key === 'up' && (
+          <section id="alerts" className="surface-card-strong p-6 text-center space-y-3">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Get an email the next time {name} breaks
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              One email when {name} goes down, one when it&apos;s back. Nothing else.
+            </p>
+            <NotifyInlineForm
+              providerIds={[app.providerId]}
+              prompt=""
+              ctaLabel="Alert me"
+              className="space-y-2 max-w-md mx-auto"
+            />
+          </section>
+        )}
 
         <section className="flex flex-wrap items-center justify-center gap-4">
           <CasualShareButton
