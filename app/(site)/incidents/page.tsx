@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { providerService } from '@/lib/services/providers';
+import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { formatTimeAgo } from '@/lib/utils/time';
 
@@ -33,8 +34,16 @@ function providerLabel(providerId: string): string {
   return provider?.displayName || provider?.name || providerId;
 }
 
-export default async function IncidentsPage() {
-  const incidents = (await intelligenceService.getIncidents({ limit: 50 }))
+export default async function IncidentsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ provider?: string }>;
+}) {
+  const sp = (await searchParams) || {};
+  const providerId = typeof sp.provider === 'string' ? sp.provider : undefined;
+  const providerName = providerId ? appNameForProvider(providerId) : null;
+
+  const incidents = (await intelligenceService.getIncidents({ providerId, limit: 50 }))
     .map(normalizeIncidentDates)
     .slice(0, 50);
 
@@ -43,18 +52,26 @@ export default async function IncidentsPage() {
       <div className="max-w-3xl mx-auto space-y-8">
         <header className="pt-4 space-y-3">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Outage history
+            {providerName ? `${providerName} outage history` : 'Outage history'}
           </h1>
           <p className="text-base text-slate-600 dark:text-slate-300">
-            What broke recently across the AI apps we watch, newest first. Every entry links to
-            the incident detail and the provider&apos;s original report.
+            {providerName
+              ? `Every ${providerName} incident we have recorded, newest first — each links to the detail and ${providerName}'s original report.`
+              : 'What broke recently across the AI apps we watch, newest first. Every entry links to the incident detail and the provider\u2019s original report.'}
           </p>
+          {providerName && (
+            <p className="text-sm">
+              <Link href={`/${appIdForProvider(providerId as string)}`} className="underline text-slate-700 dark:text-slate-200">
+                Is {providerName} down right now? →
+              </Link>
+            </p>
+          )}
         </header>
 
         <section className="space-y-3">
           {incidents.length === 0 && (
             <p className="surface-card p-5 text-sm text-slate-600 dark:text-slate-300">
-              Nothing recorded recently — a good sign. Check back after the next outage.
+              {providerName ? `No ${providerName} incidents recorded yet.` : 'Nothing recorded recently — a good sign. Check back after the next outage.'}
             </p>
           )}
           {incidents.map((incident) => {

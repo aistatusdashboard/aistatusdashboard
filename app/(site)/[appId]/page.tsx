@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
+import { getAppReliability } from '@/lib/services/reliability';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
@@ -37,8 +38,8 @@ export async function generateMetadata({ params }: { params: Promise<AppParams> 
   const app = getCasualApp(appId);
   if (!app) return { title: 'Status' };
   const name = shortName(app.id, app.label);
-  const title = `Is ${name} down? Live status`;
-  const description = `Is ${name} down right now, or is it just you? ${app.providerDisplay}'s official status, read every five minutes and put in plain English.`;
+  const title = `Is ${name} down? Status, uptime & outage history`;
+  const description = `Is ${name} down right now? ${app.providerDisplay}'s official status read every five minutes, plus ${name}'s 30-day uptime, how often it goes down, and its recent outage history.`;
   return {
     title,
     description,
@@ -62,7 +63,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const app = getCasualApp(appId);
   if (!app) return notFound();
 
-  const status = await getCasualStatus({ appId: app.id }).catch(() => null);
+  const [status, reliability] = await Promise.all([
+    getCasualStatus({ appId: app.id }).catch(() => null),
+    getAppReliability(app.providerId).catch(() => null),
+  ]);
   const name = shortName(app.id, app.label);
 
   if (!status) {
@@ -115,6 +119,16 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   // (Google requires content parity between the two).
   const provider = app.providerDisplay;
   const statusPageHost = status.evidence.find((e) => e.type === 'official')?.url;
+  // Evergreen reliability facts — these give the page something to rank for
+  // between outages ("how reliable is X", "X uptime", "how often does X go down").
+  const uptimeText = reliability ? `${reliability.uptimePct.toFixed(reliability.uptimePct >= 99.9 ? 2 : 1)}%` : null;
+  const rankText = reliability?.rank ? `#${reliability.rank} of ${reliability.total}` : null;
+  const reliabilityAnswer = reliability
+    ? reliability.incidentCount === 0
+      ? `Very reliable lately: over the last ${reliability.windowDays} days we recorded no ${provider} incidents, for ${uptimeText} uptime${rankText ? ` — ${rankText} of the AI apps we track` : ''}.`
+      : `Over the last ${reliability.windowDays} days ${name} had ${reliability.incidentCount} incident${reliability.incidentCount === 1 ? '' : 's'} totalling about ${reliability.downtimeMinutes} minutes of disruption, for ${uptimeText} uptime${rankText ? ` — ${rankText} of the AI apps we track` : ''}. The longest single incident lasted about ${reliability.longestIncidentMinutes} minutes.`
+    : `We are still building ${name}'s outage history.`;
+
   const faqs: Array<{ q: string; a: string }> = [
     {
       q: `Is ${name} down right now?`,
@@ -144,6 +158,18 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
       a: statusPageHost
         ? `Yes — ${provider} publishes an official status page at ${statusPageHost}; this page mirrors it.`
         : `${provider} does not publish a status page; this page reads ${provider}'s public ${sourceKind} instead.`,
+    },
+    {
+      q: `How reliable is ${name}?`,
+      a: reliabilityAnswer,
+    },
+    {
+      q: `How often does ${name} go down?`,
+      a: reliability
+        ? reliability.incidentCount === 0
+          ? `${name} has not had a recorded incident in the last ${reliability.windowDays} days.`
+          : `${name} has had ${reliability.incidentCount} incident${reliability.incidentCount === 1 ? '' : 's'} in the last ${reliability.windowDays} days${reliability.lastIncidentAt ? `, most recently on ${new Date(reliability.lastIncidentAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}` : ''}. See the full outage history below.`
+        : `See ${name}'s outage history below.`,
     },
   ];
 
@@ -361,6 +387,42 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             ))}
           </div>
         </section>
+
+        {/* Evergreen: reliability facts that rank between outages. */}
+        {reliability && (
+          <section className="surface-card p-5 space-y-4">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              How reliable is {name}?
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{uptimeText}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">uptime · last {reliability.windowDays} days</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{reliability.incidentCount}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">incident{reliability.incidentCount === 1 ? '' : 's'} · {reliability.windowDays} days</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{reliability.longestIncidentMinutes > 0 ? `${reliability.longestIncidentMinutes}m` : '—'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">longest outage</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{rankText || '—'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">reliability rank</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-300">{reliabilityAnswer}</p>
+            <p className="flex flex-wrap gap-4 text-sm">
+              <Link href="/reliability" className="underline text-slate-700 dark:text-slate-200">
+                Compare AI reliability →
+              </Link>
+              <Link href={`/incidents?provider=${app.providerId}`} className="underline text-slate-700 dark:text-slate-200">
+                {name}&apos;s full outage history →
+              </Link>
+            </p>
+          </section>
+        )}
 
         {/* Receipts. */}
         <section className="surface-card p-5">

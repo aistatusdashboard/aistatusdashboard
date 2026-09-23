@@ -1,5 +1,6 @@
 import { intelligenceService } from '@/lib/services/intelligence';
 import { listCasualApps } from '@/lib/services/casual';
+import { TtlCache } from '@/lib/utils/ttl-cache';
 
 // 30-day reliability ranking computed from ingested incident history.
 // One row per status feed: apps sharing a provider (ChatGPT/Sora) are ranked
@@ -88,4 +89,46 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
   return rows.sort(
     (a, b) => b.uptimePct - a.uptimePct || a.incidentCount - b.incidentCount || a.name.localeCompare(b.name)
   );
+}
+
+// The ranking is reused on every app page (for that app's uptime block and
+// its rank), so cache it briefly rather than recomputing 26 providers per render.
+const rankingCache = new TtlCache<ReliabilityRow[]>(1800_000, 1);
+
+export async function getReliabilityRankingCached(): Promise<ReliabilityRow[]> {
+  const hit = rankingCache.get('all');
+  if (hit) return hit;
+  const rows = await getReliabilityRanking();
+  if (rows.length) rankingCache.set('all', rows);
+  return rows;
+}
+
+export type AppReliability = {
+  windowDays: number;
+  uptimePct: number;
+  incidentCount: number;
+  downtimeMinutes: number;
+  longestIncidentMinutes: number;
+  lastIncidentAt: string | null;
+  rank: number | null;
+  total: number;
+};
+
+// One app's 30-day reliability plus where it ranks among all tracked apps.
+export async function getAppReliability(providerId: string): Promise<AppReliability | null> {
+  const rows = await getReliabilityRankingCached().catch(() => []);
+  if (!rows.length) return null;
+  const index = rows.findIndex((row) => row.providerId === providerId);
+  if (index < 0) return null;
+  const row = rows[index];
+  return {
+    windowDays: WINDOW_DAYS,
+    uptimePct: row.uptimePct,
+    incidentCount: row.incidentCount,
+    downtimeMinutes: row.downtimeMinutes,
+    longestIncidentMinutes: row.longestIncidentMinutes,
+    lastIncidentAt: row.lastIncidentAt,
+    rank: index + 1,
+    total: rows.length,
+  };
 }
