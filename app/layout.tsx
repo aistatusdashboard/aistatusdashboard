@@ -9,6 +9,7 @@ import Script from 'next/script';
 import GlobalErrorHandler from './components/GlobalErrorHandler';
 import OfflineIndicator from './components/OfflineIndicator';
 import GoogleAnalytics from './components/GoogleAnalytics';
+import { GoogleAnalytics as GA4Script } from '@next/third-parties/google';
 import CookieConsentBanner from './components/CookieConsentBanner';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-ZV3PS0MPQ7';
@@ -135,9 +136,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
 
-        {/* GA4 bootstrap in initial HTML — deterministic, consent-mode gated.
-            Stored opt-in grants analytics_storage synchronously; otherwise the
-            tag runs cookieless until the banner decision arrives. */}
+        {/* Consent mode defaults, set in the initial HTML BEFORE GA loads its
+            config (below) so the first hit already respects the choice. The
+            gtag.js load, config, and — crucially — SPA route-change page_views
+            are handled by @next/third-parties, not hand-rolled. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -156,12 +158,9 @@ window.gtag = gtag;
     ad_user_data: 'denied',
     ad_personalization: 'denied'
   });
-  gtag('js', new Date());
-  gtag('config', '${GA_MEASUREMENT_ID}');
 })();`,
           }}
         />
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
       </head>
       <body className={`${geistSans.className} ${geistMono.variable} antialiased min-h-screen bg-background font-sans`}>
         <ErrorBoundary>
@@ -169,6 +168,7 @@ window.gtag = gtag;
             <Suspense fallback={null}>
               <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
             </Suspense>
+            <GA4Script gaId={GA_MEASUREMENT_ID} />
             <GlobalErrorHandler />
             <OfflineIndicator />
             <CookieConsentBanner />
