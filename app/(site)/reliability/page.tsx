@@ -33,8 +33,45 @@ export default async function ReliabilityPage() {
   const worst = withIncidents.length ? withIncidents[withIncidents.length - 1] : null;
   const cleanCount = rows.length - withIncidents.length;
 
+  // Machine-readable ranking so AI Overviews and assistants can cite "the most
+  // reliable AI" straight from our 30-day data, and the page is eligible for
+  // rich results — the standing "reliable ai" demand we barely rank for today.
+  const itemListLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Most reliable AI apps by 30-day uptime',
+    itemListOrder: 'https://schema.org/ItemListOrderDescending',
+    numberOfItems: rows.length,
+    itemListElement: rows.map((row, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: `${row.name} — ${row.uptimePct.toFixed(2)}% uptime, ${row.incidentCount} incident${row.incidentCount === 1 ? '' : 's'} in 30 days`,
+      url: `https://aistatusdashboard.com/${row.appId}`,
+    })),
+  };
+  const faqLd = best && worst
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'Which AI is the most reliable?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: `Over the last 30 days, ${best.name} was the most reliable AI app we track with ${best.uptimePct.toFixed(2)}% uptime across ${best.incidentCount} incident${best.incidentCount === 1 ? '' : 's'}. ${worst.name} was the least reliable at ${worst.uptimePct.toFixed(2)}%. Rankings are computed from each provider's own official incident history.`,
+            },
+          },
+        ],
+      }
+    : null;
+
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
+      {faqLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      )}
       <div className="max-w-3xl mx-auto space-y-8">
         <header className="pt-4 space-y-3">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
