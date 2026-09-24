@@ -55,5 +55,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  return [...staticRoutes, ...appRoutes, ...incidentRoutes, ...compareRoutes];
+  const CATEGORIES = ['ai-chatbot','ai-coding-assistant','ai-image-generator','ai-video-generator','ai-voice-generator'];
+  const bestRoutes: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({ url: `${SITE_URL}/best/${c}`, changeFrequency: 'daily' as const, priority: 0.7 }));
+
+  return [...staticRoutes, ...appRoutes, ...incidentRoutes, ...compareRoutes, ...bestRoutes];
 }
