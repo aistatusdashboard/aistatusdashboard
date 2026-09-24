@@ -325,6 +325,10 @@ async function markFeedUnreachable(source: SourceDefinition): Promise<void> {
 async function storeNormalized(summary: NormalizedProviderSummary) {
   const db = getDb();
   const providerStatusRef = db.collection('provider_status').doc(summary.providerId);
+  // What the provider's overall status was last cycle, so a flip to/from
+  // trouble can push the app page for immediate re-crawl ("what's down now"
+  // is the whole product, and it's worthless if search/AIs see a stale page).
+  const previousStatus = String((await providerStatusRef.get().catch(() => null))?.data()?.status || '');
   const batch = db.batch();
   const evidence = summarizeEvidence(summary.components, summary.incidents, summary.maintenances);
 
@@ -460,13 +464,27 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
 
   await batch.commit();
 
-  if (pingIncidentIds.length) {
+  const paths = new Set<string>();
+  for (const id of pingIncidentIds) paths.add(`/incidents/${id}`);
+  if (pingIncidentIds.length) paths.add('/incidents');
+
+  // The provider's overall verdict crossed the operational line (down->up or
+  // up->down): re-crawl the app page and the live board now, not next cycle.
+  const wasTrouble = previousStatus !== '' && previousStatus !== 'operational';
+  const isTrouble = summary.status !== 'operational' && summary.status !== 'unknown';
+  if (previousStatus !== String(summary.status) && (wasTrouble || isTrouble)) {
+    paths.add('/');
+    paths.add('/status.json');
     const appId = APP_ID_BY_PROVIDER.get(summary.providerId);
-    const paths = pingIncidentIds.map((id) => `/incidents/${id}`);
-    paths.push('/incidents');
-    if (appId) paths.push(`/${appId}`);
+    if (appId) paths.add(`/${appId}`);
+  } else if (pingIncidentIds.length) {
+    const appId = APP_ID_BY_PROVIDER.get(summary.providerId);
+    if (appId) paths.add(`/${appId}`);
+  }
+
+  if (paths.size) {
     // Fire-and-forget: indexing pings must never slow ingestion down.
-    void pingIndexNow(paths);
+    void pingIndexNow([...paths]);
   }
 }
 
