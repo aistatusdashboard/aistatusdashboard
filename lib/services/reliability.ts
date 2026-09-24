@@ -24,6 +24,26 @@ export type ReliabilityRow = {
   siblings: string[];
 };
 
+// Downtime weighted by severity: a full outage is 100% down, a partial outage
+// counts less, and a minor "degraded" blip (elevated errors on one model) is
+// not the service being down — so it barely moves uptime. Without this, a
+// transparent provider that posts many small incidents (Anthropic, OpenAI)
+// looks less reliable than an opaque one that posts nothing.
+function severityWeight(severity: string | undefined): number {
+  switch (severity) {
+    case 'major_outage':
+      return 1;
+    case 'partial_outage':
+      return 0.5;
+    case 'degraded':
+      return 0.15;
+    case 'maintenance':
+      return 0;
+    default:
+      return 0.15;
+  }
+}
+
 export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
   const apps = listCasualApps();
   const byProvider = new Map<string, { appId: string; name: string; siblings: string[] }>();
@@ -62,9 +82,10 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
           : Number.isFinite(updated) && now - updated > MAX_INCIDENT_MS
             ? updated
             : now;
-        const duration = Math.min(Math.max(ended - started, 0), MAX_INCIDENT_MS);
+        const rawDuration = Math.min(Math.max(ended - started, 0), MAX_INCIDENT_MS);
+        const duration = rawDuration * severityWeight(incident.severity);
         downtimeMs += duration;
-        longestMs = Math.max(longestMs, duration);
+        longestMs = Math.max(longestMs, rawDuration);
         count += 1;
         if (!lastIncidentAt || started > Date.parse(lastIncidentAt)) {
           lastIncidentAt = incident.startedAt;
