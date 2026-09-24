@@ -47,5 +47,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // A sitemap without incidents is still a valid sitemap.
   }
 
-  return [...staticRoutes, ...appRoutes, ...incidentRoutes];
+  const POPULAR = ['chatgpt','claude','gemini','grok','perplexity','deepseek','copilot','cursor'];
+  const compareRoutes: MetadataRoute.Sitemap = [];
+  for (let i = 0; i < POPULAR.length; i++) {
+    for (let j = i + 1; j < POPULAR.length; j++) {
+      compareRoutes.push({ url: `${SITE_URL}/compare/${POPULAR[i]}-vs-${POPULAR[j]}`, changeFrequency: 'daily', priority: 0.6 });
+    }
+  }
+
+  return [...staticRoutes, ...appRoutes, ...incidentRoutes, ...compareRoutes];
 }
