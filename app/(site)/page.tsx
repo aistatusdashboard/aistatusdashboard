@@ -108,9 +108,35 @@ export default async function HomePage() {
     })),
   };
 
+  const downNow = troubled.map((item) => item.name);
+  const aggregateFaqs = [
+    {
+      q: 'Which AI is down right now?',
+      a: downNow.length === 0
+        ? 'No major AI app is down right now — every service we track reports itself as operational. We read 26 providers\u2019 official status pages every five minutes.'
+        : `Right now ${downNow.slice(0, 5).join(', ')}${downNow.length > 5 ? ' and others' : ''} ${downNow.length === 1 ? 'is' : 'are'} reporting problems. Every other AI app we track is up.`,
+    },
+    {
+      q: 'Are any AI services having problems today?',
+      a: downNow.length === 0
+        ? 'Not right now. ChatGPT, Claude, Gemini, Grok, Perplexity, DeepSeek and the other AI apps we watch all report operational.'
+        : `Yes — ${downNow.join(', ')} ${downNow.length === 1 ? 'is' : 'are'} currently reporting issues on ${downNow.length === 1 ? 'its' : 'their'} official status page.`,
+    },
+    {
+      q: 'How do you know if an AI app is down?',
+      a: 'We read each provider\u2019s own official status page (or public endpoint) every five minutes and report exactly what they say, in plain English \u2014 plus 30-day uptime and outage history for each app.',
+    },
+  ];
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: aggregateFaqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  };
+
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <div className="max-w-5xl mx-auto space-y-12">
         <Suspense fallback={null}>
           <SubscriptionNotice />
@@ -237,6 +263,19 @@ export default async function HomePage() {
             <p className="mt-1 text-slate-600 dark:text-slate-300">
               If a provider publishes no status page, or we can&apos;t reach it, we say so — never a made-up green light.
             </p>
+          </div>
+        </section>
+
+        {/* Aggregate answers — the broad questions people and assistants ask. */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Common questions</h2>
+          <div className="surface-card divide-y divide-slate-200/70 dark:divide-slate-800/70">
+            {aggregateFaqs.map((f) => (
+              <div key={f.q} className="p-5">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{f.q}</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{f.a}</p>
+              </div>
+            ))}
           </div>
         </section>
       </div>
