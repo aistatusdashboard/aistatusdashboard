@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getReliabilityRanking } from '@/lib/services/reliability';
+import { CATEGORIES } from '@/lib/ui/categories';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { APP_LOGOS } from '@/lib/ui/verdict';
 
@@ -165,6 +166,17 @@ export default async function ReliabilityPage() {
             later. Rankings refresh every 30 minutes —{' '}
             <Link href="/how-it-works" className="underline">how it works</Link>.
           </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Most reliable by category</h2>
+          <div className="flex flex-wrap gap-3 text-sm">
+            {Object.entries(CATEGORIES).map(([slug, cat]) => (
+              <Link key={slug} href={`/best/${slug}`} className="underline text-slate-700 dark:text-slate-200">
+                Most reliable {cat.label} →
+              </Link>
+            ))}
+          </div>
         </section>
       </div>
     </main>

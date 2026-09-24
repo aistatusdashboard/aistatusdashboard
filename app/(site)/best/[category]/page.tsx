@@ -3,41 +3,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getReliabilityRankingCached } from '@/lib/services/reliability';
 import { listCasualApps } from '@/lib/services/casual';
+import { CATEGORIES } from '@/lib/ui/categories';
 
 export const revalidate = 1800;
 export const dynamicParams = false;
 
 type CategoryParams = { category: string };
-
-// Curated categories map to how people actually search ("most reliable AI
-// coding assistant"), which the coarse provider categories don't capture.
-const CATEGORIES: Record<string, { label: string; noun: string; appIds: string[] }> = {
-  'ai-chatbot': {
-    label: 'AI chatbot',
-    noun: 'AI chatbots',
-    appIds: ['chatgpt', 'claude', 'gemini', 'grok', 'perplexity', 'deepseek', 'meta-ai', 'le-chat', 'poe', 'kimi', 'character-ai'],
-  },
-  'ai-coding-assistant': {
-    label: 'AI coding assistant',
-    noun: 'AI coding assistants',
-    appIds: ['copilot', 'cursor', 'windsurf', 'v0', 'lovable'],
-  },
-  'ai-image-generator': {
-    label: 'AI image generator',
-    noun: 'AI image generators',
-    appIds: ['midjourney', 'ideogram', 'canva-ai'],
-  },
-  'ai-video-generator': {
-    label: 'AI video generator',
-    noun: 'AI video generators',
-    appIds: ['sora', 'runway', 'minimax'],
-  },
-  'ai-voice-generator': {
-    label: 'AI voice generator',
-    noun: 'AI voice tools',
-    appIds: ['elevenlabs', 'minimax'],
-  },
-};
 
 export function generateStaticParams() {
   return Object.keys(CATEGORIES).map((category) => ({ category }));

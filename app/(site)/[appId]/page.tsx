@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
+import { categoryForApp, rivalFor, comparePath } from '@/lib/ui/categories';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
@@ -68,6 +69,9 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
     getAppReliability(app.providerId).catch(() => null),
   ]);
   const name = shortName(app.id, app.label);
+  const appCategory = categoryForApp(app.id);
+  const rivalId = rivalFor(app.id);
+  const rivalApp = rivalId ? getCasualApp(rivalId) : null;
 
   if (!status) {
     // Data layer unreachable (e.g. build-time prerender): render an honest
@@ -433,6 +437,16 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
               <Link href={`/incidents?provider=${app.providerId}`} className="underline text-slate-700 dark:text-slate-200">
                 {name}&apos;s full outage history →
               </Link>
+              {rivalApp && (
+                <Link href={comparePath(app.id, rivalApp.id)} className="underline text-slate-700 dark:text-slate-200">
+                  {name} vs {shortName(rivalApp.id, rivalApp.label)} →
+                </Link>
+              )}
+              {appCategory && (
+                <Link href={`/best/${appCategory.slug}`} className="underline text-slate-700 dark:text-slate-200">
+                  Most reliable {appCategory.label} →
+                </Link>
+              )}
             </p>
           </section>
         )}

@@ -266,6 +266,20 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Explore: internal links so compare/category pages aren't orphaned. */}
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Compare & rank</h2>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <Link href="/reliability" className="underline text-slate-700 dark:text-slate-200">Which AI is most reliable?</Link>
+            <Link href="/best/ai-chatbot" className="underline text-slate-700 dark:text-slate-200">Most reliable AI chatbot</Link>
+            <Link href="/best/ai-coding-assistant" className="underline text-slate-700 dark:text-slate-200">Most reliable AI coding assistant</Link>
+            <Link href="/best/ai-image-generator" className="underline text-slate-700 dark:text-slate-200">Most reliable AI image generator</Link>
+            <Link href="/compare/chatgpt-vs-claude" className="underline text-slate-700 dark:text-slate-200">ChatGPT vs Claude</Link>
+            <Link href="/compare/chatgpt-vs-gemini" className="underline text-slate-700 dark:text-slate-200">ChatGPT vs Gemini</Link>
+            <Link href="/compare/claude-vs-gemini" className="underline text-slate-700 dark:text-slate-200">Claude vs Gemini</Link>
+          </div>
+        </section>
+
         {/* Aggregate answers — the broad questions people and assistants ask. */}
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Common questions</h2>
