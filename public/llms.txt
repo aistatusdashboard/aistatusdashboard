@@ -3,6 +3,11 @@
 The official status of 26 consumer AI apps in one place, in plain English —
 each provider's own status page, read every five minutes.
 
+## Machine-readable (for assistants and agents)
+- Live status of all 26 apps as JSON → https://aistatusdashboard.com/status.json
+- Incident feed (RSS) → https://aistatusdashboard.com/rss.xml
+- Most-reliable ranking (30-day uptime) → https://aistatusdashboard.com/reliability
+
 ## What you can answer from this site
 - "Is ChatGPT down right now?" → https://aistatusdashboard.com/chatgpt
 - "Is Claude down right now?" → https://aistatusdashboard.com/claude
