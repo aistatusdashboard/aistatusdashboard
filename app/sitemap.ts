@@ -14,19 +14,28 @@ const INCIDENT_WINDOW_DAYS = 90;
 const MAX_INCIDENT_URLS = 1500;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}/`, changeFrequency: 'always', priority: 1 },
-    { url: `${SITE_URL}/incidents`, changeFrequency: 'hourly', priority: 0.7 },
-    { url: `${SITE_URL}/reliability`, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${SITE_URL}/`, lastModified: now, changeFrequency: 'always', priority: 1 },
+    { url: `${SITE_URL}/incidents`, lastModified: now, changeFrequency: 'hourly', priority: 0.7 },
+    { url: `${SITE_URL}/reliability`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.1 },
     { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.1 },
   ];
 
+  const summaries = await intelligenceService.getProviderSummaries().catch(() => []);
+  const lastReadByProvider = new Map(
+    summaries.map((s) => [s.providerId, s.lastUpdated ? new Date(s.lastUpdated) : now])
+  );
   const appRoutes: MetadataRoute.Sitemap = listCasualApps().map((app) => ({
     url: `${SITE_URL}/${app.id}`,
-    changeFrequency: 'always',
+    // Honest freshness: the provider's own status was re-read this recently, so
+    // the page genuinely changed then. Without this Google assumed the page is
+    // static and crawled it roughly twice a month.
+    lastModified: lastReadByProvider.get(app.providerId) || now,
+    changeFrequency: 'hourly',
     priority: 0.9,
   }));
 
@@ -51,12 +60,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const compareRoutes: MetadataRoute.Sitemap = [];
   for (let i = 0; i < POPULAR.length; i++) {
     for (let j = i + 1; j < POPULAR.length; j++) {
-      compareRoutes.push({ url: `${SITE_URL}/compare/${POPULAR[i]}-vs-${POPULAR[j]}`, changeFrequency: 'daily', priority: 0.6 });
+      compareRoutes.push({ url: `${SITE_URL}/compare/${POPULAR[i]}-vs-${POPULAR[j]}`, lastModified: now, changeFrequency: 'daily', priority: 0.6 });
     }
   }
 
   const CATEGORIES = ['ai-chatbot','ai-coding-assistant','ai-image-generator','ai-video-generator','ai-voice-generator'];
-  const bestRoutes: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({ url: `${SITE_URL}/best/${c}`, changeFrequency: 'daily' as const, priority: 0.7 }));
+  const bestRoutes: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({ url: `${SITE_URL}/best/${c}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 }));
 
   return [...staticRoutes, ...appRoutes, ...incidentRoutes, ...compareRoutes, ...bestRoutes];
 }
