@@ -176,36 +176,16 @@ window.gtag = gtag;
           </Providers>
         </ErrorBoundary>
 
-        {/* Service Worker Registration */}
-        <Script id="sw-registration" strategy="afterInteractive">
+        {/* No service worker: a live-status site has no useful offline mode,
+            and caching risked stale verdicts. Clean up any old registration. */}
+        <Script id="sw-cleanup" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
-              const registerServiceWorker = async function() {
-                try {
-                  const hostname = window.location.hostname;
-                  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-                  const allowLocalSw = ${process.env.NEXT_PUBLIC_ENABLE_SW_ON_LOCALHOST === 'true' ? 'true' : 'false'};
-
-                  // Service workers often cause confusing caching issues during local dev.
-                  // If one is installed on localhost, unregister it to keep the dev experience reliable.
-                  if (isLocalhost && !allowLocalSw) {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    await Promise.all(registrations.map((r) => r.unregister()));
-                    return;
-                  }
-
-                  await navigator.serviceWorker.register('/sw.js');
-                } catch (registrationError) {
-                  console.log('SW registration failed:', registrationError);
-                }
-              };
-
-              // afterInteractive scripts can run after the window load event in fast navigations.
-              // Register immediately if the document is already loaded.
-              if (document.readyState === 'complete') {
-                registerServiceWorker();
-              } else {
-                window.addEventListener('load', registerServiceWorker);
+              navigator.serviceWorker.getRegistrations()
+                .then((rs) => rs.forEach((r) => r.unregister()))
+                .catch(() => {});
+              if (window.caches && caches.keys) {
+                caches.keys().then((ks) => ks.forEach((k) => caches.delete(k))).catch(() => {});
               }
             }
           `}
