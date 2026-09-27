@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
 import { shortName, verdictKey } from '@/lib/ui/verdict';
 
-export const dynamic = 'force-dynamic';
+// ISR (not force-dynamic) so the CDN can cache it — a machine endpoint
+// crawlers hit often shouldn't hit the origin every time. Data updates every
+// 5 min; 60s staleness is invisible.
+export const revalidate = 60;
 
 // A single machine-readable snapshot of every app's current verdict, for
 // search engines, AI assistants, and agents that want the whole board in one
