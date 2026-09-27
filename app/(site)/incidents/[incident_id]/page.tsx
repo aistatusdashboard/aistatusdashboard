@@ -6,6 +6,7 @@ import { getIncidentById } from '@/lib/services/public-data';
 import { providerService } from '@/lib/services/providers';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
+import { OG_BASE } from '@/lib/ui/metadata';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { log } from '@/lib/utils/logger';
 
@@ -96,9 +97,11 @@ export async function generateMetadata({
       canonical: `/incidents/${safeId}`,
     },
     openGraph: {
+      ...OG_BASE,
+      type: 'article',
       title: `${title} | AI Status Dashboard`,
       description,
-      images: [{ url: `https://aistatusdashboard.com/og/incident/${encodeURIComponent(safeId)}`, width: 1200, height: 630 }],
+      images: [{ url: `https://aistatusdashboard.com/og/incident/${encodeURIComponent(safeId)}`, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',

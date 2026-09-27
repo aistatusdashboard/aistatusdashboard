@@ -5,6 +5,7 @@ import Link from 'next/link';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import SubscriptionNotice from '@/app/components/SubscriptionNotice';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
+import { OG_BASE } from '@/lib/ui/metadata';
 import { searchIncidents } from '@/lib/services/public-data';
 import { formatTimeAgo } from '@/lib/utils/time';
 import {
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: '/' },
   openGraph: {
+    ...OG_BASE,
     title: 'Is your AI down right now?',
     description: DESCRIPTION,
     images: [{ url: 'https://aistatusdashboard.com/og/home', width: 1200, height: 630, alt: 'Live AI status board' }],

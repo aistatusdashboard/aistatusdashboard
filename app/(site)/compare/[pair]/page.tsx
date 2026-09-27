@@ -5,6 +5,7 @@ import { getCasualApp, getCasualStatus, listCasualApps } from '@/lib/services/ca
 import { getAppReliability } from '@/lib/services/reliability';
 import { shortName, verdictKey, VERDICT_COPY } from '@/lib/ui/verdict';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
+import { OG_BASE } from '@/lib/ui/metadata';
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -55,7 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<PairParams>
     title,
     description,
     alternates: { canonical: `/compare/${x}-vs-${y}` },
-    openGraph: { title, description, url: `https://aistatusdashboard.com/compare/${x}-vs-${y}`, type: 'website', images: [{ url: `https://aistatusdashboard.com/og/compare/${x}-vs-${y}`, width: 1200, height: 630 }] },
+    openGraph: { ...OG_BASE, title, description, url: `https://aistatusdashboard.com/compare/${x}-vs-${y}`, type: 'website', images: [{ url: `https://aistatusdashboard.com/og/compare/${x}-vs-${y}`, width: 1200, height: 630, alt: `${nx} vs ${ny} reliability` }] },
     twitter: { card: 'summary_large_image', title, description, images: [`https://aistatusdashboard.com/og/compare/${x}-vs-${y}`] },
   };
 }

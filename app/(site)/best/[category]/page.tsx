@@ -5,6 +5,7 @@ import { getReliabilityRankingCached } from '@/lib/services/reliability';
 import { listCasualApps } from '@/lib/services/casual';
 import { CATEGORIES } from '@/lib/ui/categories';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
+import { OG_BASE } from '@/lib/ui/metadata';
 
 export const revalidate = 1800;
 export const dynamicParams = false;
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<CategoryPar
   if (!cat) return { title: 'Most reliable AI' };
   const title = `Most reliable ${cat.label}`;
   const description = `Which ${cat.label} is the most reliable? ${cat.noun} ranked by 30-day uptime and outage history, from each provider's own official incident feed.`;
-  return { title, description, alternates: { canonical: `/best/${category}` }, openGraph: { title, description, url: `https://aistatusdashboard.com/best/${category}`, type: 'website', images: [{ url: `https://aistatusdashboard.com/og/best/${category}`, width: 1200, height: 630 }] }, twitter: { card: 'summary_large_image', title, description, images: [`https://aistatusdashboard.com/og/best/${category}`] } };
+  return { title, description, alternates: { canonical: `/best/${category}` }, openGraph: { ...OG_BASE, title, description, url: `https://aistatusdashboard.com/best/${category}`, type: 'website', images: [{ url: `https://aistatusdashboard.com/og/best/${category}`, width: 1200, height: 630, alt: `Most reliable ${cat.label}` }] }, twitter: { card: 'summary_large_image', title, description, images: [`https://aistatusdashboard.com/og/best/${category}`] } };
 }
 
 export default async function BestCategoryPage({ params }: { params: Promise<CategoryParams> }) {

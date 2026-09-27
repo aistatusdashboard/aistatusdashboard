@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
+import { OG_BASE } from '@/lib/ui/metadata';
 import { categoryForApp, rivalFor, comparePath } from '@/lib/ui/categories';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
@@ -47,11 +48,12 @@ export async function generateMetadata({ params }: { params: Promise<AppParams> 
     description,
     alternates: { canonical: `/${app.id}` },
     openGraph: {
+      ...OG_BASE,
       title,
       description,
       url: `https://aistatusdashboard.com/${app.id}`,
       type: 'website',
-      images: [{ url: `https://aistatusdashboard.com/og/app/${app.id}`, width: 1200, height: 630 }],
+      images: [{ url: `https://aistatusdashboard.com/og/app/${app.id}`, width: 1200, height: 630, alt: `${name} status` }],
     },
     twitter: {
       card: 'summary_large_image',

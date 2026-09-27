@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getReliabilityRanking } from '@/lib/services/reliability';
 import { CATEGORIES } from '@/lib/ui/categories';
+import { OG_BASE } from '@/lib/ui/metadata';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { APP_LOGOS } from '@/lib/ui/verdict';
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   title: 'Which AI is the most reliable?',
   description,
   alternates: { canonical: '/reliability' },
-  openGraph: { title: 'Which AI is the most reliable?', description, url: 'https://aistatusdashboard.com/reliability', type: 'website', images: [{ url: 'https://aistatusdashboard.com/og/home', width: 1200, height: 630 }] },
+  openGraph: { ...OG_BASE, title: 'Which AI is the most reliable?', description, url: 'https://aistatusdashboard.com/reliability', type: 'website', images: [{ url: 'https://aistatusdashboard.com/og/home', width: 1200, height: 630, alt: 'AI reliability ranking' }] },
   twitter: { card: 'summary_large_image', title: 'Which AI is the most reliable?', description, images: ['https://aistatusdashboard.com/og/home'] },
 };
 
