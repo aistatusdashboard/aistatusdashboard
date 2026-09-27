@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound, permanentRedirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
@@ -64,12 +64,6 @@ export async function generateMetadata({ params }: { params: Promise<AppParams> 
 
 export default async function AppStatusPage({ params }: { params: Promise<AppParams> }) {
   const { appId } = await params;
-  // Non-lowercase variants (/ChatGPT) would render a duplicate 200; send them
-  // to the canonical lowercase path.
-  if (appId !== appId.toLowerCase()) {
-    const lower = getCasualApp(appId);
-    if (lower) permanentRedirect(`/${lower.id}`);
-  }
   const app = getCasualApp(appId);
   if (!app) return notFound();
 

@@ -15,13 +15,6 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // Canonicalize to the apex host (www served a duplicate 200).
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.aistatusdashboard.com' }],
-        destination: 'https://aistatusdashboard.com/:path*',
-        permanent: true,
-      },
       // The old "casual mode" URLs are now the primary app pages.
       { source: '/casual', destination: '/', permanent: true },
       { source: '/casual/:appId', destination: '/:appId', permanent: true },

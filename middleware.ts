@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import appsConfig from '@/lib/casual/apps.json';
+
+// Single-segment app slugs, lowercased, for the case-normalizing redirect.
+const APP_SLUGS = new Set(
+  (appsConfig.apps as Array<{ id: string }>).map((a) => a.id.toLowerCase())
+);
 
 const DEFAULT_CANONICAL_HOST = 'aistatusdashboard.com';
 
@@ -51,6 +57,15 @@ export function middleware(request: NextRequest) {
       url.protocol = 'https:';
       return NextResponse.redirect(url, 308);
     }
+  }
+
+  // Case-normalize app pages (/ChatGPT -> /chatgpt) in one clean 308 so an
+  // uppercase variant isn't a duplicate 200. Only single-segment app slugs —
+  // incident ids and other paths keep their case.
+  if (/^\/[^/]+$/.test(path) && path !== path.toLowerCase() && APP_SLUGS.has(path.slice(1).toLowerCase())) {
+    const url = request.nextUrl.clone();
+    url.pathname = path.toLowerCase();
+    return NextResponse.redirect(url, 308);
   }
 
   return NextResponse.next();
