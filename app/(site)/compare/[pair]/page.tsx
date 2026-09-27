@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getCasualApp, getCasualStatus, listCasualApps } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
 import { shortName, verdictKey, VERDICT_COPY } from '@/lib/ui/verdict';
+import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -48,14 +49,14 @@ export async function generateMetadata({ params }: { params: Promise<PairParams>
   const [x, y] = canonicalOrder(a.id, b.id);
   const nx = shortName(x, getCasualApp(x)!.label);
   const ny = shortName(y, getCasualApp(y)!.label);
-  const title = `${nx} vs ${ny}: status, uptime & reliability`;
-  const description = `${nx} vs ${ny} compared right now — live status, 30-day uptime, and outage history for both, side by side. Which AI is more reliable?`;
+  const title = `${nx} vs ${ny}: reliability`;
+  const description = `${nx} vs ${ny} — live status and 30-day uptime for both, side by side. Which AI is more reliable?`;
   return {
     title,
     description,
     alternates: { canonical: `/compare/${x}-vs-${y}` },
-    openGraph: { title, description },
-    twitter: { card: 'summary_large_image', title, description },
+    openGraph: { title, description, url: `https://aistatusdashboard.com/compare/${x}-vs-${y}`, type: 'website', images: [{ url: `https://aistatusdashboard.com/og/compare/${x}-vs-${y}`, width: 1200, height: 630 }] },
+    twitter: { card: 'summary_large_image', title, description, images: [`https://aistatusdashboard.com/og/compare/${x}-vs-${y}`] },
   };
 }
 
@@ -137,6 +138,7 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd([{ name: 'Home', path: '/' }, { name: `${nx} vs ${ny}`, path: `/compare/${x.id}-vs-${y.id}` }])) }} />
       <div className="max-w-3xl mx-auto space-y-8">
         <header className="pt-4 space-y-3">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">{nx} vs {ny}: which is more reliable?</h1>

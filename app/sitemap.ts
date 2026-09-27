@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  const CATEGORIES = ['ai-chatbot','ai-coding-assistant','ai-image-generator','ai-video-generator','ai-voice-generator'];
+  const CATEGORIES = ['ai-chatbot','ai-coding-assistant','ai-image-generator','ai-video-generator','ai-writing-assistant'];
   const bestRoutes: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({ url: `${SITE_URL}/best/${c}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 }));
 
   return [...staticRoutes, ...appRoutes, ...incidentRoutes, ...compareRoutes, ...bestRoutes];

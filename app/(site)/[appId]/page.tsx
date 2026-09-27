@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
+import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
 import { categoryForApp, rivalFor, comparePath } from '@/lib/ui/categories';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
@@ -39,8 +40,8 @@ export async function generateMetadata({ params }: { params: Promise<AppParams> 
   const app = getCasualApp(appId);
   if (!app) return { title: 'Status' };
   const name = shortName(app.id, app.label);
-  const title = `Is ${name} down? Status, uptime & outage history`;
-  const description = `Is ${name} down right now? ${app.providerDisplay}'s official status read every five minutes, plus ${name}'s 30-day uptime, how often it goes down, and its recent outage history.`;
+  const title = `Is ${name} down? Live status & uptime`;
+  const description = `Is ${name} down right now? ${app.providerDisplay}'s official status, read every 5 minutes, plus ${name}'s 30-day uptime and outage history.`;
   return {
     title,
     description,
@@ -48,6 +49,8 @@ export async function generateMetadata({ params }: { params: Promise<AppParams> 
     openGraph: {
       title,
       description,
+      url: `https://aistatusdashboard.com/${app.id}`,
+      type: 'website',
       images: [{ url: `https://aistatusdashboard.com/og/app/${app.id}`, width: 1200, height: 630 }],
     },
     twitter: {
@@ -61,6 +64,12 @@ export async function generateMetadata({ params }: { params: Promise<AppParams> 
 
 export default async function AppStatusPage({ params }: { params: Promise<AppParams> }) {
   const { appId } = await params;
+  // Non-lowercase variants (/ChatGPT) would render a duplicate 200; send them
+  // to the canonical lowercase path.
+  if (appId !== appId.toLowerCase()) {
+    const lower = getCasualApp(appId);
+    if (lower) permanentRedirect(`/${lower.id}`);
+  }
   const app = getCasualApp(appId);
   if (!app) return notFound();
 
@@ -129,8 +138,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const rankText = reliability?.rank ? `#${reliability.rank} of ${reliability.total}` : null;
   const reliabilityAnswer = reliability
     ? reliability.incidentCount === 0
-      ? `Very reliable lately: over the last ${reliability.windowDays} days we recorded no ${provider} incidents, for ${uptimeText} uptime${rankText ? ` — ${rankText} of the AI apps we track` : ''}.`
-      : `Over the last ${reliability.windowDays} days ${name} had ${reliability.incidentCount} incident${reliability.incidentCount === 1 ? '' : 's'} totalling about ${reliability.downtimeMinutes} minutes of disruption, for ${uptimeText} uptime${rankText ? ` — ${rankText} of the AI apps we track` : ''}. The longest single incident lasted about ${reliability.longestIncidentMinutes} minutes.`
+      ? (reliability.limitedData
+        ? `${provider} publishes no incident feed we can read, so we have no outage history for ${name} — only a live reachability check.`
+        : `Very reliable lately: over the last ${reliability.windowDays} days we recorded no ${provider} incidents, for ${uptimeText} uptime${rankText ? ` — ${rankText} of the AI apps we track` : ''}.`)
+      : `Over the last ${reliability.windowDays} days ${name} had ${reliability.incidentCount} incident${reliability.incidentCount === 1 ? '' : 's'} totalling about ${reliability.downtimeMinutes} minutes of disruption, for ${uptimeText} uptime${rankText ? ` — ${rankText} of the AI apps we track` : ''}. The longest single incident lasted ${reliability.longestIncidentMinutes >= 1440 ? '24 hours or more' : `about ${reliability.longestIncidentMinutes} minutes`}.`
     : `We are still building ${name}'s outage history.`;
 
   const faqs: Array<{ q: string; a: string }> = [
@@ -190,6 +201,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd([{ name: 'Home', path: '/' }, { name: name, path: `/${app.id}` }])) }} />
       <div className="max-w-3xl mx-auto space-y-10">
         {/* The answer. */}
         <header className="pt-6 text-center space-y-4">
@@ -421,7 +433,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
                 <p className="text-xs text-slate-500 dark:text-slate-400">incident{reliability.incidentCount === 1 ? '' : 's'} · {reliability.windowDays} days</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{reliability.longestIncidentMinutes > 0 ? `${reliability.longestIncidentMinutes}m` : '—'}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{reliability.limitedData ? '—' : reliability.longestIncidentMinutes >= 1440 ? '\u226524h' : reliability.longestIncidentMinutes > 0 ? `${reliability.longestIncidentMinutes}m` : '\u2014'}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">longest outage</p>
               </div>
               <div>

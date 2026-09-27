@@ -22,10 +22,10 @@ export const CATEGORIES: Record<string, { label: string; noun: string; appIds: s
     noun: 'AI video generators',
     appIds: ['sora', 'runway', 'minimax'],
   },
-  'ai-voice-generator': {
-    label: 'AI voice generator',
-    noun: 'AI voice tools',
-    appIds: ['elevenlabs', 'minimax'],
+  'ai-writing-assistant': {
+    label: 'AI writing assistant',
+    noun: 'AI writing assistants',
+    appIds: ['grammarly', 'notion-ai'],
   },
 };
 

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { providerService } from '@/lib/services/providers';
 import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
+import { listCasualApps } from '@/lib/services/casual';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { formatTimeAgo } from '@/lib/utils/time';
 
@@ -40,7 +41,11 @@ export default async function IncidentsPage({
   searchParams?: Promise<{ provider?: string }>;
 }) {
   const sp = (await searchParams) || {};
-  const providerId = typeof sp.provider === 'string' ? sp.provider : undefined;
+  const requested = typeof sp.provider === 'string' ? sp.provider.toLowerCase() : undefined;
+  // Only honour a provider filter for a real provider; otherwise ignore it so
+  // arbitrary ?provider=<junk> can't render a page titled after raw input.
+  const knownProviders = new Set(listCasualApps().map((a) => a.providerId));
+  const providerId = requested && knownProviders.has(requested) ? requested : undefined;
   const providerName = providerId ? appNameForProvider(providerId) : null;
 
   const incidents = (await intelligenceService.getIncidents({ providerId, limit: 50 }))

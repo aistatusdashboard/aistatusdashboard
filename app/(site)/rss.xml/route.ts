@@ -45,7 +45,7 @@ export async function GET() {
     )}</pubDate>\n      <description>${esc(summary)}</description>\n    </item>`;
   });
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>AI Status Dashboard — AI outages &amp; incidents</title>\n    <link>https://aistatusdashboard.com/</link>\n    <description>Live incidents across ChatGPT, Claude, Gemini and 20+ AI apps, read from each provider's official status page.</description>\n    <language>en-us</language>\n    <lastBuildDate>${now}</lastBuildDate>\n    <ttl>60</ttl>\n${items.join(
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>AI Status Dashboard — AI outages &amp; incidents</title>\n    <link>https://aistatusdashboard.com/</link>\n    <description>Live incidents across ChatGPT, Claude, Gemini and 20+ AI apps, read from each provider's official status page.</description>\n    <language>en-us</language>\n    <atom:link href="https://aistatusdashboard.com/rss.xml" rel="self" type="application/rss+xml" />\n    <image><url>https://aistatusdashboard.com/icon-192x192.png</url><title>AI Status Dashboard</title><link>https://aistatusdashboard.com/</link></image>\n    <lastBuildDate>${now}</lastBuildDate>\n    <ttl>60</ttl>\n${items.join(
     "\n"
   )}\n  </channel>\n</rss>\n`;
   return new NextResponse(xml, {

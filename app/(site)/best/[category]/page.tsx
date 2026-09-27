@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getReliabilityRankingCached } from '@/lib/services/reliability';
 import { listCasualApps } from '@/lib/services/casual';
 import { CATEGORIES } from '@/lib/ui/categories';
+import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
 
 export const revalidate = 1800;
 export const dynamicParams = false;
@@ -18,9 +19,9 @@ export async function generateMetadata({ params }: { params: Promise<CategoryPar
   const { category } = await params;
   const cat = CATEGORIES[category];
   if (!cat) return { title: 'Most reliable AI' };
-  const title = `Most reliable ${cat.label}: ${cat.noun} ranked by uptime`;
+  const title = `Most reliable ${cat.label}`;
   const description = `Which ${cat.label} is the most reliable? ${cat.noun} ranked by 30-day uptime and outage history, from each provider's own official incident feed.`;
-  return { title, description, alternates: { canonical: `/best/${category}` }, openGraph: { title, description }, twitter: { card: 'summary_large_image', title, description } };
+  return { title, description, alternates: { canonical: `/best/${category}` }, openGraph: { title, description, url: `https://aistatusdashboard.com/best/${category}`, type: 'website', images: [{ url: `https://aistatusdashboard.com/og/best/${category}`, width: 1200, height: 630 }] }, twitter: { card: 'summary_large_image', title, description, images: [`https://aistatusdashboard.com/og/best/${category}`] } };
 }
 
 export default async function BestCategoryPage({ params }: { params: Promise<CategoryParams> }) {
@@ -69,6 +70,7 @@ export default async function BestCategoryPage({ params }: { params: Promise<Cat
   return (
     <main className="flex-1 px-4 sm:px-6 py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Reliability', path: '/reliability' }, { name: `Most reliable ${cat.label}`, path: `/best/${category}` }])) }} />
       <div className="max-w-3xl mx-auto space-y-8">
         <header className="pt-4 space-y-3">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Most reliable {cat.label}</h1>

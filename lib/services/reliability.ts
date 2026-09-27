@@ -1,5 +1,6 @@
 import { intelligenceService } from '@/lib/services/intelligence';
 import { listCasualApps } from '@/lib/services/casual';
+import sourcesConfig from '@/lib/data/sources.json';
 import { TtlCache } from '@/lib/utils/ttl-cache';
 
 // 30-day reliability ranking computed from ingested incident history.
@@ -14,6 +15,7 @@ const MAX_INCIDENT_MS = 24 * 60 * 60 * 1000;
 
 export type ReliabilityRow = {
   appId: string;
+  limitedData?: boolean;
   name: string;
   providerId: string;
   uptimePct: number;
@@ -29,7 +31,7 @@ export type ReliabilityRow = {
 // not the service being down — so it barely moves uptime. Without this, a
 // transparent provider that posts many small incidents (Anthropic, OpenAI)
 // looks less reliable than an opaque one that posts nothing.
-function severityWeight(severity: string | undefined): number {
+function baseWeight(severity: string | undefined): number {
   switch (severity) {
     case 'major_outage':
       return 1;
@@ -43,6 +45,28 @@ function severityWeight(severity: string | undefined): number {
       return 0.15;
   }
 }
+
+// Providers label severity inconsistently (MiniMax/Moonshot mark "elevated
+// error rate" as major/critical; Anthropic calls the same thing degraded).
+// For the cross-provider ranking, cap the weight when the incident text plainly
+// describes a partial degradation rather than a full outage — so the comparison
+// is apples-to-apples and doesn't punish providers who label honestly.
+const DEGRADATION_HINT = /elevated (error|latenc)|increased (error|latenc)|degrad|slow|partial|minor|intermittent|error rate/i;
+function severityWeight(severity: string | undefined, title?: string): number {
+  const w = baseWeight(severity);
+  if (w >= 1 && title && DEGRADATION_HINT.test(title)) return 0.15;
+  if (w >= 0.5 && title && DEGRADATION_HINT.test(title)) return 0.15;
+  return w;
+}
+
+// Providers whose only source is a public endpoint (up/down probe) can never
+// record an incident, so a perfect uptime for them is absence of data, not
+// evidence of reliability. Flag them so the ranking can say so.
+const ENDPOINT_ONLY = new Set(
+  ((sourcesConfig as { sources: Array<{ providerId: string; platform?: string }> }).sources || [])
+    .filter((src) => src.platform === 'endpoint')
+    .map((src) => src.providerId)
+);
 
 export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
   const apps = listCasualApps();
@@ -83,7 +107,7 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
             ? updated
             : now;
         const rawDuration = Math.min(Math.max(ended - started, 0), MAX_INCIDENT_MS);
-        const duration = rawDuration * severityWeight(incident.severity);
+        const duration = rawDuration * severityWeight(incident.severity, incident.title);
         downtimeMs += duration;
         longestMs = Math.max(longestMs, rawDuration);
         count += 1;
@@ -93,7 +117,9 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
       }
 
       const uptimePct = Math.max(0, 100 * (1 - downtimeMs / WINDOW_MS));
+      const limitedData = ENDPOINT_ONLY.has(providerId);
       return {
+        limitedData,
         appId: meta.appId,
         name: meta.name,
         providerId,
@@ -108,7 +134,11 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
   );
 
   return rows.sort(
-    (a, b) => b.uptimePct - a.uptimePct || a.incidentCount - b.incidentCount || a.name.localeCompare(b.name)
+    (a, b) =>
+      Number(Boolean(a.limitedData)) - Number(Boolean(b.limitedData)) ||
+      b.uptimePct - a.uptimePct ||
+      a.incidentCount - b.incidentCount ||
+      a.name.localeCompare(b.name)
   );
 }
 
@@ -126,6 +156,7 @@ export async function getReliabilityRankingCached(): Promise<ReliabilityRow[]> {
 
 export type AppReliability = {
   windowDays: number;
+  limitedData: boolean;
   uptimePct: number;
   incidentCount: number;
   downtimeMinutes: number;
@@ -144,6 +175,7 @@ export async function getAppReliability(providerId: string): Promise<AppReliabil
   const row = rows[index];
   return {
     windowDays: WINDOW_DAYS,
+    limitedData: Boolean(row.limitedData),
     uptimePct: row.uptimePct,
     incidentCount: row.incidentCount,
     downtimeMinutes: row.downtimeMinutes,

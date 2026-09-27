@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   title: 'Which AI is the most reliable?',
   description,
   alternates: { canonical: '/reliability' },
-  openGraph: { title: 'Which AI is the most reliable? | AI Status', description },
-  twitter: { title: 'Which AI is the most reliable? | AI Status', description },
+  openGraph: { title: 'Which AI is the most reliable?', description, url: 'https://aistatusdashboard.com/reliability', type: 'website', images: [{ url: 'https://aistatusdashboard.com/og/home', width: 1200, height: 630 }] },
+  twitter: { card: 'summary_large_image', title: 'Which AI is the most reliable?', description, images: ['https://aistatusdashboard.com/og/home'] },
 };
 
 function uptimeTone(pct: number): string {
@@ -143,7 +143,7 @@ export default async function ReliabilityPage() {
                     {row.incidentCount}
                   </td>
                   <td className="p-3 text-right font-mono text-slate-500 dark:text-slate-400 hidden sm:table-cell">
-                    {row.longestIncidentMinutes ? `${row.longestIncidentMinutes}m` : '—'}
+                    {row.limitedData ? 'no feed' : row.longestIncidentMinutes >= 1440 ? '\u226524h' : row.longestIncidentMinutes ? `${row.longestIncidentMinutes}m` : '\u2014'}
                   </td>
                   <td className="p-3 text-right font-mono text-slate-500 dark:text-slate-400 hidden sm:table-cell">
                     {row.lastIncidentAt ? formatTimeAgo(row.lastIncidentAt) : 'none'}

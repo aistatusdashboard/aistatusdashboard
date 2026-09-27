@@ -159,6 +159,7 @@ export default async function IncidentDetailPage({
     '@type': 'Event',
     name: incident.title,
     description: latestUpdate || incident.title,
+    image: [`https://aistatusdashboard.com/og/incident/${encodeURIComponent(incident.incident_id)}`],
     startDate: incident.startedAt,
     endDate: incident.resolvedAt || undefined,
     eventStatus,
