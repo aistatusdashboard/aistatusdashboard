@@ -1,9 +1,9 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 import { config } from '@/lib/config';
 import { log } from '@/lib/utils/logger';
 
 export class EmailUtils {
-    private static transporter: nodemailer.Transporter;
+    private static transporter: Transporter;
 
     private static isLoopbackHost(host: string): boolean {
         const h = host.toLowerCase();
