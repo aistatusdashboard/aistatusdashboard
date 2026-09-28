@@ -50,8 +50,11 @@ export async function GET() {
     {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        // Cheap for crawlers: CDN-cached, never staler than the 5-min ingest.
-        'Cache-Control': 'public, max-age=60, s-maxage=120',
+        // No manual Cache-Control: setting one alongside `export const
+        // revalidate = 60` makes Next treat the handler as dynamic and emit
+        // `no-store`. Let ISR own caching — it serves from a 60s server-side
+        // cache, sparing the container regardless of what App Hosting stamps on
+        // the client-facing header.
         'Access-Control-Allow-Origin': '*',
       },
     }
