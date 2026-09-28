@@ -50,11 +50,12 @@ export async function GET() {
     {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        // No manual Cache-Control: setting one alongside `export const
-        // revalidate = 60` makes Next treat the handler as dynamic and emit
-        // `no-store`. Let ISR own caching — it serves from a 60s server-side
-        // cache, sparing the container regardless of what App Hosting stamps on
-        // the client-facing header.
+        // App Hosting rewrites `public` -> `private` here but keeps max-age, so
+        // this yields `max-age=60, private` — the best client-facing header this
+        // endpoint can get. WITHOUT this explicit header App Hosting defaults
+        // the route handler to `no-store` (worse). ISR (`revalidate = 60`) still
+        // caches the heavy Firestore fan-out server-side either way. #147.
+        'Cache-Control': 'public, max-age=60, s-maxage=120',
         'Access-Control-Allow-Origin': '*',
       },
     }
