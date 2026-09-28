@@ -9,9 +9,12 @@ const APP_SLUGS = new Set(
 
 const DEFAULT_CANONICAL_HOST = 'aistatusdashboard.com';
 
-function getCanonicalHost(): string | null {
+// Fall back to the hardcoded apex host: NEXT_PUBLIC_SITE_URL is a build-time
+// inline for the client bundle and isn't guaranteed to be in the middleware's
+// runtime env, so relying on it here silently disabled the www->apex redirect.
+function getCanonicalHost(): string {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (!siteUrl) return null;
+  if (!siteUrl) return DEFAULT_CANONICAL_HOST;
 
   try {
     return new URL(siteUrl).host;
@@ -48,15 +51,14 @@ export function middleware(request: NextRequest) {
   const currentHost = request.headers.get('host');
   const currentHostname = currentHost ? currentHost.split(':')[0] : null;
 
-  if (process.env.NODE_ENV === 'production' && canonicalHost && currentHostname) {
-    const wwwHost = `www.${canonicalHost}`;
-    if (currentHostname === wwwHost) {
-      const url = request.nextUrl.clone();
-      url.hostname = canonicalHost;
-      url.port = '';
-      url.protocol = 'https:';
-      return NextResponse.redirect(url, 308);
-    }
+  // Redirect www -> apex in a single 308. No NODE_ENV guard: a www host is
+  // never correct to serve directly, and localhost can't match this anyway.
+  if (currentHostname && currentHostname === `www.${canonicalHost}`) {
+    const url = request.nextUrl.clone();
+    url.hostname = canonicalHost;
+    url.port = '';
+    url.protocol = 'https:';
+    return NextResponse.redirect(url, 308);
   }
 
   // Case-normalize app pages (/ChatGPT -> /chatgpt) in one clean 308 so an
