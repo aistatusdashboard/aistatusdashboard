@@ -20,12 +20,43 @@ const nextConfig = {
       { source: '/casual/:appId', destination: '/:appId', permanent: true },
       { source: '/dashboard', destination: '/', permanent: true },
       { source: '/providers', destination: '/', permanent: true },
-      // These two legacy provider URLs still rank (Search Console: /provider/aws
-      // is pos ~4 for "bedrock status", ~1.2k impressions). Point them at their
-      // new app pages to transfer that equity instead of dumping it on the home
-      // page. Must precede the /provider/:id catch-all.
-      { source: '/provider/aws', destination: '/bedrock', permanent: true },
-      { source: '/provider/cerebras', destination: '/cerebras', permanent: true },
+      // The developer-era /provider/<id> pages were the site's biggest traffic
+      // source (June 2026: /provider/aws alone did 510 clicks / 6.5k impressions
+      // on "aws bedrock status"). The rebuild blanket-redirected them all to the
+      // home page, throwing that equity away. Map each to its real app page so
+      // the ranking transfers to a page that actually answers the query. These
+      // must precede the /provider/:id catch-all.
+      { source: "/provider/openai", destination: "/chatgpt", permanent: true },
+      { source: "/provider/anthropic", destination: "/claude", permanent: true },
+      { source: "/provider/gemini", destination: "/gemini", permanent: true },
+      { source: "/provider/google", destination: "/gemini", permanent: true },
+      { source: "/provider/xai", destination: "/grok", permanent: true },
+      { source: "/provider/perplexity", destination: "/perplexity", permanent: true },
+      { source: "/provider/deepseek", destination: "/deepseek", permanent: true },
+      { source: "/provider/meta", destination: "/meta-ai", permanent: true },
+      { source: "/provider/github", destination: "/copilot", permanent: true },
+      { source: "/provider/cursor", destination: "/cursor", permanent: true },
+      { source: "/provider/character-ai", destination: "/character-ai", permanent: true },
+      { source: "/provider/mistral", destination: "/le-chat", permanent: true },
+      { source: "/provider/elevenlabs", destination: "/elevenlabs", permanent: true },
+      { source: "/provider/lovable", destination: "/lovable", permanent: true },
+      { source: "/provider/midjourney", destination: "/midjourney", permanent: true },
+      { source: "/provider/poe", destination: "/poe", permanent: true },
+      { source: "/provider/windsurf", destination: "/windsurf", permanent: true },
+      { source: "/provider/vercel", destination: "/v0", permanent: true },
+      { source: "/provider/notion", destination: "/notion-ai", permanent: true },
+      { source: "/provider/runway", destination: "/runway", permanent: true },
+      { source: "/provider/ideogram", destination: "/ideogram", permanent: true },
+      { source: "/provider/grammarly", destination: "/grammarly", permanent: true },
+      { source: "/provider/moonshot", destination: "/kimi", permanent: true },
+      { source: "/provider/manus", destination: "/manus", permanent: true },
+      { source: "/provider/minimax", destination: "/minimax", permanent: true },
+      { source: "/provider/canva", destination: "/canva-ai", permanent: true },
+      { source: "/provider/muse", destination: "/muse", permanent: true },
+      { source: "/provider/heygen", destination: "/heygen", permanent: true },
+      { source: "/provider/synthesia", destination: "/synthesia", permanent: true },
+      { source: "/provider/aws", destination: "/bedrock", permanent: true },
+      { source: "/provider/cerebras", destination: "/cerebras", permanent: true },
       { source: '/provider/:id', destination: '/', permanent: true },
       { source: '/developer', destination: '/', permanent: true },
       { source: '/status', destination: '/', permanent: true },
