@@ -13,6 +13,7 @@ import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
 import CasualHelpful from '@/app/components/casual/CasualHelpful';
+import ClientTimestamp from '@/app/components/ClientTimestamp';
 import { formatTimeAgo } from '@/lib/utils/time';
 import {
   APP_LOGOS,
@@ -284,18 +285,9 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
           )}
           <p className="text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-slate-700/60 pt-3">
             As of{' '}
-            {new Date(status.updated_at).toLocaleString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZone: 'UTC',
-            })}{' '}
-            UTC on{' '}
-            {new Date(status.updated_at).toLocaleDateString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-              timeZone: 'UTC',
-            })}
+            {/* Rendered in the viewer's own timezone on the client; the server
+                falls back to UTC so crawlers still get an absolute time. */}
+            <ClientTimestamp date={new Date(status.updated_at)} format="datetime" />
             , {app.providerDisplay} reports {name} as{' '}
             {key === 'up' ? 'operational' : key === 'wobbly' ? 'having issues' : key === 'down' ? 'experiencing an outage' : 'unknown'}.
           </p>

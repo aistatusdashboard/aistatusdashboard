@@ -9,17 +9,20 @@ import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
 import { OG_BASE } from '@/lib/ui/metadata';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { log } from '@/lib/utils/logger';
+import ClientTimestamp from '@/app/components/ClientTimestamp';
+
+// Timeline timestamps in the viewer's own timezone (server falls back to UTC
+// for crawlers, via ClientTimestamp's suppressed-hydration span).
+function WhenLocal({ value }: { value?: string | null }) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return <>{value}</>;
+  return <ClientTimestamp date={d} format="datetime" />;
+}
 
 function providerLabel(providerId: string): string {
   const provider = providerService.getProvider(providerId);
   return provider?.displayName || provider?.name || providerId;
-}
-
-function formatWhen(value?: string | null): string | null {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return `${parsed.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })} UTC`;
 }
 
 export const dynamic = 'force-dynamic';
@@ -233,9 +236,9 @@ export default async function IncidentDetailPage({
 
         <section className="surface-card p-6 space-y-2 text-sm text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-semibold text-slate-900 dark:text-white">Timeline</h2>
-          <p>Started: {formatWhen(incident.startedAt)}</p>
-          <p>Last update: {formatWhen(incident.updatedAt)}</p>
-          {incident.resolvedAt && <p>Resolved: {formatWhen(incident.resolvedAt)}</p>}
+          <p>Started: <WhenLocal value={incident.startedAt} /></p>
+          <p>Last update: <WhenLocal value={incident.updatedAt} /></p>
+          {incident.resolvedAt && <p>Resolved: <WhenLocal value={incident.resolvedAt} /></p>}
           {impactedParts.length > 0 && <p>Affected: {impactedParts.join(' · ')}</p>}
           {incident.rawUrl && (
             <p>
@@ -259,7 +262,7 @@ export default async function IncidentDetailPage({
                 <li key={update.id} className="border-l border-slate-200 dark:border-slate-700 pl-4">
                   <p className="font-semibold text-slate-800 dark:text-slate-200 capitalize">{update.status}</p>
                   <p>{update.body}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{formatWhen(update.createdAt)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1"><WhenLocal value={update.createdAt} /></p>
                 </li>
               ))}
             </ul>

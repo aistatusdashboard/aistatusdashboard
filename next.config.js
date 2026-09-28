@@ -67,7 +67,18 @@ const nextConfig = {
         ].join('; '),
       },
     ];
-    return [{ source: '/:path*', headers: security }];
+    return [
+      { source: '/:path*', headers: security },
+      // #147: try to make the machine endpoint CDN-cacheable. App Hosting has
+      // been stamping it `private`; an explicit public directive here is the
+      // test of whether that can be overridden at the app layer.
+      {
+        source: '/status.json',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },
+        ],
+      },
+    ];
   },
   generateBuildId: async () => {
     return buildId;
