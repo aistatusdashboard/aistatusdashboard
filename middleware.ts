@@ -48,8 +48,12 @@ export function middleware(request: NextRequest) {
   }
 
   const canonicalHost = getCanonicalHost();
-  const currentHost = request.headers.get('host');
-  const currentHostname = currentHost ? currentHost.split(':')[0] : null;
+  // Behind App Hosting / Google Frontend the `host` header is the internal
+  // Cloud Run host, not the domain the visitor typed — the real one arrives in
+  // `x-forwarded-host`. Reading `host` alone is why www was never redirected.
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const rawHost = forwardedHost?.split(',')[0]?.trim() || request.headers.get('host');
+  const currentHostname = rawHost ? rawHost.split(':')[0] : null;
 
   // Redirect www -> apex in a single 308. No NODE_ENV guard: a www host is
   // never correct to serve directly, and localhost can't match this anyway.
