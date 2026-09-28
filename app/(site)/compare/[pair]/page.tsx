@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getCasualApp, getCasualStatus, listCasualApps } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
+import { intelligenceService } from '@/lib/services/intelligence';
+import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { shortName, verdictKey, VERDICT_COPY } from '@/lib/ui/verdict';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
 import { OG_BASE } from '@/lib/ui/metadata';
@@ -72,11 +74,19 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
   const x = getCasualApp(xId)!;
   const y = getCasualApp(yId)!;
 
-  const [xStatus, yStatus, xRel, yRel] = await Promise.all([
+  const latestIncident = (providerId: string) =>
+    intelligenceService
+      .getIncidents({ providerId, limit: 1 })
+      .then((rows) => rows.map(normalizeIncidentDates)[0] || null)
+      .catch(() => null);
+
+  const [xStatus, yStatus, xRel, yRel, xInc, yInc] = await Promise.all([
     getCasualStatus({ appId: x.id }).catch(() => null),
     getCasualStatus({ appId: y.id }).catch(() => null),
     getAppReliability(x.providerId).catch(() => null),
     getAppReliability(y.providerId).catch(() => null),
+    latestIncident(x.providerId),
+    latestIncident(y.providerId),
   ]);
 
   const nx = shortName(x.id, x.label);
@@ -120,7 +130,7 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
     mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
   };
 
-  const renderCol = (app: typeof x, name: string, k: string, rel: typeof xRel) => (
+  const renderCol = (app: typeof x, name: string, k: string, rel: typeof xRel, inc: typeof xInc) => (
     <div className="surface-card p-5 space-y-3">
       <div className="flex items-center justify-between">
         <Link href={`/${app.id}`} className="text-lg font-semibold text-slate-900 dark:text-white hover:underline">{name}</Link>
@@ -132,6 +142,14 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
         <div><dt className="text-slate-500 dark:text-slate-400">Reliability rank</dt><dd className="text-xl font-bold text-slate-900 dark:text-white">{rel?.rank ? `#${rel.rank} of ${rel.total}` : '—'}</dd></div>
         <div><dt className="text-slate-500 dark:text-slate-400">Longest outage</dt><dd className="text-xl font-bold text-slate-900 dark:text-white">{rel && rel.longestIncidentMinutes > 0 ? `${rel.longestIncidentMinutes}m` : '—'}</dd></div>
       </dl>
+      {inc && (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Latest incident:{' '}
+          <Link href={`/incidents/${inc.providerId}:${inc.id}`} className="underline text-slate-700 dark:text-slate-200">
+            {inc.title}
+          </Link>
+        </p>
+      )}
       <Link href={`/${app.id}`} className="inline-block text-sm underline text-slate-700 dark:text-slate-200">Is {name} down right now? →</Link>
     </div>
   );
@@ -148,8 +166,8 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
           </p>
         </header>
         <section className="grid gap-4 sm:grid-cols-2">
-          {renderCol(x, nx, xKey, xRel)}
-          {renderCol(y, ny, yKey, yRel)}
+          {renderCol(x, nx, xKey, xRel, xInc)}
+          {renderCol(y, ny, yKey, yRel, yInc)}
         </section>
         <section className="surface-card p-5 space-y-3">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Questions</h2>
