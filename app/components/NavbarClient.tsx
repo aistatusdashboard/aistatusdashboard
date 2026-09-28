@@ -66,6 +66,14 @@ export default function NavbarClient({ statusLabel, updatedAgo, statusTone }: Na
 
   return (
     <header className="sticky top-0 z-50" data-role="site-header">
+      {/* Skip link lives inside the header landmark so no content sits outside
+          one (axe 'region'); still the first focusable element on the page. */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[80] bg-slate-900 text-white px-4 py-3 rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
+      >
+        Skip to main content
+      </a>
       <div className="bg-white/90 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/70">
         <div className="max-w-5xl mx-auto px-3 sm:px-4 min-h-[64px] flex items-center gap-4">
           <div className="shrink-0">

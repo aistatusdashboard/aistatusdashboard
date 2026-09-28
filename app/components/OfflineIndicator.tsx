@@ -43,7 +43,12 @@ export default function OfflineIndicator({ className = '' }: OfflineIndicatorPro
   }
 
   return (
-    <div className={`fixed top-20 left-4 right-4 z-40 ${className}`}>
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label="Connection status"
+      className={`fixed top-20 left-4 right-4 z-40 ${className}`}
+    >
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
