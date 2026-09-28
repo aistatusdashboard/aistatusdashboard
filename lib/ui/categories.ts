@@ -20,7 +20,7 @@ export const CATEGORIES: Record<string, { label: string; noun: string; appIds: s
   'ai-video-generator': {
     label: 'AI video generator',
     noun: 'AI video generators',
-    appIds: ['sora', 'runway', 'minimax'],
+    appIds: ['sora', 'runway', 'minimax', 'heygen', 'synthesia'],
   },
   'ai-writing-assistant': {
     label: 'AI writing assistant',

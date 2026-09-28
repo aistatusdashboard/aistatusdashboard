@@ -576,6 +576,32 @@
         "gemini"
       ],
       "enabled": true
+    },
+    {
+      "id": "heygen",
+      "name": "HeyGen",
+      "displayName": "HeyGen",
+      "aliases": [
+        "heygen"
+      ],
+      "category": "Video",
+      "statusUrl": "https://status.heygen.com/api/v2/status.json",
+      "statusPageUrl": "https://status.heygen.com",
+      "format": "statuspage",
+      "enabled": true
+    },
+    {
+      "id": "synthesia",
+      "name": "Synthesia",
+      "displayName": "Synthesia",
+      "aliases": [
+        "synthesia"
+      ],
+      "category": "Video",
+      "statusUrl": "https://status.synthesia.io/api/v2/status.json",
+      "statusPageUrl": "https://status.synthesia.io",
+      "format": "statuspage",
+      "enabled": true
     }
   ]
 }

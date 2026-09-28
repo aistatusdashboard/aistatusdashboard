@@ -329,6 +329,22 @@
       "metadata": {
         "expect": "401,403,200"
       }
+    },
+    {
+      "id": "heygen-statuspage",
+      "providerId": "heygen",
+      "name": "HeyGen Statuspage",
+      "baseUrl": "https://status.heygen.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 120
+    },
+    {
+      "id": "synthesia-statuspage",
+      "providerId": "synthesia",
+      "name": "Synthesia Statuspage",
+      "baseUrl": "https://status.synthesia.io",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 120
     }
   ]
 }

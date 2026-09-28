@@ -373,6 +373,32 @@
       ],
       "defaultRegion": "global",
       "webUrl": "https://muse.ai"
+    },
+    {
+      "id": "heygen",
+      "label": "HeyGen Status",
+      "providerId": "heygen",
+      "providerDisplay": "HeyGen",
+      "surfaces": [
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://www.heygen.com"
+    },
+    {
+      "id": "synthesia",
+      "label": "Synthesia Status",
+      "providerId": "synthesia",
+      "providerDisplay": "Synthesia",
+      "surfaces": [
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://www.synthesia.io"
     }
   ]
 }
