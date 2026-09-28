@@ -360,6 +360,19 @@
       ],
       "defaultRegion": "global",
       "webUrl": "https://www.canva.com"
+    },
+    {
+      "id": "muse",
+      "label": "Muse Status",
+      "providerId": "muse",
+      "providerDisplay": "Meta",
+      "surfaces": [
+        "text",
+        "browse",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://muse.ai"
     }
   ]
 }

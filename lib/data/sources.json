@@ -317,6 +317,18 @@
       "metadata": {
         "expect": "405,200"
       }
+    },
+    {
+      "id": "muse-frontdoor",
+      "providerId": "muse",
+      "name": "Muse public API endpoint",
+      "baseUrl": "https://muse.ai",
+      "statusUrl": "https://muse.ai/api/health",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "401,403,200"
+      }
     }
   ]
 }
