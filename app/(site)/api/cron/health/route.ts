@@ -5,8 +5,20 @@ import { getReliabilityRankingCached } from '@/lib/services/reliability';
 import { listCasualApps } from '@/lib/services/casual';
 import { EmailUtils } from '@/lib/utils/email';
 import { log } from '@/lib/utils/logger';
+import sourcesConfig from '@/lib/data/sources.json';
 
 export const dynamic = 'force-dynamic';
+
+// Browser-rendered sources (e.g. Mistral, which Cloudflare-blocks direct access
+// so we read it through the r.jina.ai renderer) legitimately gap 30-45 min when
+// that external renderer hiccups, then self-heal. A 20-min threshold pages the
+// owner for normal transients; give these a realistic window that still catches
+// a genuine multi-hour outage.
+const BROWSER_PROVIDERS = new Set(
+  (sourcesConfig.sources as Array<{ providerId: string; platform: string }>)
+    .filter((s) => s.platform === 'browser')
+    .map((s) => s.providerId)
+);
 
 function authorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET || process.env.APP_CRON_SECRET;
@@ -20,6 +32,7 @@ function authorized(request: NextRequest): boolean {
 }
 
 const STALE_MS = 20 * 60 * 1000; // provider read older than this = feed trouble
+const BROWSER_STALE_MS = 55 * 60 * 1000; // renderer-dependent sources gap longer
 const UNKNOWN_MS = 60 * 60 * 1000; // stuck "unknown" longer than this = broken source
 
 // Continuously validate the live product so problems surface to the owner
@@ -46,7 +59,8 @@ export async function GET(request: NextRequest) {
         continue;
       }
       const age = now - (doc.lastUpdated?.toMillis?.() ?? 0);
-      if (age > STALE_MS) problems.push(`${pid} not read for ${Math.round(age / 60000)} min (feed may be down)`);
+      const staleLimit = BROWSER_PROVIDERS.has(pid) ? BROWSER_STALE_MS : STALE_MS;
+      if (age > staleLimit) problems.push(`${pid} not read for ${Math.round(age / 60000)} min (feed may be down)`);
       if (doc.status === 'unknown' && age < UNKNOWN_MS) {
         // fresh unknown is fine mid-transition; only flag if it's the stored state and old enough handled below
       }
