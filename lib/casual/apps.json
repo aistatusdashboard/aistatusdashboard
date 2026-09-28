@@ -399,6 +399,30 @@
       ],
       "defaultRegion": "global",
       "webUrl": "https://www.synthesia.io"
+    },
+    {
+      "id": "bedrock",
+      "label": "AWS Bedrock Status",
+      "providerId": "aws",
+      "providerDisplay": "AWS",
+      "surfaces": [
+        "text",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://aws.amazon.com/bedrock/"
+    },
+    {
+      "id": "cerebras",
+      "label": "Cerebras Status",
+      "providerId": "cerebras",
+      "providerDisplay": "Cerebras",
+      "surfaces": [
+        "text",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://www.cerebras.ai"
     }
   ]
 }

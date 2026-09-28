@@ -20,6 +20,12 @@ const nextConfig = {
       { source: '/casual/:appId', destination: '/:appId', permanent: true },
       { source: '/dashboard', destination: '/', permanent: true },
       { source: '/providers', destination: '/', permanent: true },
+      // These two legacy provider URLs still rank (Search Console: /provider/aws
+      // is pos ~4 for "bedrock status", ~1.2k impressions). Point them at their
+      // new app pages to transfer that equity instead of dumping it on the home
+      // page. Must precede the /provider/:id catch-all.
+      { source: '/provider/aws', destination: '/bedrock', permanent: true },
+      { source: '/provider/cerebras', destination: '/cerebras', permanent: true },
       { source: '/provider/:id', destination: '/', permanent: true },
       { source: '/developer', destination: '/', permanent: true },
       { source: '/status', destination: '/', permanent: true },
