@@ -67,18 +67,13 @@ const nextConfig = {
         ].join('; '),
       },
     ];
-    return [
-      { source: '/:path*', headers: security },
-      // #147: try to make the machine endpoint CDN-cacheable. App Hosting has
-      // been stamping it `private`; an explicit public directive here is the
-      // test of whether that can be overridden at the app layer.
-      {
-        source: '/status.json',
-        headers: [
-          { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },
-        ],
-      },
-    ];
+    // #147: an explicit public Cache-Control for /status.json was tried here
+    // and made things worse — App Hosting overrode it to `no-store`, killing
+    // even the server-side revalidate cache. Removed. The endpoint keeps its
+    // route-level `revalidate = 60` (App Hosting stamps it `private`, but the
+    // 60s server-side ISR cache still spares the container). This cap is at the
+    // App Hosting / CDN layer, not something the app can override.
+    return [{ source: '/:path*', headers: security }];
   },
   generateBuildId: async () => {
     return buildId;
