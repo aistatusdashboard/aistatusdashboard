@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
+import { intelligenceService } from '@/lib/services/intelligence';
+import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
 import { OG_BASE } from '@/lib/ui/metadata';
 import { categoryForApp, rivalFor, comparePath } from '@/lib/ui/categories';
@@ -69,9 +71,17 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const app = getCasualApp(appId);
   if (!app) return notFound();
 
-  const [status, reliability] = await Promise.all([
+  const [status, reliability, recentIncidents] = await Promise.all([
     getCasualStatus({ appId: app.id }).catch(() => null),
     getAppReliability(app.providerId).catch(() => null),
+    // The app's own recent incidents, linked inline. Each incident page ranks
+    // far better than this templated app page, so surfacing them here gives the
+    // page unique, dated, per-app content and funnels crawl + link equity to
+    // the pages that already rank.
+    intelligenceService
+      .getIncidents({ providerId: app.providerId, limit: 6 })
+      .then((rows) => rows.map(normalizeIncidentDates))
+      .catch(() => []),
   ]);
   const name = shortName(app.id, app.label);
   const appCategory = categoryForApp(app.id);
@@ -455,6 +465,57 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
                   Most reliable {appCategory.label} →
                 </Link>
               )}
+            </p>
+          </section>
+        )}
+
+        {/* Recent incidents for this app — unique, dated, and each a direct link
+            to the incident page (which ranks far better than this one). */}
+        {recentIncidents.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Recent {name} incidents
+            </h2>
+            <div className="surface-card divide-y divide-slate-200/70 dark:divide-slate-800/70">
+              {recentIncidents.map((incident) => {
+                const done =
+                  ['resolved', 'completed', 'cancelled'].includes(String(incident.status || '').toLowerCase()) ||
+                  Boolean(incident.resolvedAt);
+                const when = incident.startedAt || incident.updatedAt;
+                const whenLabel = when
+                  ? new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+                  : null;
+                return (
+                  <Link
+                    key={`${incident.providerId}:${incident.id}`}
+                    href={`/incidents/${incident.providerId}:${incident.id}`}
+                    className="flex items-start justify-between gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-slate-900 dark:text-white truncate">
+                        {incident.title}
+                      </span>
+                      {whenLabel && (
+                        <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">{whenLabel}</span>
+                      )}
+                    </span>
+                    <span
+                      className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                        done
+                          ? 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900/60 dark:text-slate-300 dark:border-slate-700'
+                          : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+                      }`}
+                    >
+                      {done ? 'Resolved' : 'Ongoing'}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+            <p className="text-sm">
+              <Link href={`/incidents?provider=${app.providerId}`} className="underline text-slate-700 dark:text-slate-200">
+                {name}&apos;s full outage history →
+              </Link>
             </p>
           </section>
         )}
