@@ -97,7 +97,14 @@ export async function GET(request: NextRequest) {
       if (to) {
         const stateRef = db.collection('health_state').doc('last');
         const prev = (await stateRef.get()).data();
-        const signature = problems.slice().sort().join(' | ');
+        // Signature must ignore the values that drift every run (the "N min
+        // stale" counter climbs each cycle), or the same ongoing problem looks
+        // "changed" every time and re-emails every 15 min. Normalise numbers to
+        // a placeholder so one persistent issue alerts once, then hourly.
+        const signature = problems
+          .map((p) => p.replace(/\d+/g, '#'))
+          .sort()
+          .join(' | ');
         const lastAt = prev?.alertedAt ? Date.parse(prev.alertedAt) : 0;
         const changed = prev?.signature !== signature;
         if (changed || now - lastAt > 60 * 60 * 1000) {
