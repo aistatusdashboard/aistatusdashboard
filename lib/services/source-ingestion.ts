@@ -69,8 +69,14 @@ function hasChangedSinceLastWrite(docId: string, source: unknown): boolean {
   return true;
 }
 
+// Atlassian Statuspage's edge (AtlassianEdge) blocks datacenter egress IPs that
+// present a non-browser User-Agent — which silently took out every Statuspage-
+// hosted feed from App Hosting (the Vercel-hosted ones like OpenAI kept working).
+// Present a real browser UA + Accept so the public JSON APIs serve us.
 const DEFAULT_HEADERS = {
-  'User-Agent': 'AI-Status-Dashboard/1.0',
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+  Accept: 'application/json, text/plain, */*',
 };
 
 // One plain request to a provider's public endpoint, judged by status code.

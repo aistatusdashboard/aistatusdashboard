@@ -12,7 +12,7 @@
       "id": "anthropic-statuspage",
       "providerId": "anthropic",
       "name": "Anthropic Statuspage",
-      "baseUrl": "https://status.anthropic.com",
+      "baseUrl": "https://status.claude.com",
       "platform": "statuspage",
       "pollIntervalSeconds": 90
     },
