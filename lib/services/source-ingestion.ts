@@ -110,8 +110,12 @@ const BROWSER_USER_AGENT =
 const RENDER_ENDPOINT = process.env.RENDER_ENDPOINT || 'https://r.jina.ai/';
 
 async function fetchRendered(url: string): Promise<string> {
+  const headers: Record<string, string> = { ...DEFAULT_HEADERS, 'X-Return-Format': 'html' };
+  // Authenticate when a key is present — lifts the 20 req/min keyless limit that
+  // was making this renderer (Mistral) gap for 30-40 min at a time.
+  if (process.env.JINA_API_KEY) headers['Authorization'] = `Bearer ${process.env.JINA_API_KEY}`;
   const response = await fetch(`${RENDER_ENDPOINT}${url}`, {
-    headers: { ...DEFAULT_HEADERS, 'X-Return-Format': 'html' },
+    headers,
     cache: 'no-store',
     signal: AbortSignal.timeout(60_000),
   });

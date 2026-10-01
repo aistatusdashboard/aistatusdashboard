@@ -19,6 +19,15 @@ for (const s of sourcesConfig.sources as Array<{ providerId: string; pollInterva
   const secs = s.pollIntervalSeconds || 120;
   POLL_INTERVAL_SECONDS.set(s.providerId, Math.max(POLL_INTERVAL_SECONDS.get(s.providerId) || 0, secs));
 }
+// Browser-rendered feeds (Mistral, via the r.jina.ai renderer) gap 30-45 min
+// when that external renderer hiccups, independent of their poll interval, then
+// self-heal — so they get a higher floor than the poll-interval rule would give.
+const BROWSER_STALE_FLOOR_MS = 55 * 60 * 1000;
+const BROWSER_PROVIDERS = new Set(
+  (sourcesConfig.sources as Array<{ providerId: string; platform: string }>)
+    .filter((s) => s.platform === 'browser')
+    .map((s) => s.providerId)
+);
 
 function authorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET || process.env.APP_CRON_SECRET;
@@ -58,7 +67,11 @@ export async function GET(request: NextRequest) {
         continue;
       }
       const age = now - (doc.lastUpdated?.toMillis?.() ?? 0);
-      const staleLimit = Math.max(STALE_MS, (POLL_INTERVAL_SECONDS.get(pid) || 120) * 3 * 1000);
+      const staleLimit = Math.max(
+        STALE_MS,
+        (POLL_INTERVAL_SECONDS.get(pid) || 120) * 3 * 1000,
+        BROWSER_PROVIDERS.has(pid) ? BROWSER_STALE_FLOOR_MS : 0
+      );
       if (age > staleLimit) problems.push(`${pid} not read for ${Math.round(age / 60000)} min (feed may be down)`);
       if (doc.status === 'unknown' && age < UNKNOWN_MS) {
         // fresh unknown is fine mid-transition; only flag if it's the stored state and old enough handled below
