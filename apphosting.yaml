@@ -67,5 +67,3 @@ env:
   # Statuspage feed's direct fetch is blocked, so token spend stays minimal.
   - variable: JINA_API_KEY
     secret: "JINA_API_KEY"
-  - variable: JINA_FORCE_PROXY
-    value: "1"

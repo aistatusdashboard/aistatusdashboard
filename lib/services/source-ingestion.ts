@@ -628,17 +628,23 @@ export class SourceIngestionService {
     // proxy when direct is actually blocked. Slow polling keeps blocks rare, so
     // the proxy — and the token spend — stays near zero in steady state.
     const directSummary = `${base}/api/v2/summary.json`;
-    const proxySummary = `https://r.jina.ai/${directSummary}`;
-    // Proxy fetches use their own cache key (:proxy) so they never inherit the
-    // direct fetch's etag — otherwise a stale conditional request 304s and the
-    // old (blocked) HTML body gets reused, leaving the feed "unknown".
-    // TEMP TEST: JINA_FORCE_PROXY=1 exercises the failover on demand. Remove after.
-    const forceProxy = process.env.JINA_FORCE_PROXY === '1' && source.metadata?.proxy === 'jina';
-    let summaryResponse = forceProxy
-      ? await fetchWithCache(`${source.id}:summary:proxy`, proxySummary, source.providerId, 'statuspage')
-      : await fetchWithCache(`${source.id}:summary`, directSummary, source.providerId, 'statuspage');
-    if ((!summaryResponse.ok || !summaryResponse.json) && !forceProxy && source.metadata?.proxy === 'jina') {
-      summaryResponse = await fetchWithCache(`${source.id}:summary:proxy`, proxySummary, source.providerId, 'statuspage');
+    // Best-effort proxy fallback when direct is blocked. It recovers only the
+    // subset of feeds r.jina.ai can read — about half of them serve it a bot
+    // challenge ("confirm you are human") it can't pass — so it's partial backup,
+    // not a guarantee. The real protection is the slow poll that keeps blocks
+    // rare; this just salvages what it can. Its own cache key (:proxy) avoids
+    // inheriting the direct fetch's etag (a stale 304 would reuse blocked HTML).
+    let summaryResponse = await fetchWithCache(`${source.id}:summary`, directSummary, source.providerId, 'statuspage');
+    if ((!summaryResponse.ok || !summaryResponse.json) && source.metadata?.proxy === 'jina') {
+      const proxied = await fetchWithCache(
+        `${source.id}:summary:proxy`,
+        `https://r.jina.ai/${directSummary}`,
+        source.providerId,
+        'statuspage'
+      );
+      // Only accept the proxy result if it actually parsed — a bot-challenge page
+      // comes back as 200 non-JSON, which we must not treat as a real reading.
+      if (proxied.ok && proxied.json) summaryResponse = proxied;
     }
     if (!summaryResponse.ok) return null;
 
