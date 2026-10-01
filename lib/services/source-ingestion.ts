@@ -127,6 +127,48 @@ const STATUSPAGE_PROXY_URL =
   process.env.STATUSPAGE_PROXY_URL || 'https://aistatus-proxy.aistatus-khs.workers.dev';
 const buildProxyUrl = (target: string) => `${STATUSPAGE_PROXY_URL}/?url=${encodeURIComponent(target)}`;
 
+// Any Statuspage feed can get its datacenter IP blocked by AtlassianEdge, not
+// just the ones we've seen break — so instead of a hand-maintained allow-list we
+// auto-detect: a feed whose direct fetch comes back blocked is routed through the
+// Cloudflare Worker and remembered here, so we don't re-probe (and re-trigger) the
+// block every cycle. We re-try direct after this window in case the block lifted.
+const WORKER_PREFERRED_TTL_MS = 60 * 60 * 1000;
+const workerPreferred = new Map<string, number>();
+function shouldPreferWorker(source: SourceDefinition): boolean {
+  if (source.metadata?.proxy) return true; // explicit hint: skip the first failed probe
+  const until = workerPreferred.get(source.id) || 0;
+  return until > Date.now();
+}
+// Fetch a statuspage JSON resource with automatic worker failover. Direct first
+// (free) unless we already know this feed is blocked; on a block, fail over to
+// the worker and remember it. Worker-preferred feeds try the worker first and
+// fall back to direct in case the block has lifted or the worker is down.
+async function fetchStatuspageResource(
+  source: SourceDefinition,
+  directUrl: string,
+  key: string
+): Promise<SourceFetchResult> {
+  const blocked = (r: SourceFetchResult) => !r.ok || !r.json;
+  if (shouldPreferWorker(source)) {
+    const viaWorker = await fetchWithCache(key, buildProxyUrl(directUrl), source.providerId, 'statuspage');
+    if (!blocked(viaWorker)) return viaWorker;
+    const direct = await fetchWithCache(`${key}:direct`, directUrl, source.providerId, 'statuspage');
+    if (!blocked(direct)) {
+      workerPreferred.delete(source.id); // direct works again — stop preferring the worker
+      return direct;
+    }
+    return viaWorker;
+  }
+  const direct = await fetchWithCache(key, directUrl, source.providerId, 'statuspage');
+  if (!blocked(direct)) return direct;
+  const viaWorker = await fetchWithCache(`${key}:proxy`, buildProxyUrl(directUrl), source.providerId, 'statuspage');
+  if (!blocked(viaWorker)) {
+    workerPreferred.set(source.id, Date.now() + WORKER_PREFERRED_TTL_MS);
+    return viaWorker;
+  }
+  return direct;
+}
+
 async function fetchRendered(url: string): Promise<string> {
   const attempt = (useKey: boolean) => {
     const headers: Record<string, string> = { ...DEFAULT_HEADERS, 'X-Return-Format': 'html' };
@@ -645,23 +687,11 @@ export class SourceIngestionService {
     const maintUpcomingUrl = `${base}/api/v2/scheduled-maintenances/upcoming.json`;
     const maintActiveUrl = `${base}/api/v2/scheduled-maintenances/active.json`;
 
-    // AtlassianEdge (Atlassian Statuspage's CDN) periodically rate-blocks our
-    // datacenter egress IP, silently taking down every Statuspage-hosted feed.
-    // Flagged feeds go through our Cloudflare Worker (CF network isn't blocked),
-    // which returns the JSON clean and free. Direct is the fallback if the worker
-    // ever errors. Non-flagged feeds (Vercel-hosted etc.) fetch direct as before.
+    // Every statuspage resource goes through fetchStatuspageResource, which does
+    // direct-first with automatic Cloudflare-Worker failover when AtlassianEdge
+    // blocks our IP — no hand-maintained list of which feeds are affected.
     const directSummary = `${base}/api/v2/summary.json`;
-    const useProxy = Boolean(source.metadata?.proxy);
-    let summaryResponse = await fetchWithCache(
-      `${source.id}:summary`,
-      useProxy ? buildProxyUrl(directSummary) : directSummary,
-      source.providerId,
-      'statuspage'
-    );
-    if (useProxy && (!summaryResponse.ok || !summaryResponse.json)) {
-      const direct = await fetchWithCache(`${source.id}:summary:direct`, directSummary, source.providerId, 'statuspage');
-      if (direct.ok && direct.json) summaryResponse = direct;
-    }
+    const summaryResponse = await fetchStatuspageResource(source, directSummary, `${source.id}:summary`);
     if (!summaryResponse.ok) return null;
 
     if (!summaryResponse.json) {
@@ -701,12 +731,7 @@ export class SourceIngestionService {
     const incidents = parseStatuspageIncidents(source.providerId, source.id, summaryResponse.json);
     let fullIncidents = incidents;
 
-    const incidentsResponse = await fetchWithCache(
-      `${source.id}:incidents`,
-      useProxy ? buildProxyUrl(incidentsUrl) : incidentsUrl,
-      source.providerId,
-      'statuspage'
-    );
+    const incidentsResponse = await fetchStatuspageResource(source, incidentsUrl, `${source.id}:incidents`);
     if (incidentsResponse.ok && incidentsResponse.json) {
       fullIncidents = parseStatuspageIncidents(source.providerId, source.id, incidentsResponse.json);
     }
