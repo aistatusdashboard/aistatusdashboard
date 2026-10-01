@@ -69,14 +69,23 @@ function hasChangedSinceLastWrite(docId: string, source: unknown): boolean {
   return true;
 }
 
-// Atlassian Statuspage's edge (AtlassianEdge) blocks datacenter egress IPs that
-// present a non-browser User-Agent — which silently took out every Statuspage-
-// hosted feed from App Hosting (the Vercel-hosted ones like OpenAI kept working).
-// Present a real browser UA + Accept so the public JSON APIs serve us.
+// AtlassianEdge (Atlassian Statuspage's CDN) bot-walls datacenter egress IPs
+// whose requests don't look like a real browser. A bare UA got us blocked within
+// hours; send the full set of headers a real Chrome sends so the request clears
+// the wall from a server IP too. (Vercel-hosted status pages never cared.)
 const DEFAULT_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
   Accept: 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Cache-Control': 'no-cache',
+  'Sec-Ch-Ua': '"Chromium";v="129", "Not=A?Brand";v="8", "Google Chrome";v="129"',
+  'Sec-Ch-Ua-Mobile': '?0',
+  'Sec-Ch-Ua-Platform': '"Windows"',
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-origin',
 };
 
 // One plain request to a provider's public endpoint, judged by status code.
