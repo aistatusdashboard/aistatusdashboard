@@ -616,21 +616,27 @@ export class SourceIngestionService {
   }
 
   private async fetchStatuspage(source: SourceDefinition, base: string): Promise<NormalizedProviderSummary | null> {
-    // AtlassianEdge (Atlassian Statuspage's CDN) hard-blocks our datacenter
-    // egress IP after sustained polling, which silently takes down every
-    // Statuspage-hosted feed. Route flagged sources through the r.jina.ai reader
-    // proxy (a different IP), same mechanism we use for Cloudflare-blocked
-    // Mistral. fetchWithCache adds X-Return-Format:text so the JSON comes back raw.
-    const wrap = source.metadata?.proxy === 'jina' ? (u: string) => `https://r.jina.ai/${u}` : (u: string) => u;
-    // Proxy summary + incidents (status, components, full incident history — the
-    // pages that rank). Maintenance is rare; leave it direct so we don't quadruple
-    // the proxy's request load.
-    const summaryUrl = wrap(`${base}/api/v2/summary.json`);
-    const incidentsUrl = wrap(`${base}/api/v2/incidents.json`);
+    const incidentsUrl = `${base}/api/v2/incidents.json`;
     const maintUpcomingUrl = `${base}/api/v2/scheduled-maintenances/upcoming.json`;
     const maintActiveUrl = `${base}/api/v2/scheduled-maintenances/active.json`;
 
-    const summaryResponse = await fetchWithCache(`${source.id}:summary`, summaryUrl, source.providerId, 'statuspage');
+    // AtlassianEdge (Atlassian Statuspage's CDN) periodically rate-blocks our
+    // datacenter egress IP, which silently takes down every Statuspage-hosted
+    // feed. The r.jina.ai reader proxy (a different IP) bypasses it — but it
+    // bills tokens on everything it reads, so using it for every poll would burn
+    // the key in days. Instead: fetch direct (free) and only fall back to the
+    // proxy when direct is actually blocked. Slow polling keeps blocks rare, so
+    // the proxy — and the token spend — stays near zero in steady state.
+    const directSummary = `${base}/api/v2/summary.json`;
+    let summaryResponse = await fetchWithCache(`${source.id}:summary`, directSummary, source.providerId, 'statuspage');
+    if ((!summaryResponse.ok || !summaryResponse.json) && source.metadata?.proxy === 'jina') {
+      summaryResponse = await fetchWithCache(
+        `${source.id}:summary`,
+        `https://r.jina.ai/${directSummary}`,
+        source.providerId,
+        'statuspage'
+      );
+    }
     if (!summaryResponse.ok) return null;
 
     if (!summaryResponse.json) {

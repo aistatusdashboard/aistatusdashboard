@@ -63,3 +63,7 @@ env:
     secret: "SMTP_PASSWORD"
   - variable: FIREBASE_SERVICE_ACCOUNT_KEY
     secret: "FIREBASE_SERVICE_ACCOUNT_KEY"
+  # Lifts the r.jina.ai keyless rate limit. Only used as a fallback when a
+  # Statuspage feed's direct fetch is blocked, so token spend stays minimal.
+  - variable: JINA_API_KEY
+    secret: "JINA_API_KEY"
