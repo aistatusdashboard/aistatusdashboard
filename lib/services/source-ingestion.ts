@@ -128,15 +128,18 @@ const STATUSPAGE_PROXY_URL =
 const buildProxyUrl = (target: string) => `${STATUSPAGE_PROXY_URL}/?url=${encodeURIComponent(target)}`;
 
 async function fetchRendered(url: string): Promise<string> {
-  const headers: Record<string, string> = { ...DEFAULT_HEADERS, 'X-Return-Format': 'html' };
-  // Authenticate when a key is present — lifts the 20 req/min keyless limit that
-  // was making this renderer (Mistral) gap for 30-40 min at a time.
-  if (process.env.JINA_API_KEY) headers['Authorization'] = `Bearer ${process.env.JINA_API_KEY}`;
-  const response = await fetch(`${RENDER_ENDPOINT}${url}`, {
-    headers,
-    cache: 'no-store',
-    signal: AbortSignal.timeout(60_000),
-  });
+  const attempt = (useKey: boolean) => {
+    const headers: Record<string, string> = { ...DEFAULT_HEADERS, 'X-Return-Format': 'html' };
+    // A key lifts the 20 req/min keyless limit. But keys run out of balance, so
+    // if the keyed call is rejected for auth/quota reasons, retry keyless rather
+    // than let the feed go dark.
+    if (useKey && process.env.JINA_API_KEY) headers['Authorization'] = `Bearer ${process.env.JINA_API_KEY}`;
+    return fetch(`${RENDER_ENDPOINT}${url}`, { headers, cache: 'no-store', signal: AbortSignal.timeout(60_000) });
+  };
+  let response = await attempt(true);
+  if (!response.ok && [401, 402, 429].includes(response.status) && process.env.JINA_API_KEY) {
+    response = await attempt(false);
+  }
   if (!response.ok) throw new Error(`renderer returned HTTP ${response.status} for ${url}`);
   return response.text();
 }
