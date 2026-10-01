@@ -628,8 +628,14 @@ export class SourceIngestionService {
     // proxy when direct is actually blocked. Slow polling keeps blocks rare, so
     // the proxy — and the token spend — stays near zero in steady state.
     const directSummary = `${base}/api/v2/summary.json`;
-    let summaryResponse = await fetchWithCache(`${source.id}:summary`, directSummary, source.providerId, 'statuspage');
-    if ((!summaryResponse.ok || !summaryResponse.json) && source.metadata?.proxy === 'jina') {
+    // TEMP TEST: JINA_FORCE_PROXY=1 exercises the proxy failover path on demand
+    // (so we can prove key+proxy work from App Hosting's IP without waiting for a
+    // real AtlassianEdge block). Remove after verification.
+    const forceProxy = process.env.JINA_FORCE_PROXY === '1' && source.metadata?.proxy === 'jina';
+    let summaryResponse = forceProxy
+      ? await fetchWithCache(`${source.id}:summary`, `https://r.jina.ai/${directSummary}`, source.providerId, 'statuspage')
+      : await fetchWithCache(`${source.id}:summary`, directSummary, source.providerId, 'statuspage');
+    if ((!summaryResponse.ok || !summaryResponse.json) && !forceProxy && source.metadata?.proxy === 'jina') {
       summaryResponse = await fetchWithCache(
         `${source.id}:summary`,
         `https://r.jina.ai/${directSummary}`,
