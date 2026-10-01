@@ -14,9 +14,9 @@
       "name": "Anthropic Statuspage",
       "baseUrl": "https://status.claude.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -122,9 +122,9 @@
       "name": "AI21 Statuspage",
       "baseUrl": "https://status.ai21.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -141,9 +141,9 @@
       "name": "Cerebras Statuspage",
       "baseUrl": "https://status.cerebras.ai",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -152,9 +152,9 @@
       "name": "Runway Statuspage",
       "baseUrl": "https://status.runwayml.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -179,9 +179,9 @@
       "name": "GitHub Statuspage",
       "baseUrl": "https://www.githubstatus.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -190,9 +190,9 @@
       "name": "Cursor Statuspage",
       "baseUrl": "https://status.cursor.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -217,9 +217,9 @@
       "name": "Midjourney Statuspage",
       "baseUrl": "https://midjourney.statuspage.io",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -228,9 +228,9 @@
       "name": "Windsurf Statuspage",
       "baseUrl": "https://status.windsurf.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -239,9 +239,9 @@
       "name": "Vercel Statuspage",
       "baseUrl": "https://www.vercel-status.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -266,9 +266,9 @@
       "name": "Ideogram Statuspage",
       "baseUrl": "https://status.ideogram.ai",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -277,9 +277,9 @@
       "name": "Grammarly Statuspage",
       "baseUrl": "https://status.grammarly.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -288,9 +288,9 @@
       "name": "Moonshot Statuspage",
       "baseUrl": "https://status.moonshot.cn",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -299,9 +299,9 @@
       "name": "Manus Statuspage",
       "baseUrl": "https://status.manus.im",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -310,9 +310,9 @@
       "name": "MiniMax Statuspage",
       "baseUrl": "https://status.minimaxi.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -321,9 +321,9 @@
       "name": "Canva Statuspage",
       "baseUrl": "https://www.canvastatus.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     },
     {
@@ -389,9 +389,9 @@
       "name": "Synthesia Statuspage",
       "baseUrl": "https://status.synthesia.io",
       "platform": "statuspage",
-      "pollIntervalSeconds": 1200,
+      "pollIntervalSeconds": 300,
       "metadata": {
-        "proxy": "jina"
+        "proxy": "cf"
       }
     }
   ]

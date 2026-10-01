@@ -118,6 +118,15 @@ const BROWSER_USER_AGENT =
 // plain GET (20 requests/min without a key; we make two every five minutes).
 const RENDER_ENDPOINT = process.env.RENDER_ENDPOINT || 'https://r.jina.ai/';
 
+// Our Cloudflare Worker proxy (runs on Cloudflare's network, which Atlassian
+// Statuspage does NOT block — unlike our App Hosting datacenter IP). Free up to
+// 100k req/day, no token metering, no bot challenge. Used for the Statuspage
+// feeds flagged with metadata.proxy. Override with STATUSPAGE_PROXY_URL if the
+// worker is ever moved. buildProxyUrl wraps a target statuspage URL for it.
+const STATUSPAGE_PROXY_URL =
+  process.env.STATUSPAGE_PROXY_URL || 'https://aistatus-proxy.aistatus-khs.workers.dev';
+const buildProxyUrl = (target: string) => `${STATUSPAGE_PROXY_URL}/?url=${encodeURIComponent(target)}`;
+
 async function fetchRendered(url: string): Promise<string> {
   const headers: Record<string, string> = { ...DEFAULT_HEADERS, 'X-Return-Format': 'html' };
   // Authenticate when a key is present — lifts the 20 req/min keyless limit that
@@ -634,30 +643,21 @@ export class SourceIngestionService {
     const maintActiveUrl = `${base}/api/v2/scheduled-maintenances/active.json`;
 
     // AtlassianEdge (Atlassian Statuspage's CDN) periodically rate-blocks our
-    // datacenter egress IP, which silently takes down every Statuspage-hosted
-    // feed. The r.jina.ai reader proxy (a different IP) bypasses it — but it
-    // bills tokens on everything it reads, so using it for every poll would burn
-    // the key in days. Instead: fetch direct (free) and only fall back to the
-    // proxy when direct is actually blocked. Slow polling keeps blocks rare, so
-    // the proxy — and the token spend — stays near zero in steady state.
+    // datacenter egress IP, silently taking down every Statuspage-hosted feed.
+    // Flagged feeds go through our Cloudflare Worker (CF network isn't blocked),
+    // which returns the JSON clean and free. Direct is the fallback if the worker
+    // ever errors. Non-flagged feeds (Vercel-hosted etc.) fetch direct as before.
     const directSummary = `${base}/api/v2/summary.json`;
-    // Best-effort proxy fallback when direct is blocked. It recovers only the
-    // subset of feeds r.jina.ai can read — about half of them serve it a bot
-    // challenge ("confirm you are human") it can't pass — so it's partial backup,
-    // not a guarantee. The real protection is the slow poll that keeps blocks
-    // rare; this just salvages what it can. Its own cache key (:proxy) avoids
-    // inheriting the direct fetch's etag (a stale 304 would reuse blocked HTML).
-    let summaryResponse = await fetchWithCache(`${source.id}:summary`, directSummary, source.providerId, 'statuspage');
-    if ((!summaryResponse.ok || !summaryResponse.json) && source.metadata?.proxy === 'jina') {
-      const proxied = await fetchWithCache(
-        `${source.id}:summary:proxy`,
-        `https://r.jina.ai/${directSummary}`,
-        source.providerId,
-        'statuspage'
-      );
-      // Only accept the proxy result if it actually parsed — a bot-challenge page
-      // comes back as 200 non-JSON, which we must not treat as a real reading.
-      if (proxied.ok && proxied.json) summaryResponse = proxied;
+    const useProxy = Boolean(source.metadata?.proxy);
+    let summaryResponse = await fetchWithCache(
+      `${source.id}:summary`,
+      useProxy ? buildProxyUrl(directSummary) : directSummary,
+      source.providerId,
+      'statuspage'
+    );
+    if (useProxy && (!summaryResponse.ok || !summaryResponse.json)) {
+      const direct = await fetchWithCache(`${source.id}:summary:direct`, directSummary, source.providerId, 'statuspage');
+      if (direct.ok && direct.json) summaryResponse = direct;
     }
     if (!summaryResponse.ok) return null;
 
@@ -698,7 +698,12 @@ export class SourceIngestionService {
     const incidents = parseStatuspageIncidents(source.providerId, source.id, summaryResponse.json);
     let fullIncidents = incidents;
 
-    const incidentsResponse = await fetchWithCache(`${source.id}:incidents`, incidentsUrl, source.providerId, 'statuspage');
+    const incidentsResponse = await fetchWithCache(
+      `${source.id}:incidents`,
+      useProxy ? buildProxyUrl(incidentsUrl) : incidentsUrl,
+      source.providerId,
+      'statuspage'
+    );
     if (incidentsResponse.ok && incidentsResponse.json) {
       fullIncidents = parseStatuspageIncidents(source.providerId, source.id, incidentsResponse.json);
     }
