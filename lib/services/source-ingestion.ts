@@ -186,6 +186,14 @@ async function fetchWithCache(
 ): Promise<SourceFetchResult> {
   const meta = await sourceRegistryService.getEntry(sourceId);
   const headers: Record<string, string> = { ...DEFAULT_HEADERS };
+  // When fetching through the r.jina.ai reader proxy, ask for the raw upstream
+  // body (not the reader's markdown wrapper) so JSON APIs parse unchanged. A
+  // (free) JINA_API_KEY lifts the keyless rate limit — recommended when several
+  // feeds are proxied, but it degrades gracefully without one.
+  if (url.startsWith('https://r.jina.ai/')) {
+    headers['X-Return-Format'] = 'text';
+    if (process.env.JINA_API_KEY) headers['Authorization'] = `Bearer ${process.env.JINA_API_KEY}`;
+  }
   if (meta?.etag) headers['If-None-Match'] = meta.etag;
   if (meta?.lastModified) headers['If-Modified-Since'] = meta.lastModified;
 
@@ -608,8 +616,17 @@ export class SourceIngestionService {
   }
 
   private async fetchStatuspage(source: SourceDefinition, base: string): Promise<NormalizedProviderSummary | null> {
-    const summaryUrl = `${base}/api/v2/summary.json`;
-    const incidentsUrl = `${base}/api/v2/incidents.json`;
+    // AtlassianEdge (Atlassian Statuspage's CDN) hard-blocks our datacenter
+    // egress IP after sustained polling, which silently takes down every
+    // Statuspage-hosted feed. Route flagged sources through the r.jina.ai reader
+    // proxy (a different IP), same mechanism we use for Cloudflare-blocked
+    // Mistral. fetchWithCache adds X-Return-Format:text so the JSON comes back raw.
+    const wrap = source.metadata?.proxy === 'jina' ? (u: string) => `https://r.jina.ai/${u}` : (u: string) => u;
+    // Proxy summary + incidents (status, components, full incident history — the
+    // pages that rank). Maintenance is rare; leave it direct so we don't quadruple
+    // the proxy's request load.
+    const summaryUrl = wrap(`${base}/api/v2/summary.json`);
+    const incidentsUrl = wrap(`${base}/api/v2/incidents.json`);
     const maintUpcomingUrl = `${base}/api/v2/scheduled-maintenances/upcoming.json`;
     const maintActiveUrl = `${base}/api/v2/scheduled-maintenances/active.json`;
 

@@ -14,7 +14,10 @@
       "name": "Anthropic Statuspage",
       "baseUrl": "https://status.claude.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "cohere-statuspage",
@@ -119,7 +122,10 @@
       "name": "AI21 Statuspage",
       "baseUrl": "https://status.ai21.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "stability-statuspage",
@@ -135,7 +141,10 @@
       "name": "Cerebras Statuspage",
       "baseUrl": "https://status.cerebras.ai",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "runway-statuspage",
@@ -143,7 +152,10 @@
       "name": "Runway Statuspage",
       "baseUrl": "https://status.runwayml.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "replicate-statuspage",
@@ -167,7 +179,10 @@
       "name": "GitHub Statuspage",
       "baseUrl": "https://www.githubstatus.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "cursor-statuspage",
@@ -175,7 +190,10 @@
       "name": "Cursor Statuspage",
       "baseUrl": "https://status.cursor.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "elevenlabs-statuspage",
@@ -199,7 +217,10 @@
       "name": "Midjourney Statuspage",
       "baseUrl": "https://midjourney.statuspage.io",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "windsurf-statuspage",
@@ -207,7 +228,10 @@
       "name": "Windsurf Statuspage",
       "baseUrl": "https://status.windsurf.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "vercel-statuspage",
@@ -215,7 +239,10 @@
       "name": "Vercel Statuspage",
       "baseUrl": "https://www.vercel-status.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "notion-statuspage",
@@ -239,7 +266,10 @@
       "name": "Ideogram Statuspage",
       "baseUrl": "https://status.ideogram.ai",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "grammarly-statuspage",
@@ -247,7 +277,10 @@
       "name": "Grammarly Statuspage",
       "baseUrl": "https://status.grammarly.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "moonshot-statuspage",
@@ -255,7 +288,10 @@
       "name": "Moonshot Statuspage",
       "baseUrl": "https://status.moonshot.cn",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "manus-statuspage",
@@ -263,7 +299,10 @@
       "name": "Manus Statuspage",
       "baseUrl": "https://status.manus.im",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "minimax-statuspage",
@@ -271,7 +310,10 @@
       "name": "MiniMax Statuspage",
       "baseUrl": "https://status.minimaxi.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "canva-statuspage",
@@ -279,7 +321,10 @@
       "name": "Canva Statuspage",
       "baseUrl": "https://www.canvastatus.com",
       "platform": "statuspage",
-      "pollIntervalSeconds": 90
+      "pollIntervalSeconds": 90,
+      "metadata": {
+        "proxy": "jina"
+      }
     },
     {
       "id": "google-workspace-gemini",
@@ -344,7 +389,10 @@
       "name": "Synthesia Statuspage",
       "baseUrl": "https://status.synthesia.io",
       "platform": "statuspage",
-      "pollIntervalSeconds": 120
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "proxy": "jina"
+      }
     }
   ]
 }
