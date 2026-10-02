@@ -254,12 +254,14 @@ async function fetchWithCache(
   const meta = await sourceRegistryService.getEntry(sourceId);
   const headers: Record<string, string> = { ...DEFAULT_HEADERS };
   // When fetching through the r.jina.ai reader proxy, ask for the raw upstream
-  // body (not the reader's markdown wrapper) so JSON APIs parse unchanged. A
-  // (free) JINA_API_KEY lifts the keyless rate limit — recommended when several
-  // feeds are proxied, but it degrades gracefully without one.
+  // body (not the reader's markdown wrapper) so JSON APIs parse unchanged.
   if (url.startsWith('https://r.jina.ai/')) {
     headers['X-Return-Format'] = 'text';
     if (process.env.JINA_API_KEY) headers['Authorization'] = `Bearer ${process.env.JINA_API_KEY}`;
+  }
+  // Authenticate to our Cloudflare statuspage proxy so it isn't an open endpoint.
+  if (url.startsWith(STATUSPAGE_PROXY_URL) && process.env.STATUSPAGE_PROXY_KEY) {
+    headers['X-Proxy-Key'] = process.env.STATUSPAGE_PROXY_KEY;
   }
   if (meta?.etag) headers['If-None-Match'] = meta.etag;
   if (meta?.lastModified) headers['If-Modified-Since'] = meta.lastModified;

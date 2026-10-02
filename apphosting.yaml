@@ -67,3 +67,7 @@ env:
   # Statuspage feed's direct fetch is blocked, so token spend stays minimal.
   - variable: JINA_API_KEY
     secret: "JINA_API_KEY"
+  # Shared secret the ingest sends to the Cloudflare statuspage proxy so that
+  # worker isn't an open endpoint anyone can use to burn its request quota.
+  - variable: STATUSPAGE_PROXY_KEY
+    secret: "STATUSPAGE_PROXY_KEY"

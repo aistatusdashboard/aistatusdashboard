@@ -1,9 +1,12 @@
 // Proxy for Atlassian Statuspage JSON that App Hosting's datacenter IP is
 // blocked from reading. Runs on Cloudflare's network (not blocked by Atlassian).
-// Whitelisted to https statuspage /api/v2/ endpoints so it can't be abused as an
-// open proxy; it only ever returns public status JSON.
+// Whitelisted to https statuspage /api/v2/ endpoints, and gated by a shared
+// secret (env PROXY_KEY) so it can't be used by anyone but our ingest.
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
+    if (env.PROXY_KEY && request.headers.get('x-proxy-key') !== env.PROXY_KEY) {
+      return json({ error: 'unauthorized' }, 401);
+    }
     const u = new URL(request.url);
     const target = u.searchParams.get('url');
     if (!target) return json({ error: 'missing url' }, 400);
@@ -26,7 +29,6 @@ export default {
       status: upstream.status,
       headers: {
         'content-type': upstream.headers.get('content-type') || 'application/json',
-        'access-control-allow-origin': '*',
         'cache-control': 'public, max-age=30',
       },
     });
