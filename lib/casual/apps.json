@@ -423,6 +423,32 @@
       ],
       "defaultRegion": "global",
       "webUrl": "https://www.cerebras.ai"
+    },
+    {
+      "id": "dots",
+      "label": "OpenAI Dots Status",
+      "providerId": "openai",
+      "providerDisplay": "OpenAI",
+      "surfaces": [
+        "text",
+        "browse",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://chatgpt.com"
+    },
+    {
+      "id": "comet",
+      "label": "Perplexity Comet Status",
+      "providerId": "perplexity",
+      "providerDisplay": "Perplexity",
+      "surfaces": [
+        "text",
+        "browse",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://www.perplexity.ai/comet"
     }
   ]
 }
