@@ -91,11 +91,21 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Blend: Google Trends demand band (primary) + our GSC share as tiebreak.
+    // Blend. Google Trends measures true global demand but only resolves the
+    // head: below ~1% of ChatGPT's "is X down" volume it quantizes to ~0, so a
+    // genuinely surging niche app (e.g. muse — hundreds of real "is muse down"
+    // searches) reads as 0 and noise-level Trends values would otherwise park
+    // dead apps above it. So: where Trends has real signal (>= TREND_FLOOR),
+    // rank by it; below the noise floor, rank by MEASURED outage-search demand
+    // (our GSC impressions, which are real "is X down" queries that reached us).
     const demand = (demandConfig as { scores: Record<string, number> }).scores || {};
+    const TREND_FLOOR = 0.01; // 1% of ChatGPT = Trends' reliable resolution
     const maxImp = Math.max(1, ...Object.values(imp));
+    const gscShare = (id: string) => (imp[id] || 0) / (maxImp + 1); // 0..1
     const score = (id: string) =>
-      Math.round((demand[id] || 0) * 100) + (imp[id] || 0) / (maxImp + 1);
+      (demand[id] || 0) >= TREND_FLOOR
+        ? 100 + (demand[id] || 0) * 100 + gscShare(id) // trusted head, GSC breaks ties
+        : gscShare(id); // Trends-blind tail: order by real outage-search demand
     const order = apps.map((a) => a.id).sort((a, b) => score(b) - score(a));
     await getDb()
       .collection('config')
