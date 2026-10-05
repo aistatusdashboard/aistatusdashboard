@@ -12,6 +12,7 @@ import { categoryForApp, rivalFor, comparePath } from '@/lib/ui/categories';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
+import SharePrompt from '@/app/components/casual/SharePrompt';
 import CasualHelpful from '@/app/components/casual/CasualHelpful';
 import ClientTimestamp from '@/app/components/ClientTimestamp';
 import { formatTimeAgo } from '@/lib/utils/time';
@@ -236,6 +237,13 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
               />
             </div>
           )}
+          {/* In-the-moment share prompt: only when down/degraded (the "it's not
+              just you" moment), once per browser. */}
+          {key !== 'up' && (
+            <div className="pt-2">
+              <SharePrompt text={`${answer} ${status.headline}`} path={`/${app.id}`} />
+            </div>
+          )}
         </header>
 
         {/* The provider's own word, when it's open but stale: shown, not scored. */}
@@ -393,9 +401,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
         )}
 
         <section className="flex flex-wrap items-center justify-center gap-4">
-          <CasualShareButton
-            summary={`${answer} ${status.headline} — via https://aistatusdashboard.com/${app.id}`}
-          />
+          <CasualShareButton text={`${answer} ${status.headline}`} path={`/${app.id}`} where="app" />
           <CasualHelpful appId={app.id} />
         </section>
 
