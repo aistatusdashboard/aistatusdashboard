@@ -1,21 +1,15 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import SubscriptionNotice from '@/app/components/SubscriptionNotice';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
+import { categoryForApp, CATEGORIES } from '@/lib/ui/categories';
+import StatusBoard, { type BoardItem } from '@/app/components/casual/StatusBoard';
 import { OG_BASE } from '@/lib/ui/metadata';
 import { searchIncidents } from '@/lib/services/public-data';
 import { formatTimeAgo } from '@/lib/utils/time';
-import {
-  APP_LOGOS,
-  VERDICT_COPY,
-  VERDICT_ORDER,
-  VERDICT_TONE,
-  shortName,
-  verdictKey,
-} from '@/lib/ui/verdict';
+import { VERDICT_COPY, VERDICT_ORDER, shortName, verdictKey } from '@/lib/ui/verdict';
 
 // Deliberately shorter than the 5-minute cron that feeds this page. A longer
 // window would stack page staleness on top of data staleness, and "is it down
@@ -69,6 +63,15 @@ export default async function HomePage() {
         VERDICT_ORDER[a.key] - VERDICT_ORDER[b.key] ||
         (configOrder.get(a.app.id) ?? 99) - (configOrder.get(b.app.id) ?? 99)
     );
+
+  // Serializable rows for the interactive board (already in the smart default
+  // order: status severity first, then popularity). The client only filters/
+  // re-sorts from here.
+  const boardItems: BoardItem[] = board.map(({ app, key, noPage, name }) => {
+    const c = categoryForApp(app.id);
+    return { id: app.id, name, key, noPage, category: c ? { slug: c.slug, label: c.label } : null };
+  });
+  const boardCategories = Object.entries(CATEGORIES).map(([slug, c]) => ({ slug, label: c.label }));
 
   const verified = board.filter((item) => item.status);
   const troubled = board.filter((item) => item.key === 'down' || item.key === 'wobbly');
@@ -159,36 +162,7 @@ export default async function HomePage() {
         </header>
 
         {/* The board. Troubled apps float to the top. */}
-        <section aria-label="AI app status board" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {board.map(({ app, key, noPage, name }) => {
-            const tone = VERDICT_TONE[key];
-            const copy = VERDICT_COPY[key];
-            const label = noPage ? 'No status page' : copy.label;
-            return (
-              <Link
-                key={app.id}
-                href={`/${app.id}`}
-                className={`group rounded-2xl border bg-white/80 dark:bg-slate-900/70 p-4 flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-lg ${tone.card}`}
-              >
-                <Image
-                  src={APP_LOGOS[app.id] || '/logos/openai.svg'}
-                  alt=""
-                  width={36}
-                  height={36}
-                  loading="eager"
-                  className="rounded-lg shrink-0"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-base font-semibold text-slate-900 dark:text-white truncate">
-                    {name}
-                  </span>
-                  <span className={`block text-sm font-medium ${tone.text}`}>{label}</span>
-                </span>
-                <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${tone.dot} ${key !== 'up' ? 'animate-pulse' : ''}`} aria-hidden="true" />
-              </Link>
-            );
-          })}
-        </section>
+        <StatusBoard items={boardItems} categories={boardCategories} />
 
         {/* One alert CTA for the whole page. */}
         <section id="alerts" className="surface-card-strong p-6 md:p-8 max-w-2xl mx-auto text-center space-y-3">
