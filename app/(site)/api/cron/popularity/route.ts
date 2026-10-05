@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth, Impersonated } from 'google-auth-library';
 import { getDb } from '@/lib/db/firestore';
 import appsConfig from '@/lib/casual/apps.json';
+import demandConfig from '@/lib/data/demand.json';
 import { log } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -42,8 +43,11 @@ async function searchConsoleToken(): Promise<string> {
   return token;
 }
 
-// Rebuild config/popularity from the last 90 days of per-app Search Console
-// impressions, so the homepage board stays ordered by real current demand.
+// Rebuild config/popularity so the homepage board is ordered by REAL public
+// search demand. Primary signal: Google Trends interest for "is <app> down"
+// (lib/data/demand.json) — what the whole web searches, not just us. Our own
+// Search Console impressions (below) only break ties within an equal demand
+// band, so a page we happen to rank well for can't jump a genuinely bigger app.
 export async function GET(request: NextRequest) {
   const unauth = requireCronAuth(request);
   if (unauth) return unauth;
@@ -87,12 +91,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Stable sort: apps start in config order, so ties (0 impressions) keep that.
-    const order = apps.map((a) => a.id).sort((a, b) => (imp[b] || 0) - (imp[a] || 0));
+    // Blend: Google Trends demand band (primary) + our GSC share as tiebreak.
+    const demand = (demandConfig as { scores: Record<string, number> }).scores || {};
+    const maxImp = Math.max(1, ...Object.values(imp));
+    const score = (id: string) =>
+      Math.round((demand[id] || 0) * 100) + (imp[id] || 0) / (maxImp + 1);
+    const order = apps.map((a) => a.id).sort((a, b) => score(b) - score(a));
     await getDb()
       .collection('config')
       .doc('popularity')
-      .set({ order, updatedAt: new Date().toISOString(), source: 'gsc_90d_impressions' });
+      .set({ order, updatedAt: new Date().toISOString(), source: 'trends_demand_x_gsc_tiebreak' });
 
     return NextResponse.json({ ok: true, count: order.length, top: order.slice(0, 5) });
   } catch (e) {
