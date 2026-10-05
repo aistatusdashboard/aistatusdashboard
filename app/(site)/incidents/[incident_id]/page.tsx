@@ -6,6 +6,8 @@ import { getIncidentById } from '@/lib/services/public-data';
 import { providerService } from '@/lib/services/providers';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
+import { getCasualStatus } from '@/lib/services/casual';
+import { verdictKey } from '@/lib/ui/verdict';
 import { OG_BASE } from '@/lib/ui/metadata';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { log } from '@/lib/utils/logger';
@@ -82,15 +84,30 @@ export async function generateMetadata({
   const incidentId = await resolveIncidentId(params);
   const safeId = incidentId || 'unknown';
   const incident = incidentId ? await getIncidentById(incidentId) : null;
-  // Title in the words people search during an outage: app name + what broke + when.
   const startedDate = incident?.startedAt
     ? new Date(incident.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
     : null;
+  // These pages rank for "is <app> down" but are mostly resolved past incidents,
+  // so they looked like stale news in the SERP and got ~0% CTR. Lead the title +
+  // snippet with the app's CURRENT status so the result answers the live question
+  // ("is it down now?") and earns the click, with the dated past incident as
+  // context. Also stops an old incident from masquerading as a current outage.
+  const appName = incident ? appNameForProvider(incident.providerId) : null;
+  const appId = incident ? appIdForProvider(incident.providerId) : null;
+  const live = appId ? await getCasualStatus({ appId }).catch(() => null) : null;
+  const liveKey = live ? verdictKey(live.overall_status) : null;
+  const liveWord =
+    liveKey === 'up' ? 'up' : liveKey === 'wobbly' ? 'having issues' : liveKey === 'down' ? 'down' : null;
+  const resolvedNow = Boolean(incident?.resolvedAt);
   const title = incident
-    ? `${providerLabel(incident.providerId)} outage: ${incident.title}${startedDate ? ` (${startedDate})` : ''}`
+    ? resolvedNow
+      ? `Is ${appName} down? ${appName} is ${liveWord || 'back up'} now${startedDate ? ` — ${startedDate} outage` : ''}`
+      : `Is ${appName} down? Ongoing ${appName} outage${startedDate ? ` since ${startedDate}` : ''}`
     : `Incident ${safeId}`;
   const description = incident
-    ? `${incident.resolvedAt ? 'Resolved' : 'Ongoing'} ${providerLabel(incident.providerId)} incident${startedDate ? ` from ${startedDate}` : ''}: ${summarizeIncident(incident)}`
+    ? resolvedNow
+      ? `${appName} is ${liveWord || 'operational'} right now. This ${appName} outage${startedDate ? ` from ${startedDate}` : ''} is resolved: ${summarizeIncident(incident)}`
+      : `${appName} is ${liveWord || 'having problems'} right now — ongoing incident${startedDate ? ` since ${startedDate}` : ''}: ${summarizeIncident(incident)}`
     : summarizeIncident(incident);
 
   return {
