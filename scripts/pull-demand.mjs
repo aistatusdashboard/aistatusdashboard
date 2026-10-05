@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 // Regenerate lib/data/demand.json from Google Trends.
 //
-// Signal: 3-month search interest for "is <app> down", summed and expressed
-// relative to "is chatgpt down" = 1.0. This is TRUE public demand (what the
-// whole web searches), used as the primary order for the status board. It is
-// deliberately NOT our own traffic — our Search Console impressions only break
-// ties within an equal demand band (see app/(site)/api/cron/popularity).
+// Signal: 3-month general search POPULARITY per AI product, relative to
+// ChatGPT = 1.0. This is TRUE public interest (what the whole web searches),
+// the primary order for the status board's head. ChatGPT's dominance crushes
+// everything below the top tier under Trends' resolution, so only the head
+// resolves; the cron falls back to measured GSC demand below TREND_FLOOR.
 //
-// Trends has no official API and rate-limits aggressively, so this is a manual,
-// occasional refresh (not a cron). Run from the repo root:  node scripts/pull-demand.mjs
+// NOTE: Trends rate-limits datacenter IPs hard (this box gets a 302 "sorry"
+// page). Run it from a residential IP, or pull in-browser on trends.google.com
+// via the page's own /trends/api fetch (same session, not blocked). Anchor each
+// batch DIRECTLY on "chatgpt" — do NOT chain through low-volume bridges (the
+// error compounds into nonsense). Run from the repo root: node scripts/pull-demand.mjs
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,17 +21,18 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CJ = '/tmp/trends_cookies.txt';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/129.0 Safari/537.36';
 const TIME = 'today 3-m';
-const ANCHOR = { id: '__anchor__', q: 'is chatgpt down' };
+const ANCHOR = { id: '__anchor__', q: 'chatgpt' };
 
-// Search term people actually type for each app (strip " Status"; special-case
-// brands whose app id differs from the common search term).
+// Disambiguated product term per app (so "cursor" means the AI editor, etc.).
 const SPECIAL = {
-  'le-chat': 'mistral', 'meta-ai': 'meta ai', copilot: 'github copilot', v0: 'v0 app',
-  dots: 'chatgpt dots', comet: 'perplexity comet', 'canva-ai': 'canva', 'notion-ai': 'notion ai',
-  'character-ai': 'character ai', bedrock: 'aws bedrock', muse: 'muse ai',
+  gemini: 'gemini ai', claude: 'claude ai', grok: 'grok ai', cursor: 'cursor ai', sora: 'sora ai',
+  copilot: 'github copilot', 'character-ai': 'character.ai', 'le-chat': 'mistral ai', v0: 'v0 vercel',
+  dots: 'openai dots', comet: 'perplexity comet', 'canva-ai': 'canva ai', 'notion-ai': 'notion ai',
+  'meta-ai': 'meta ai', bedrock: 'amazon bedrock', muse: 'muse ai', kimi: 'kimi ai', manus: 'manus ai',
+  minimax: 'minimax ai', lovable: 'lovable ai', windsurf: 'windsurf ai', ideogram: 'ideogram ai',
 };
 const apps = JSON.parse(fs.readFileSync(`${ROOT}/lib/casual/apps.json`, 'utf8')).apps;
-const items = apps.map((a) => ({ id: a.id, q: `is ${(SPECIAL[a.id] || a.label.replace(/ Status$/, '')).toLowerCase()} down` }));
+const items = apps.map((a) => ({ id: a.id, q: (SPECIAL[a.id] || a.label.replace(/ Status$/, '')).toLowerCase() }));
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function curlGet(url, params) {
@@ -72,9 +76,9 @@ for (const [bi, chunk] of chunks.entries()) {
 scores.chatgpt = 1;
 
 const out = {
-  source: 'google_trends',
-  metric: 'search interest for "is <app> down", 3-month sum, relative to "is chatgpt down" = 1.0',
-  note: 'True public search demand (NOT our own traffic). Used as the PRIMARY order for the status board; our GSC impressions only break ties within equal demand bands. Refresh occasionally with scripts/pull-demand (Google Trends).',
+  source: 'google_trends_popularity',
+  metric: 'general search interest for each AI product, 3-month, relative to ChatGPT = 1.0',
+  note: 'True public search POPULARITY (how much the whole web searches each tool), pulled via Google Trends. ChatGPT crushes everything below the top tier under Trends resolution, so only the head resolves reliably; below TREND_FLOOR the board falls back to measured GSC demand. Refresh from a residential IP / in-browser.',
   pulledAt: new Date().toISOString().slice(0, 10),
   scores,
 };

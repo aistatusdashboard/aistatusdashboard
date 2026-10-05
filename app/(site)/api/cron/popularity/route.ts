@@ -43,11 +43,12 @@ async function searchConsoleToken(): Promise<string> {
   return token;
 }
 
-// Rebuild config/popularity so the homepage board is ordered by REAL public
-// search demand. Primary signal: Google Trends interest for "is <app> down"
-// (lib/data/demand.json) — what the whole web searches, not just us. Our own
-// Search Console impressions (below) only break ties within an equal demand
-// band, so a page we happen to rank well for can't jump a genuinely bigger app.
+// Rebuild config/popularity so the homepage board leads with the most popular
+// AI tools. Primary signal: Google Trends general search popularity per product
+// (lib/data/demand.json) — what the whole web searches, not just us. ChatGPT's
+// dominance crushes everything below the top tier under Trends' resolution, so
+// only the head resolves; below TREND_FLOOR we fall back to our measured GSC
+// demand (real searches that reached us), the only signal that separates the tail.
 export async function GET(request: NextRequest) {
   const unauth = requireCronAuth(request);
   if (unauth) return unauth;
@@ -99,7 +100,7 @@ export async function GET(request: NextRequest) {
     // rank by it; below the noise floor, rank by MEASURED outage-search demand
     // (our GSC impressions, which are real "is X down" queries that reached us).
     const demand = (demandConfig as { scores: Record<string, number> }).scores || {};
-    const TREND_FLOOR = 0.01; // 1% of ChatGPT = Trends' reliable resolution
+    const TREND_FLOOR = 0.005; // below this, ChatGPT's dominance crushes apps under Trends' resolution
     const maxImp = Math.max(1, ...Object.values(imp));
     const gscShare = (id: string) => (imp[id] || 0) / (maxImp + 1); // 0..1
     const score = (id: string) =>
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
     await getDb()
       .collection('config')
       .doc('popularity')
-      .set({ order, updatedAt: new Date().toISOString(), source: 'trends_demand_x_gsc_tiebreak' });
+      .set({ order, updatedAt: new Date().toISOString(), source: 'trends_popularity_head_gsc_tail' });
 
     return NextResponse.json({ ok: true, count: order.length, top: order.slice(0, 5) });
   } catch (e) {
