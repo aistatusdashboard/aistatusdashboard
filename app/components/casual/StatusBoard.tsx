@@ -88,6 +88,7 @@ export default function StatusBoard({
             <Link
               key={it.id}
               href={`/${it.id}`}
+              data-track="app_click"
               className={`group rounded-2xl border bg-white/80 dark:bg-slate-900/70 p-4 flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-lg ${tone.card}`}
             >
               <Image

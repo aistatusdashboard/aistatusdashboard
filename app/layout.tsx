@@ -10,6 +10,7 @@ import GlobalErrorHandler from './components/GlobalErrorHandler';
 import OfflineIndicator from './components/OfflineIndicator';
 import GoogleAnalytics from './components/GoogleAnalytics';
 import { GoogleAnalytics as GA4Script } from '@next/third-parties/google';
+import InteractionTracker from './components/InteractionTracker';
 import CookieConsentBanner from './components/CookieConsentBanner';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-ZV3PS0MPQ7';
@@ -169,6 +170,7 @@ window.gtag = gtag;
               <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
             </Suspense>
             <GA4Script gaId={GA_MEASUREMENT_ID} />
+            <InteractionTracker />
             <GlobalErrorHandler />
             <OfflineIndicator />
             <CookieConsentBanner />
