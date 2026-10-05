@@ -4,6 +4,7 @@ import Link from 'next/link';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import SubscriptionNotice from '@/app/components/SubscriptionNotice';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
+import { getDb } from '@/lib/db/firestore';
 import { categoryForApp, CATEGORIES } from '@/lib/ui/categories';
 import StatusBoard, { type BoardItem } from '@/app/components/casual/StatusBoard';
 import { OG_BASE } from '@/lib/ui/metadata';
@@ -51,18 +52,28 @@ export default async function HomePage() {
     searchIncidents({ since: sevenDaysAgoIso, limit: 6 }).catch(() => ({ data: { incidents: [] } })),
   ]);
 
+  // Popularity = real search demand (per-app Search Console impressions), refreshed
+  // by the popularity cron into config/popularity. Apps not in it yet (brand new,
+  // no searches) fall back behind the ranked ones in config order, so they never
+  // vanish — they rise on their own once people start searching them.
   const configOrder = new Map(apps.map((app, index) => [app.id, index]));
+  const popRank = new Map<string, number>();
+  try {
+    const snap = await getDb().collection('config').doc('popularity').get();
+    const order = (snap.data()?.order as string[] | undefined) || [];
+    order.forEach((id, i) => popRank.set(id, i));
+  } catch {
+    /* no popularity doc yet: fall back to config order below */
+  }
+  const popularity = (id: string) => (popRank.has(id) ? popRank.get(id)! : 1000 + (configOrder.get(id) ?? 99));
+
   const board = statuses
     .map(({ app, status }) => {
       const key = status ? verdictKey(status.overall_status) : ('unknown' as const);
       const noPage = status ? !status.official_page.exists : false;
       return { app, status, key, noPage, name: shortName(app.id, app.label) };
     })
-    .sort(
-      (a, b) =>
-        VERDICT_ORDER[a.key] - VERDICT_ORDER[b.key] ||
-        (configOrder.get(a.app.id) ?? 99) - (configOrder.get(b.app.id) ?? 99)
-    );
+    .sort((a, b) => VERDICT_ORDER[a.key] - VERDICT_ORDER[b.key] || popularity(a.app.id) - popularity(b.app.id));
 
   // Serializable rows for the interactive board (already in the smart default
   // order: status severity first, then popularity). The client only filters/
