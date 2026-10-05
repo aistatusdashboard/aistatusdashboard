@@ -2,7 +2,7 @@
 // blocked from reading. Runs on Cloudflare's network (not blocked by Atlassian).
 // Whitelisted to https statuspage /api/v2/ endpoints, and gated by a shared
 // secret (env PROXY_KEY) so it can't be used by anyone but our ingest.
-export default {
+const worker = {
   async fetch(request, env) {
     if (env.PROXY_KEY && request.headers.get('x-proxy-key') !== env.PROXY_KEY) {
       return json({ error: 'unauthorized' }, 401);
@@ -34,6 +34,9 @@ export default {
     });
   },
 };
+
+export default worker;
+
 function json(o, status) {
   return new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json' } });
 }
