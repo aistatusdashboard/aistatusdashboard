@@ -43,12 +43,9 @@ async function searchConsoleToken(): Promise<string> {
   return token;
 }
 
-// Rebuild config/popularity so the homepage board leads with the most popular
-// AI tools. Primary signal: Google Trends general search popularity per product
-// (lib/data/demand.json) — what the whole web searches, not just us. ChatGPT's
-// dominance crushes everything below the top tier under Trends' resolution, so
-// only the head resolves; below TREND_FLOOR we fall back to our measured GSC
-// demand (real searches that reached us), the only signal that separates the tail.
+// Rebuild config/popularity so the homepage board is ordered by true Google
+// search popularity of each AI tool (lib/data/demand.json) — what the whole web
+// searches, not just us. Our GSC impressions only break exact ties.
 export async function GET(request: NextRequest) {
   const unauth = requireCronAuth(request);
   if (unauth) return unauth;
@@ -92,26 +89,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Blend. Google Trends measures true global demand but only resolves the
-    // head: below ~1% of ChatGPT's "is X down" volume it quantizes to ~0, so a
-    // genuinely surging niche app (e.g. muse — hundreds of real "is muse down"
-    // searches) reads as 0 and noise-level Trends values would otherwise park
-    // dead apps above it. So: where Trends has real signal (>= TREND_FLOOR),
-    // rank by it; below the noise floor, rank by MEASURED outage-search demand
-    // (our GSC impressions, which are real "is X down" queries that reached us).
+    // Order by true Google search popularity (lib/data/demand.json). Trends
+    // can't compare the long tail directly against ChatGPT (it dwarfs them), so
+    // demand.json is pulled by bridging through mid-tier anchors — giving a real
+    // popularity value for all apps. Our GSC impressions only break exact ties.
     const demand = (demandConfig as { scores: Record<string, number> }).scores || {};
-    const TREND_FLOOR = 0.005; // below this, ChatGPT's dominance crushes apps under Trends' resolution
     const maxImp = Math.max(1, ...Object.values(imp));
-    const gscShare = (id: string) => (imp[id] || 0) / (maxImp + 1); // 0..1
-    const score = (id: string) =>
-      (demand[id] || 0) >= TREND_FLOOR
-        ? 100 + (demand[id] || 0) * 100 + gscShare(id) // trusted head, GSC breaks ties
-        : gscShare(id); // Trends-blind tail: order by real outage-search demand
+    const gscTiebreak = (id: string) => ((imp[id] || 0) / (maxImp + 1)) * 1e-5;
+    const score = (id: string) => (demand[id] || 0) + gscTiebreak(id);
     const order = apps.map((a) => a.id).sort((a, b) => score(b) - score(a));
     await getDb()
       .collection('config')
       .doc('popularity')
-      .set({ order, updatedAt: new Date().toISOString(), source: 'trends_popularity_head_gsc_tail' });
+      .set({ order, updatedAt: new Date().toISOString(), source: 'trends_popularity_full' });
 
     return NextResponse.json({ ok: true, count: order.length, top: order.slice(0, 5) });
   } catch (e) {

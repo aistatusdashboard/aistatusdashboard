@@ -8,10 +8,19 @@
 // resolves; the cron falls back to measured GSC demand below TREND_FLOOR.
 //
 // NOTE: Trends rate-limits datacenter IPs hard (this box gets a 302 "sorry"
-// page). Run it from a residential IP, or pull in-browser on trends.google.com
-// via the page's own /trends/api fetch (same session, not blocked). Anchor each
-// batch DIRECTLY on "chatgpt" — do NOT chain through low-volume bridges (the
-// error compounds into nonsense). Run from the repo root: node scripts/pull-demand.mjs
+// page). Run from a residential IP, or in-browser on trends.google.com via the
+// page's own /trends/api fetch (same session, not blocked).
+//
+// METHOD (max 5 terms/comparison, each chart normalized to its own max):
+//  - HEAD: compare the big apps DIRECTLY against chatgpt (they're large enough
+//    to register next to it): chatgpt, gemini, claude, deepseek, grok.
+//  - TAIL: do NOT put chatgpt in — it dwarfs everything to ~0. Instead bridge
+//    through MID-TIER anchors that stay measurable (grok -> perplexity ->
+//    meta-ai -> elevenlabs -> ...), carrying the scale down one healthy hop at a
+//    time. Never bridge through a near-zero app (the error compounds into junk).
+//  - Watch term ambiguity: "grok ai"/"character.ai" undercount; prefer "grok",
+//    "character ai". This script's simple chatgpt-anchored loop only nails the
+//    head; the tail was pulled in-browser with the bridged groups above.
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
