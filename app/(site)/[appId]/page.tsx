@@ -9,6 +9,7 @@ import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
 import { OG_BASE } from '@/lib/ui/metadata';
 import { categoryForApp, rivalFor, comparePath } from '@/lib/ui/categories';
+import { APP_DESCRIPTIONS } from '@/lib/casual/descriptions';
 import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import CasualReportPanel from '@/app/components/casual/CasualReportPanel';
 import CasualShareButton from '@/app/components/casual/CasualShareButton';
@@ -245,6 +246,14 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             </div>
           )}
         </header>
+
+        {/* Plain-language context: what this app is. Unique, factual content per
+            page (helps visitors, differentiates every page from the template). */}
+        {APP_DESCRIPTIONS[app.id] && (
+          <p className="text-sm text-slate-600 dark:text-slate-300 text-center max-w-xl mx-auto">
+            {APP_DESCRIPTIONS[app.id]}
+          </p>
+        )}
 
         {/* The provider's own word, when it's open but stale: shown, not scored. */}
         {status.official_notices.length > 0 && (
