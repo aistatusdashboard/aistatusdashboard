@@ -131,7 +131,7 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
   };
 
   const renderCol = (app: typeof x, name: string, k: string, rel: typeof xRel, inc: typeof xInc) => (
-    <div className="surface-card p-5 space-y-3">
+    <div className="surface-card p-5 [&>:not([hidden])~:not([hidden])]:mt-3">
       <div className="flex items-center justify-between">
         <Link href={`/${app.id}`} className="text-lg font-semibold text-slate-900 dark:text-white hover:underline">{name}</Link>
         <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{VERDICT_COPY[k as 'up']?.label || 'Unknown'}</span>
