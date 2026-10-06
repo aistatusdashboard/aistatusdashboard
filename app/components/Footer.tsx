@@ -43,6 +43,12 @@ export default function Footer() {
             Cookie preferences
           </button>
         </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Sister project:{' '}
+          <a href="https://rootfetch.com/" className="hover:text-slate-900 dark:hover:text-white transition-colors underline">
+            RootFetch, domain extension statistics
+          </a>
+        </p>
         <p className="text-xs text-slate-400 dark:text-slate-500">
           Not affiliated with any AI provider. Verify critical decisions against official sources.
         </p>
