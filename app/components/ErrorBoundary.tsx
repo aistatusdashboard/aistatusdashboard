@@ -65,20 +65,20 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="flex gap-4 justify-center mt-4">
             <button
               onClick={this.handleReset}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 bg-blue-500 text-white rounded-sm hover:bg-blue-600 transition-colors"
             >
               Try Again
             </button>
             <button
               onClick={this.handleReload}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              className="px-4 py-2 bg-gray-500 text-white rounded-sm hover:bg-gray-600 transition-colors"
             >
               Reload Page
             </button>
           </div>
 
           {getEnv('NODE_ENV') === 'development' && this.state.error && (
-            <details className="mt-4 p-4 bg-gray-100 rounded text-left">
+            <details className="mt-4 p-4 bg-gray-100 rounded-sm text-left">
               <summary className="cursor-pointer font-semibold">
                 Error Details (Development)
               </summary>

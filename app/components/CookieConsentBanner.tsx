@@ -53,7 +53,7 @@ export default function CookieConsentBanner() {
 
   return (
     <section
-      className="fixed inset-x-0 bottom-0 z-[70] border-t border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur shadow-[0_-16px_48px_-30px_rgba(15,23,42,0.7)]"
+      className="fixed inset-x-0 bottom-0 z-[70] border-t border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm shadow-[0_-16px_48px_-30px_rgba(15,23,42,0.7)]"
       role="dialog"
       aria-label="Privacy and cookies"
       aria-live="polite"
