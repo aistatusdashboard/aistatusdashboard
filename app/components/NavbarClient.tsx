@@ -70,7 +70,7 @@ export default function NavbarClient({ statusLabel, updatedAgo, statusTone }: Na
           one (axe 'region'); still the first focusable element on the page. */}
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[80] bg-slate-900 text-white px-4 py-3 rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[80] bg-slate-900 text-white px-4 py-3 rounded-sm min-h-[44px] min-w-[44px] flex items-center justify-center"
       >
         Skip to main content
       </a>
@@ -108,7 +108,7 @@ export default function NavbarClient({ statusLabel, updatedAgo, statusTone }: Na
             <DarkModeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-full border border-slate-200/70 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="p-2 rounded-full border border-slate-200/70 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-hidden focus:ring-2 focus:ring-slate-400"
               aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileMenuOpen}
             >

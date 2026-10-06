@@ -51,7 +51,7 @@ export default function OfflineIndicator({ className = '' }: OfflineIndicatorPro
     >
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <svg
               className="w-6 h-6 text-yellow-600 dark:text-yellow-400"
               fill="none"
@@ -83,7 +83,7 @@ export default function OfflineIndicator({ className = '' }: OfflineIndicatorPro
                 window.location.reload();
               }
             }}
-            className="flex-shrink-0 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors"
+            className="shrink-0 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors"
           >
             Retry
           </button>

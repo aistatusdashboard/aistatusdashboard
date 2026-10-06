@@ -137,7 +137,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
       `}
     >
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0">{getIcon()}</div>
+        <div className="shrink-0">{getIcon()}</div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{toast.title}</h4>
           {toast.message && (
@@ -154,7 +154,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
         </div>
         <button
           onClick={handleClose}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          className="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           aria-label="Close notification"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
