@@ -43,6 +43,7 @@ export const APP_DESCRIPTIONS: Record<string, string> = {
     "Amazon Bedrock is AWS's managed service for building applications with foundation models from several providers.",
   cerebras: "Cerebras provides ultra-fast AI inference powered by its wafer-scale processors.",
   comet: "Comet is Perplexity's AI-powered web browser.",
+  dots: "Dots are OpenAI's always-on AI agents inside ChatGPT that work continuously in the background, using their own cloud computer, browser and app connections to carry out multi-step tasks.",
   notebooklm:
     "NotebookLM is Google's AI research assistant that answers questions about your own sources and can turn them into audio overviews.",
   suno: "Suno is an AI music generator that creates full songs, including vocals, from a text prompt.",
