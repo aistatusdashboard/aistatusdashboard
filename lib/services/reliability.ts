@@ -143,7 +143,7 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
 }
 
 // The ranking is reused on every app page (for that app's uptime block and
-// its rank), so cache it briefly rather than recomputing 26 providers per render.
+// its rank), so cache it briefly rather than recomputing every provider per render.
 const rankingCache = new TtlCache<ReliabilityRow[]>(1800_000, 1);
 
 export async function getReliabilityRankingCached(): Promise<ReliabilityRow[]> {

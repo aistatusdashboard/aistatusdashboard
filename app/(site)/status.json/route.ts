@@ -38,8 +38,7 @@ export async function GET() {
   return NextResponse.json(
     {
       source: 'https://aistatusdashboard.com',
-      description:
-        "Live status of 26 consumer AI apps, mirroring each provider's own official status page (read every 5 minutes).",
+      description: `Live status of ${statuses.length} consumer AI apps, mirroring each provider's own official status page (read every 5 minutes).`,
       generated_at: new Date().toISOString(),
       overall: anyDown ? 'some_down' : anyDegraded ? 'some_degraded' : 'all_operational',
       count: statuses.length,
