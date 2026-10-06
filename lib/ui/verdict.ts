@@ -143,4 +143,9 @@ export const APP_LOGOS: Record<string, string> = {
   manus: '/logos/manus.svg',
   minimax: '/logos/minimax.svg',
   'canva-ai': '/logos/canva.svg',
+  notebooklm: '/logos/notebooklm.svg',
+  suno: '/logos/suno.svg',
+  higgsfield: '/logos/higgsfield.svg',
+  kling: '/logos/kling.svg',
+  replit: '/logos/replit.svg',
 };

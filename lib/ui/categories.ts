@@ -10,7 +10,7 @@ export const CATEGORIES: Record<string, { label: string; noun: string; appIds: s
   'ai-coding-assistant': {
     label: 'AI coding assistant',
     noun: 'AI coding assistants',
-    appIds: ['copilot', 'cursor', 'windsurf', 'v0', 'lovable'],
+    appIds: ['copilot', 'cursor', 'windsurf', 'v0', 'lovable', 'replit'],
   },
   'ai-image-generator': {
     label: 'AI image generator',
@@ -20,12 +20,12 @@ export const CATEGORIES: Record<string, { label: string; noun: string; appIds: s
   'ai-video-generator': {
     label: 'AI video generator',
     noun: 'AI video generators',
-    appIds: ['sora', 'runway', 'minimax', 'heygen', 'synthesia'],
+    appIds: ['sora', 'runway', 'minimax', 'heygen', 'synthesia', 'kling', 'higgsfield'],
   },
   'ai-writing-assistant': {
     label: 'AI writing assistant',
     noun: 'AI writing assistants',
-    appIds: ['grammarly', 'notion-ai'],
+    appIds: ['grammarly', 'notion-ai', 'notebooklm'],
   },
 };
 

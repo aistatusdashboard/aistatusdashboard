@@ -449,6 +449,72 @@
       ],
       "defaultRegion": "global",
       "webUrl": "https://www.perplexity.ai/comet"
+    },
+    {
+      "id": "notebooklm",
+      "label": "NotebookLM Status",
+      "providerId": "notebooklm",
+      "providerDisplay": "Google",
+      "surfaces": [
+        "text",
+        "browse",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://notebooklm.google.com"
+    },
+    {
+      "id": "suno",
+      "label": "Suno Status",
+      "providerId": "suno",
+      "providerDisplay": "Suno",
+      "surfaces": [
+        "voice",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://suno.com"
+    },
+    {
+      "id": "higgsfield",
+      "label": "Higgsfield Status",
+      "providerId": "higgsfield",
+      "providerDisplay": "Higgsfield",
+      "surfaces": [
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://higgsfield.ai"
+    },
+    {
+      "id": "kling",
+      "label": "Kling AI Status",
+      "providerId": "kling",
+      "providerDisplay": "Kuaishou",
+      "surfaces": [
+        "images",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://kling.ai"
+    },
+    {
+      "id": "replit",
+      "label": "Replit Status",
+      "providerId": "replit",
+      "providerDisplay": "Replit",
+      "surfaces": [
+        "text",
+        "tools",
+        "login",
+        "rate_limits"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://replit.com"
     }
   ]
 }

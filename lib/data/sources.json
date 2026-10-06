@@ -393,6 +393,65 @@
       "metadata": {
         "proxy": "cf"
       }
+    },
+    {
+      "id": "replit-statuspage",
+      "providerId": "replit",
+      "name": "Replit Statuspage",
+      "baseUrl": "https://status.replit.com",
+      "platform": "statuspage",
+      "pollIntervalSeconds": 300,
+      "metadata": {
+        "proxy": "cf"
+      }
+    },
+    {
+      "id": "suno-frontdoor",
+      "providerId": "suno",
+      "name": "Suno public front door",
+      "baseUrl": "https://suno.com",
+      "statusUrl": "https://suno.com",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,403"
+      }
+    },
+    {
+      "id": "notebooklm-frontdoor",
+      "providerId": "notebooklm",
+      "name": "NotebookLM public front door",
+      "baseUrl": "https://notebooklm.google.com",
+      "statusUrl": "https://notebooklm.google.com/",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,302,403"
+      }
+    },
+    {
+      "id": "kling-frontdoor",
+      "providerId": "kling",
+      "name": "Kling AI public front door",
+      "baseUrl": "https://kling.ai",
+      "statusUrl": "https://kling.ai",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,403"
+      }
+    },
+    {
+      "id": "higgsfield-frontdoor",
+      "providerId": "higgsfield",
+      "name": "Higgsfield public front door",
+      "baseUrl": "https://higgsfield.ai",
+      "statusUrl": "https://higgsfield.ai",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,403"
+      }
     }
   ]
 }
