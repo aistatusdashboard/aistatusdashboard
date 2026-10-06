@@ -395,14 +395,15 @@
       }
     },
     {
-      "id": "replit-statuspage",
+      "id": "replit-frontdoor",
       "providerId": "replit",
-      "name": "Replit Statuspage",
-      "baseUrl": "https://status.replit.com",
-      "platform": "statuspage",
-      "pollIntervalSeconds": 300,
+      "name": "Replit public front door",
+      "baseUrl": "https://replit.com",
+      "statusUrl": "https://replit.com",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
       "metadata": {
-        "proxy": "cf"
+        "expect": "200,302,403"
       }
     },
     {
