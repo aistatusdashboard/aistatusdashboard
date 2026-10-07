@@ -132,6 +132,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
 
+        <Script id="auth-action-url-scrub" strategy="beforeInteractive">
+          {`if (location.pathname === '/auth/action' && location.search) history.replaceState(null, '', location.pathname);`}
+        </Script>
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
