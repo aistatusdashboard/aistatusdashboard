@@ -2,7 +2,20 @@ import { NextResponse } from "next/server";
 import { searchIncidents } from "@/lib/services/public-data";
 import { appNameForProvider } from "@/lib/casual/app-lookup";
 
-export const dynamic = "force-dynamic";
+// Cache the feed (regenerate every 5 min in the background) instead of running
+// a Firestore query at the origin on every hit. A crawler or health check then
+// gets a fast CDN copy and never trips a cold-start timeout, which is what made
+// /rss.xml intermittently "unreachable".
+export const revalidate = 300;
+
+// Never let a slow/cold Firestore read hang the response — fall back to an empty
+// but valid feed. A momentarily empty feed beats a timeout.
+async function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
 
 function esc(value: string) {
   return value
@@ -16,8 +29,14 @@ function esc(value: string) {
 const RESOLVED = new Set(["resolved", "completed", "cancelled"]);
 
 export async function GET() {
-  const payload = await searchIncidents({ limit: 50 });
-  const incidents = payload.data.incidents || [];
+  const incidents = await withTimeout<Record<string, unknown>[]>(
+    searchIncidents({ limit: 50 }).then(
+      (p) => (p.data.incidents || []) as Record<string, unknown>[],
+      () => [] as Record<string, unknown>[]
+    ),
+    8000,
+    []
+  );
   const now = new Date().toUTCString();
   const items = incidents.slice(0, 25).map((incident: Record<string, unknown>) => {
     const incidentId = String(incident.incident_id || "");
@@ -45,13 +64,13 @@ export async function GET() {
     )}</pubDate>\n      <description>${esc(summary)}</description>\n    </item>`;
   });
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>AI Status Dashboard — AI outages &amp; incidents</title>\n    <link>https://aistatusdashboard.com/</link>\n    <description>Live incidents across ChatGPT, Claude, Gemini and 20+ AI apps, read from each provider's official status page.</description>\n    <language>en-us</language>\n    <atom:link href="https://aistatusdashboard.com/rss.xml" rel="self" type="application/rss+xml" />\n    <image><url>https://aistatusdashboard.com/icon-192x192.png</url><title>AI Status Dashboard</title><link>https://aistatusdashboard.com/</link></image>\n    <lastBuildDate>${now}</lastBuildDate>\n    <ttl>60</ttl>\n${items.join(
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>AI Status Dashboard — AI outages &amp; incidents</title>\n    <link>https://aistatusdashboard.com/</link>\n    <description>Live incidents across ChatGPT, Claude, Gemini and dozens of AI apps, read from each provider's official status page.</description>\n    <language>en-us</language>\n    <atom:link href="https://aistatusdashboard.com/rss.xml" rel="self" type="application/rss+xml" />\n    <image><url>https://aistatusdashboard.com/icon-192x192.png</url><title>AI Status Dashboard</title><link>https://aistatusdashboard.com/</link></image>\n    <lastBuildDate>${now}</lastBuildDate>\n    <ttl>60</ttl>\n${items.join(
     "\n"
   )}\n  </channel>\n</rss>\n`;
   return new NextResponse(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=60, s-maxage=120",
+      "Cache-Control": "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
     },
   });
 }

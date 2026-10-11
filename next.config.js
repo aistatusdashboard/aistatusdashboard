@@ -80,6 +80,12 @@ const nextConfig = {
       { source: '/mcp', destination: '/about', permanent: true },
     ];
   },
+  async rewrites() {
+    return [
+      // Keep Firebase's canonical callback path while using the app's email-action UI.
+      { source: '/__/auth/action', destination: '/auth/action' },
+    ];
+  },
   async headers() {
     // Security + trust headers (were entirely absent). CSP is intentionally
     // permissive for the allowed CDNs/analytics rather than strict, to harden
