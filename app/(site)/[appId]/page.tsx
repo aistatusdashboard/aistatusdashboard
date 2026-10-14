@@ -30,8 +30,10 @@ type AppParams = { appId: string };
 // Deliberately shorter than the 5-minute cron that feeds this page. A longer
 // window would stack page staleness on top of data staleness, and "is it down
 // right now" is the whole product — surfacing a fresh verdict late is worse
-// than any read this saves.
-export const revalidate = 60;
+// than any read this saves. But the verdict is written by the ingest cron,
+// which runs every 5 min, so a 60s window re-read Firestore ~5x per cycle to
+// poll for a change that cannot arrive faster than the ingest. Match the cron.
+export const revalidate = 300;
 // Unknown slugs (scanner bots, old links) used to surface as Next's internal
 // NoFallbackError — ~700 logged errors a day burying real ones. They still 404,
 // but through notFound() below, which is silent.

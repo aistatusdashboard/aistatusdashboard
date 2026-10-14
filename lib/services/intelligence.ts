@@ -17,6 +17,15 @@ import { normalizeIncidentDates, normalizeMaintenanceDates } from '@/lib/utils/n
 const incidentsCache = new TtlCache<NormalizedIncident[]>(240_000, 100);
 const summariesCache = new TtlCache<ProviderStatusSummary[]>(240_000, 1);
 
+// In-flight dedup. The TtlCache alone does not stop a stampede: the casual
+// board renders ~40 apps in one pass and fans out that many getCasualStatus
+// calls *concurrently*, so on a cold-cache window they all miss at the same
+// instant and each re-reads the same Firestore collection before any of them
+// populates the cache (~40x the reads, every regeneration). Collapsing
+// concurrent identical loads into a single shared promise keeps it to one read.
+let summariesInflight: Promise<ProviderStatusSummary[]> | null = null;
+const incidentsInflight = new Map<string, Promise<NormalizedIncident[]>>();
+
 function rememberIncidents(key: string, data: NormalizedIncident[]): void {
   incidentsCache.set(key, [...data]);
 }
@@ -38,9 +47,17 @@ class IntelligenceService {
   async getProviderSummaries(): Promise<ProviderStatusSummary[]> {
     const cached = summariesCache.get('all');
     if (cached) return cached;
-    const summaries = await this.loadProviderSummaries();
-    if (summaries.length) summariesCache.set('all', summaries);
-    return summaries;
+    if (summariesInflight) return summariesInflight;
+    summariesInflight = (async () => {
+      try {
+        const summaries = await this.loadProviderSummaries();
+        if (summaries.length) summariesCache.set('all', summaries);
+        return summaries;
+      } finally {
+        summariesInflight = null;
+      }
+    })();
+    return summariesInflight;
   }
 
   private async loadProviderSummaries(): Promise<ProviderStatusSummary[]> {
@@ -141,45 +158,58 @@ class IntelligenceService {
     const cached = incidentsCache.get(cacheKey);
     if (cached) return [...cached];
 
-    const db = getDb();
-    let query: FirebaseFirestore.Query = db.collection('incidents').orderBy('updatedAt', 'desc');
-    if (options.providerId) {
-      query = query.where('providerId', '==', options.providerId);
-    }
-    if (options.startDate) {
-      const start = new Date(options.startDate);
-      if (!Number.isNaN(start.getTime())) {
-        query = query.where('updatedAt', '>=', Timestamp.fromDate(start));
-      }
-    }
-    if (options.limit) {
-      query = query.limit(options.limit);
-    }
-    try {
-      const snapshot = await query.get();
-      let incidents = snapshot.docs.map((doc) => normalizeIncidentDates(doc.data() as NormalizedIncident));
-      if (options.providerId === 'google-ai') {
-        incidents = filterGoogleCloudIncidentsForAi(incidents, GOOGLE_AI_KEYWORDS);
-      }
-      rememberIncidents(cacheKey, incidents);
-      return incidents;
-    } catch (error) {
-      log('warn', 'Incidents query failed, falling back to basic query', { error, options });
-      let fallback: FirebaseFirestore.Query = db.collection('incidents');
+    // Share one Firestore query among concurrent callers for the same key, so a
+    // burst of identical polls (or the board's fan-out) causes a single read.
+    const existing = incidentsInflight.get(cacheKey);
+    if (existing) return [...(await existing)];
+
+    const load = (async (): Promise<NormalizedIncident[]> => {
+      const db = getDb();
+      let query: FirebaseFirestore.Query = db.collection('incidents').orderBy('updatedAt', 'desc');
       if (options.providerId) {
-        fallback = fallback.where('providerId', '==', options.providerId);
+        query = query.where('providerId', '==', options.providerId);
+      }
+      if (options.startDate) {
+        const start = new Date(options.startDate);
+        if (!Number.isNaN(start.getTime())) {
+          query = query.where('updatedAt', '>=', Timestamp.fromDate(start));
+        }
       }
       if (options.limit) {
-        fallback = fallback.limit(options.limit);
-      } else {
-        fallback = fallback.limit(50);
+        query = query.limit(options.limit);
       }
-      const snapshot = await fallback.get();
-      let incidents = snapshot.docs.map((doc) => normalizeIncidentDates(doc.data() as NormalizedIncident));
-      if (options.providerId === 'google-ai') {
-        incidents = filterGoogleCloudIncidentsForAi(incidents, GOOGLE_AI_KEYWORDS);
+      try {
+        const snapshot = await query.get();
+        let incidents = snapshot.docs.map((doc) => normalizeIncidentDates(doc.data() as NormalizedIncident));
+        if (options.providerId === 'google-ai') {
+          incidents = filterGoogleCloudIncidentsForAi(incidents, GOOGLE_AI_KEYWORDS);
+        }
+        rememberIncidents(cacheKey, incidents);
+        return incidents;
+      } catch (error) {
+        log('warn', 'Incidents query failed, falling back to basic query', { error, options });
+        let fallback: FirebaseFirestore.Query = db.collection('incidents');
+        if (options.providerId) {
+          fallback = fallback.where('providerId', '==', options.providerId);
+        }
+        if (options.limit) {
+          fallback = fallback.limit(options.limit);
+        } else {
+          fallback = fallback.limit(50);
+        }
+        const snapshot = await fallback.get();
+        let incidents = snapshot.docs.map((doc) => normalizeIncidentDates(doc.data() as NormalizedIncident));
+        if (options.providerId === 'google-ai') {
+          incidents = filterGoogleCloudIncidentsForAi(incidents, GOOGLE_AI_KEYWORDS);
+        }
+        return incidents;
       }
-      return incidents;
+    })();
+    incidentsInflight.set(cacheKey, load);
+    try {
+      return [...(await load)];
+    } finally {
+      incidentsInflight.delete(cacheKey);
     }
   }
 
