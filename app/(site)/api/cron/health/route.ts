@@ -92,14 +92,28 @@ export async function GET(request: NextRequest) {
     if (incidents === null) problems.push('incidents query failed');
 
     // 4. Public surfaces respond.
+    // Re-check a failing surface once before flagging it. These endpoints read
+    // Firestore, so the first hit on a cold (minInstances:0, scaled-to-zero)
+    // instance can exceed the timeout while the container boots and the admin
+    // SDK opens its first connection — a self-healing false alarm, not an
+    // outage. One retry lands on the now-warm instance, so we only page the
+    // owner when BOTH tries fail. This absorbs cold starts without paying to
+    // keep an instance warm 24/7.
     const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://aistatusdashboard.com';
     for (const path of ['/status.json', '/sitemap.xml', '/rss.xml']) {
-      try {
-        const res = await fetch(`${base}${path}`, { signal: AbortSignal.timeout(15000), cache: 'no-store' });
-        if (!res.ok) problems.push(`${path} returned HTTP ${res.status}`);
-      } catch (e) {
-        problems.push(`${path} unreachable (${e instanceof Error ? e.message : 'error'})`);
+      let lastErr = '';
+      let ok = false;
+      for (let attempt = 0; attempt < 2 && !ok; attempt++) {
+        if (attempt > 0) await new Promise((r) => setTimeout(r, 2000));
+        try {
+          const res = await fetch(`${base}${path}`, { signal: AbortSignal.timeout(15000), cache: 'no-store' });
+          if (res.ok) ok = true;
+          else lastErr = `returned HTTP ${res.status}`;
+        } catch (e) {
+          lastErr = `unreachable (${e instanceof Error ? e.message : 'error'})`;
+        }
       }
+      if (!ok) problems.push(`${path} ${lastErr}`);
     }
 
     if (problems.length) {
