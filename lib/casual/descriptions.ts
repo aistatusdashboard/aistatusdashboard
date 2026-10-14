@@ -44,10 +44,14 @@ export const APP_DESCRIPTIONS: Record<string, string> = {
   cerebras: "Cerebras provides ultra-fast AI inference powered by its wafer-scale processors.",
   comet: "Comet is Perplexity's AI-powered web browser.",
   dots: "Dots are OpenAI's always-on AI agents inside ChatGPT that work continuously in the background, using their own cloud computer, browser and app connections to carry out multi-step tasks.",
+  codex: "Codex is OpenAI's AI software-engineering agent that writes, edits and runs code — in the terminal, the IDE and the cloud — and shares OpenAI's platform status.",
   notebooklm:
     "NotebookLM is Google's AI research assistant that answers questions about your own sources and can turn them into audio overviews.",
   suno: "Suno is an AI music generator that creates full songs, including vocals, from a text prompt.",
   higgsfield: "Higgsfield is an AI video generator focused on cinematic motion and camera control.",
   kling: "Kling is Kuaishou's AI video generator for making realistic short videos from text and images.",
   replit: "Replit is a browser-based coding platform with an AI agent that builds, runs and deploys apps.",
+  genspark: "Genspark is an AI 'super agent' that autonomously carries out multi-step tasks from a single prompt — searching the web and building slides, sheets and documents.",
+  dreamina: "Dreamina is ByteDance's AI image and video generator (from the CapCut team), turning text prompts into images and short video clips.",
+  chutes: "Chutes is a decentralized AI compute platform, built on the Bittensor network, for running and serving open-source AI models serverlessly.",
 };

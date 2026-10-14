@@ -41,6 +41,10 @@
     "suno": 0.01686,
     "higgsfield": 0.00831,
     "kling": 0.0052,
-    "replit": 0.00321
+    "replit": 0.00321,
+    "codex": 0.0038,
+    "genspark": 0.006,
+    "dreamina": 0.004,
+    "chutes": 0.0015
   }
 }

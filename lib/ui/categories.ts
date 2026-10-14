@@ -10,12 +10,12 @@ export const CATEGORIES: Record<string, { label: string; noun: string; appIds: s
   'ai-coding-assistant': {
     label: 'AI coding assistant',
     noun: 'AI coding assistants',
-    appIds: ['copilot', 'cursor', 'windsurf', 'v0', 'lovable', 'replit'],
+    appIds: ['copilot', 'cursor', 'windsurf', 'v0', 'lovable', 'replit', 'codex'],
   },
   'ai-image-generator': {
     label: 'AI image generator',
     noun: 'AI image generators',
-    appIds: ['midjourney', 'ideogram', 'canva-ai'],
+    appIds: ['midjourney', 'ideogram', 'canva-ai', 'dreamina'],
   },
   'ai-video-generator': {
     label: 'AI video generator',

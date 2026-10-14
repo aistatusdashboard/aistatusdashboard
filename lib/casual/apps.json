@@ -438,6 +438,19 @@
       "webUrl": "https://chatgpt.com"
     },
     {
+      "id": "codex",
+      "label": "OpenAI Codex Status",
+      "providerId": "openai",
+      "providerDisplay": "OpenAI",
+      "surfaces": [
+        "text",
+        "tools",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://chatgpt.com/codex"
+    },
+    {
       "id": "comet",
       "label": "Perplexity Comet Status",
       "providerId": "perplexity",
@@ -515,6 +528,45 @@
       ],
       "defaultRegion": "global",
       "webUrl": "https://replit.com"
+    },
+    {
+      "id": "genspark",
+      "label": "Genspark Status",
+      "providerId": "genspark",
+      "providerDisplay": "Genspark",
+      "surfaces": [
+        "text",
+        "browse",
+        "tools",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://www.genspark.ai"
+    },
+    {
+      "id": "dreamina",
+      "label": "Dreamina Status",
+      "providerId": "dreamina",
+      "providerDisplay": "Dreamina",
+      "surfaces": [
+        "images",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://dreamina.capcut.com"
+    },
+    {
+      "id": "chutes",
+      "label": "Chutes Status",
+      "providerId": "chutes",
+      "providerDisplay": "Chutes",
+      "surfaces": [
+        "text",
+        "tools",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://chutes.ai"
     }
   ]
 }

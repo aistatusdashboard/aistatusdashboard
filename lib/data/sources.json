@@ -453,6 +453,42 @@
       "metadata": {
         "expect": "200,403"
       }
+    },
+    {
+      "id": "genspark-frontdoor",
+      "providerId": "genspark",
+      "name": "Genspark public front door",
+      "baseUrl": "https://www.genspark.ai",
+      "statusUrl": "https://www.genspark.ai",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,301,403"
+      }
+    },
+    {
+      "id": "dreamina-frontdoor",
+      "providerId": "dreamina",
+      "name": "Dreamina public front door",
+      "baseUrl": "https://dreamina.capcut.com",
+      "statusUrl": "https://dreamina.capcut.com",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,403"
+      }
+    },
+    {
+      "id": "chutes-frontdoor",
+      "providerId": "chutes",
+      "name": "Chutes public front door",
+      "baseUrl": "https://chutes.ai",
+      "statusUrl": "https://chutes.ai",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,403"
+      }
     }
   ]
 }

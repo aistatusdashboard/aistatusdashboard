@@ -131,6 +131,7 @@ export const APP_LOGOS: Record<string, string> = {
   elevenlabs: '/logos/elevenlabs.svg',
   lovable: '/logos/lovable.svg',
   sora: '/logos/openai.svg',
+  codex: '/logos/openai.svg',
   midjourney: '/logos/midjourney.svg',
   poe: '/logos/poe.svg',
   windsurf: '/logos/windsurf.svg',
@@ -148,4 +149,7 @@ export const APP_LOGOS: Record<string, string> = {
   higgsfield: '/logos/higgsfield.svg',
   kling: '/logos/kling.svg',
   replit: '/logos/replit.svg',
+  genspark: '/logos/genspark.svg',
+  dreamina: '/logos/dreamina.svg',
+  chutes: '/logos/chutes.svg',
 };
