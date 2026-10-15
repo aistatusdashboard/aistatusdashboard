@@ -3,6 +3,11 @@ import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
 import { listCasualApps } from '@/lib/services/casual';
 
 export const runtime = 'nodejs';
+// ISR: cache the generated PNG in Next's shared cache for 10 min. App Hosting
+// persists this cache across instances, so a social crawler (even hitting a
+// cold, scaled-to-zero instance) gets the image from cache instead of waiting
+// on a re-render + Firestore read that times out into a blank card.
+export const revalidate = 600;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

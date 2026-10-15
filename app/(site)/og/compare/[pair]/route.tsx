@@ -4,6 +4,7 @@ import { getAppReliability } from '@/lib/services/reliability';
 import { shortName } from '@/lib/ui/verdict';
 
 export const runtime = 'nodejs';
+export const revalidate = 600;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
