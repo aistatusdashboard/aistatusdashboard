@@ -27,6 +27,10 @@ export default function Footer() {
             Reliability ranking
           </Link>
           <span aria-hidden="true">·</span>
+          <Link href="/embed" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+            Status badges
+          </Link>
+          <span aria-hidden="true">·</span>
           <Link href="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">
             Terms
           </Link>
