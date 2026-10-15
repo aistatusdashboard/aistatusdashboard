@@ -25,6 +25,6 @@ export async function GET(_req: Request, { params }: { params: { category: strin
         <div style={{ fontSize: 32, color: '#34d399', marginTop: 24 }}>Ranked by 30-day uptime · aistatusdashboard.com</div>
       </div>
     ),
-    size
+    { ...size, headers: { 'Cache-Control': 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800' } }
   );
 }

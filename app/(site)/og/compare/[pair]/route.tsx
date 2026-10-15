@@ -3,7 +3,6 @@ import { getCasualApp, getCasualStatus } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
 import { shortName } from '@/lib/ui/verdict';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -38,6 +37,6 @@ export async function GET(_req: Request, { params }: { params: { pair: string } 
         <div style={{ fontSize: 28, color: '#64748b', marginTop: 36 }}>aistatusdashboard.com</div>
       </div>
     ),
-    size
+    { ...size, headers: { 'Cache-Control': 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800' } }
   );
 }

@@ -2,7 +2,6 @@ import { ImageResponse } from 'next/og';
 import { getIncidentById } from '@/lib/services/public-data';
 import { appNameForProvider } from '@/lib/casual/app-lookup';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -36,6 +35,6 @@ export async function GET(
         <div style={{ marginTop: 28, fontSize: 30, color: '#94a3b8' }}>{`${when ? when + ' \u00b7 ' : ''}${name}\u2019s official report, in plain English \u00b7 aistatusdashboard.com`}</div>
       </div>
     ),
-    size
+    { ...size, headers: { 'Cache-Control': 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800' } }
   );
 }

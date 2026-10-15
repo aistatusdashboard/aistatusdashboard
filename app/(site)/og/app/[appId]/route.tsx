@@ -2,7 +2,6 @@ import { ImageResponse } from 'next/og';
 import { getCasualApp, getCasualStatus } from '@/lib/services/casual';
 import { shortName } from '@/lib/ui/verdict';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -31,6 +30,6 @@ export async function GET(
         <div style={{ marginTop: 28, fontSize: 28, color: '#64748b' }}>{`${app.providerDisplay}\u2019s official status, read every 5 minutes \u00b7 aistatusdashboard.com/${app.id}`}</div>
       </div>
     ),
-    size
+    { ...size, headers: { 'Cache-Control': 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800' } }
   );
 }

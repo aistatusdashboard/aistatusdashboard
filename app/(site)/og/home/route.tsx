@@ -1,10 +1,17 @@
 import { ImageResponse } from 'next/og';
 import { getLivePulseSnapshot } from '@/lib/services/live-pulse';
+import { listCasualApps } from '@/lib/services/casual';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+
+// Social crawlers (X, LinkedIn, iMessage, Slack) fetch this with a short timeout
+// and cache the result. Serve it as a public, CDN-cacheable image so the crawler
+// gets it instantly from the edge instead of risking a cold-start origin fetch
+// that times out into a blank card. The live status may lag the cache window,
+// which is fine for a share card.
+const OG_CACHE = 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800';
 
 // PNG, because every social platform (X, LinkedIn, iMessage, Slack, WhatsApp)
 // ignores an SVG og:image and shows a blank card — and shares during an
@@ -28,9 +35,9 @@ export async function GET() {
         </div>
         <div style={{ marginTop: 28, fontSize: 76, fontWeight: 700, color: '#f8fafc' }}>Is your AI down right now?</div>
         <div style={{ marginTop: 24, fontSize: 44, color: accent }}>{line}</div>
-        <div style={{ marginTop: 20, fontSize: 30, color: '#cbd5e1' }}>ChatGPT · Claude · Gemini · Grok · 22 more — the official status, in one place.</div>
+        <div style={{ marginTop: 20, fontSize: 30, color: '#cbd5e1' }}>{`ChatGPT · Claude · Gemini · Grok · ${Math.max(0, listCasualApps().length - 4)} more — the official status, in one place.`}</div>
       </div>
     ),
-    size
+    { ...size, headers: { 'Cache-Control': OG_CACHE } }
   );
 }
