@@ -70,8 +70,6 @@ const nextConfig = {
       { source: '/metrics/:path*', destination: '/reliability', permanent: true },
       { source: '/reports/:path*', destination: '/reliability', permanent: true },
       { source: '/stats', destination: '/reliability', permanent: true },
-      { source: '/embed', destination: '/', permanent: true },
-      { source: '/embed/:path*', destination: '/', permanent: true },
       { source: '/discovery/:path*', destination: '/', permanent: true },
       { source: '/related', destination: '/about', permanent: true },
       { source: '/changelog', destination: '/incidents', permanent: true },
