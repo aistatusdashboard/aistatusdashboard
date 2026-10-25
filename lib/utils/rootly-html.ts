@@ -49,7 +49,12 @@ export function parseDuration(fragment: string): number | undefined {
 }
 
 export function extractRootlyOverall(html: string): string {
-  const m = /class="text-4xl[^"]*"[^>]*>([\s\S]*?)<\/span>/.exec(html);
+  // Rootly's current markup puts the overall status in the single
+  // <h2 class="heading-sm"> banner; an older layout used <span class="text-4xl">.
+  // Support both so a future markup tweak on either side doesn't blank the feed.
+  const m =
+    /<h2 class="heading-sm[^"]*">([\s\S]*?)<\/h2>/.exec(html) ||
+    /class="text-4xl[^"]*"[^>]*>([\s\S]*?)<\/span>/.exec(html);
   return text(m?.[1]);
 }
 
@@ -61,6 +66,27 @@ export function extractRootlyComponents(html: string): Array<{ name: string; sta
     const name = text(/<h2[^>]*>([\s\S]*?)<\/h2>/.exec(summary)?.[1]);
     const status = text(/<\/div>\s*<span[^>]*>([\s\S]*?)<\/span>\s*$/.exec(summary)?.[1]);
     if (name) out.push({ name, status });
+  }
+  if (out.length) return out;
+  // Newer Rootly markup drops the <details> service rows and instead lists the
+  // services in a structured JSON attribute (name only — no live status in the
+  // blob). Use it for the component names and leave status blank, which
+  // normalises to operational, so the authoritative overall banner drives the
+  // verdict. This keeps the component list populated across the markup change.
+  const blob = /data-status-pages--v3--system-status-component-index-value="([^"]*)"/.exec(html);
+  if (blob) {
+    try {
+      const parsed = JSON.parse(blob[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&'));
+      if (Array.isArray(parsed)) {
+        for (const c of parsed) {
+          if (c && c.type === 'component' && typeof c.name === 'string' && c.name.trim()) {
+            out.push({ name: c.name.trim(), status: '' });
+          }
+        }
+      }
+    } catch {
+      /* malformed blob — return whatever the markup parsing found */
+    }
   }
   return out;
 }
