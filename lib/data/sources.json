@@ -28,16 +28,12 @@
       "pollIntervalSeconds": 90
     },
     {
-      "id": "mistral-rootly",
+      "id": "mistral-statuspage",
       "providerId": "mistral",
-      "name": "Mistral Rootly (browser-rendered)",
+      "name": "Mistral (Statuspage-compatible API)",
       "baseUrl": "https://status.mistral.ai",
-      "platform": "browser",
-      "pollIntervalSeconds": 90,
-      "metadata": {
-        "browser": "rootly",
-        "historyUrl": "https://status.mistral.ai/history"
-      }
+      "platform": "statuspage",
+      "pollIntervalSeconds": 120
     },
     {
       "id": "google-cloud",
