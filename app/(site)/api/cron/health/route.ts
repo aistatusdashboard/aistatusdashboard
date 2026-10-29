@@ -10,10 +10,10 @@ import sourcesConfig from '@/lib/data/sources.json';
 export const dynamic = 'force-dynamic';
 
 // Per-provider staleness tolerance derived from how often we actually poll it.
-// Some feeds poll slowly on purpose (browser-rendered Mistral; the AtlassianEdge
-// statuspages we throttle to dodge their datacenter-IP block), so a flat 20-min
-// threshold pages the owner for normal gaps. Tolerate 3 poll intervals (min 20m)
-// which still catches a genuine multi-hour outage.
+// Some feeds poll slowly on purpose, or hop through a Cloudflare-worker proxy
+// that occasionally drops a cycle, so a tight flat threshold pages the owner for
+// normal gaps. Tolerate 5 poll intervals (min 45m), which absorbs a transient
+// blip yet still catches a genuine multi-hour outage.
 const POLL_INTERVAL_SECONDS = new Map<string, number>();
 for (const s of sourcesConfig.sources as Array<{ providerId: string; pollIntervalSeconds?: number }>) {
   const secs = s.pollIntervalSeconds || 120;
@@ -40,7 +40,11 @@ function authorized(request: NextRequest): boolean {
   return provided === secret;
 }
 
-const STALE_MS = 20 * 60 * 1000; // floor: provider read older than this = feed trouble
+// Floor before a feed is called stale. Kept well above a few missed poll cycles
+// so a transient blip (a slow proxy hop, one failed fetch) that self-heals next
+// cycle doesn't page the owner — only a genuinely stuck feed (tens of minutes to
+// hours, like a changed/blocked status page) should. 20 min was too twitchy.
+const STALE_MS = 45 * 60 * 1000;
 const UNKNOWN_MS = 60 * 60 * 1000; // stuck "unknown" longer than this = broken source
 
 // Continuously validate the live product so problems surface to the owner
@@ -69,7 +73,7 @@ export async function GET(request: NextRequest) {
       const age = now - (doc.lastUpdated?.toMillis?.() ?? 0);
       const staleLimit = Math.max(
         STALE_MS,
-        (POLL_INTERVAL_SECONDS.get(pid) || 120) * 3 * 1000,
+        (POLL_INTERVAL_SECONDS.get(pid) || 120) * 5 * 1000,
         BROWSER_PROVIDERS.has(pid) ? BROWSER_STALE_FLOOR_MS : 0
       );
       if (age > staleLimit) problems.push(`${pid} not read for ${Math.round(age / 60000)} min (feed may be down)`);
