@@ -23,6 +23,10 @@ export default function Footer() {
             Outage history
           </Link>
           <span aria-hidden="true">·</span>
+          <Link href="/blog" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+            Blog
+          </Link>
+          <span aria-hidden="true">·</span>
           <Link href="/reliability" className="hover:text-slate-900 dark:hover:text-white transition-colors">
             Reliability ranking
           </Link>
