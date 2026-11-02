@@ -4,12 +4,14 @@ import { notFound } from 'next/navigation';
 import { BLOG_POSTS, getPost } from '@/lib/blog/posts';
 import { OG_BASE } from '@/lib/ui/metadata';
 import MostReliableAi from '../_posts/most-reliable-ai';
+import ChatgptDownAug2026 from '../_posts/chatgpt-down-august-31-2026';
 
 export const revalidate = 1800;
 
 // Slug -> body component. Each post is a server component that can read live data.
 const BODIES: Record<string, () => Promise<React.ReactElement> | React.ReactElement> = {
   'most-reliable-ai': MostReliableAi,
+  'chatgpt-down-august-31-2026': ChatgptDownAug2026,
 };
 
 export function generateStaticParams() {

@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/embed`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
     { url: `${SITE_URL}/blog/most-reliable-ai`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${SITE_URL}/blog/chatgpt-down-august-31-2026`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.1 },

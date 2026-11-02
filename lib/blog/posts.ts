@@ -12,6 +12,15 @@ export type BlogPostMeta = {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: 'chatgpt-down-august-31-2026',
+    title: 'What happened when ChatGPT went down on August 31, 2026',
+    description:
+      "A minute-by-minute post-mortem of ChatGPT's biggest outage of the season — 5+ hours of errors and downtime that hit ChatGPT Work hardest — rebuilt from OpenAI's own status updates.",
+    published: '2026-09-02',
+    live: false,
+    tag: 'Post-mortem',
+  },
+  {
     slug: 'most-reliable-ai',
     title: 'The most (and least) reliable AI tools right now',
     description:
