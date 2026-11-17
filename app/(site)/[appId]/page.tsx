@@ -32,10 +32,10 @@ type AppParams = { appId: string };
 // Deliberately shorter than the 5-minute cron that feeds this page. A longer
 // window would stack page staleness on top of data staleness, and "is it down
 // right now" is the whole product — surfacing a fresh verdict late is worse
-// than any read this saves. But the verdict is written by the ingest cron,
-// which runs every 5 min, so a 60s window re-read Firestore ~5x per cycle to
-// poll for a change that cannot arrive faster than the ingest. Match the cron.
-export const revalidate = 300;
+// than any read this saves. (017e5ca raised this to 300 to save reads; that
+// stacked five minutes of page staleness on top of the cron, which efd3baf had
+// already ruled out, and a refresh now reuses the in-memory read caches.)
+export const revalidate = 60;
 // Unknown slugs (scanner bots, old links) used to surface as Next's internal
 // NoFallbackError — ~700 logged errors a day burying real ones. They still 404,
 // but through notFound() below, which is silent.
@@ -77,11 +77,9 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const { appId } = await params;
   const app = getCasualApp(appId);
   if (!app) return notFound();
-  // An uppercase variant (/ChatGPT) renders this same page; the canonical link
-  // in generateMetadata points search engines at the lowercase URL. A redirect
-  // is not used: from middleware it made every matched route uncacheable at the
-  // CDN, and permanentRedirect() from this ISR page emits a doubled Location
-  // header that App Hosting merges into a broken "/chatgpt,/chatgpt".
+  // Uppercase variants (/ChatGPT) are redirected to the lowercase URL by the
+  // middleware. Never do that redirect here: from this ISR page it emits a
+  // doubled Location header ("/chatgpt,/chatgpt") - see 4c68c76 and 598457a.
 
   const [status, reliability, strip, recentIncidents] = await Promise.all([
     getCasualStatus({ appId: app.id }).catch(() => null),

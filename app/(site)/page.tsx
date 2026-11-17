@@ -16,9 +16,11 @@ import { VERDICT_COPY, VERDICT_ORDER, shortName, verdictKey } from '@/lib/ui/ver
 // window would stack page staleness on top of data staleness, and "is it down
 // right now" is the whole product — surfacing a fresh verdict late is worse
 // than any read this saves.
-// Data changes at most once per ingest cycle (5 min). Regenerating every 60s
-// re-read Firestore 5x more often than anything could have changed — pure cost.
-export const revalidate = 300;
+// (017e5ca raised this to 300 on the grounds that a 60s refresh re-read
+// Firestore 5x per cycle. That stacked five minutes of page staleness on top
+// of the cron, which efd3baf had already ruled out. The reads are no longer a
+// reason either: a refresh now reuses the in-memory read caches.)
+export const revalidate = 60;
 
 const DESCRIPTION =
   'Is ChatGPT down? Is Claude down? The official status of every major AI app, in one place and in plain English — read from each provider\'s own status page every 5 minutes.';
