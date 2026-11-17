@@ -28,7 +28,7 @@ const BASELINE_WINDOW_MINUTES = 60;
 const REPORT_RATE_LIMIT_MINUTES = 5;
 const SELF_TEST_HEADER = 'x-aistatus-selftest';
 // A page we haven't managed to read for two hours is treated as unreadable.
-const OFFICIAL_FEED_STALE_MS = 2 * 60 * 60 * 1000;
+export const OFFICIAL_FEED_STALE_MS = 2 * 60 * 60 * 1000;
 
 const SURFACE_KEYWORDS: Record<ExperienceSurfaceId, string[]> = {
   text: ['chat', 'message', 'response', 'completion', 'text'],
@@ -72,7 +72,7 @@ function normalizeSurface(surface: ExperienceSurfaceId): ExperienceSurfaceId {
 }
 
 // What the provider's own page says, in our three words.
-function officialSignal(status: string | undefined): ExperienceSignal {
+export function officialSignal(status: string | undefined): ExperienceSignal {
   const s = String(status || '').toLowerCase();
   if (!s || s === 'unknown') return 'unknown';
   if (s === 'operational' || s === 'maintenance' || s === 'up') return 'operational';

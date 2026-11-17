@@ -1,3 +1,4 @@
+import { recordStripCycle } from '@/lib/services/status-strip';
 import { NextRequest, NextResponse } from 'next/server';
 import { sourceIngestionService } from '@/lib/services/source-ingestion';
 import { log } from '@/lib/utils/logger';
@@ -38,6 +39,8 @@ export async function GET(request: NextRequest) {
   try {
     const force = request.nextUrl.searchParams.get('force') === '1';
     const stats = await sourceIngestionService.ingestAll({ force });
+    // Tally this cycle's official statuses into the 30-day bar document.
+    await recordStripCycle();
     return NextResponse.json({ success: true, ...stats, timestamp: new Date().toISOString() });
   } catch (error) {
     log('error', 'Source ingestion cron failed', { error });

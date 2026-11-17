@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
+import { getStatusStrip } from '@/lib/services/status-strip';
+import StatusStrip from '@/app/components/casual/StatusStrip';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
@@ -81,9 +83,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   // CDN, and permanentRedirect() from this ISR page emits a doubled Location
   // header that App Hosting merges into a broken "/chatgpt,/chatgpt".
 
-  const [status, reliability, recentIncidents] = await Promise.all([
+  const [status, reliability, strip, recentIncidents] = await Promise.all([
     getCasualStatus({ appId: app.id }).catch(() => null),
     getAppReliability(app.providerId).catch(() => null),
+    getStatusStrip(app.providerId).catch(() => []),
     // The app's own recent incidents, linked inline. Each incident page ranks
     // far better than this templated app page, so surfacing them here gives the
     // page unique, dated, per-app content and funnels crawl + link equity to
@@ -316,6 +319,8 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
             {key === 'up' ? 'operational' : key === 'wobbly' ? 'having issues' : key === 'down' ? 'experiencing an outage' : 'unknown'}.
           </p>
         </section>
+
+        <StatusStrip days={strip} name={name} provider={app.providerDisplay} />
 
         {/* Is it just me? */}
         <section className="surface-card-strong p-6 space-y-4">
