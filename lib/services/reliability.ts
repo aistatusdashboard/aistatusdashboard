@@ -81,14 +81,30 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
   const now = Date.now();
   const since = now - WINDOW_MS;
 
+  // One query for every provider's incidents in the window, instead of one
+  // query of up to 200 incidents per provider (~2,000 reads per refresh for
+  // ~400 relevant documents). An incident that started inside the window was
+  // necessarily updated inside it, so filtering on updatedAt cannot miss one.
+  type IncidentRow = Awaited<ReturnType<typeof intelligenceService.getIncidents>>[number];
+  const incidentsByProvider = new Map<string, IncidentRow[]>();
+  try {
+    const windowIncidents = await intelligenceService.getIncidents({
+      startDate: new Date(since - 24 * 60 * 60 * 1000).toISOString(),
+      limit: 2000,
+    });
+    for (const incident of windowIncidents) {
+      const list = incidentsByProvider.get(incident.providerId);
+      if (list) list.push(incident);
+      else incidentsByProvider.set(incident.providerId, [incident]);
+    }
+  } catch {
+    // Leave the map empty: every provider then reports no incidents, exactly
+    // what the per-provider query did on failure.
+  }
+
   const rows = await Promise.all(
     Array.from(byProvider.entries()).map(async ([providerId, meta]) => {
-      let incidents: Awaited<ReturnType<typeof intelligenceService.getIncidents>> = [];
-      try {
-        incidents = await intelligenceService.getIncidents({ providerId, limit: 200 });
-      } catch {
-        incidents = [];
-      }
+      const incidents = incidentsByProvider.get(providerId) || [];
 
       let downtimeMs = 0;
       let longestMs = 0;

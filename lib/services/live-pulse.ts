@@ -1,121 +1,50 @@
 import { cache } from 'react';
-import { getStatusSummary, searchIncidents } from '@/lib/services/public-data';
-import { persistenceService } from '@/lib/services/persistence';
-import { providerService } from '@/lib/services/providers';
-import { getCommunityReportCount } from '@/lib/services/community-reports';
+import { intelligenceService, type ProviderStatusSummary } from '@/lib/services/intelligence';
 
-type LivePulseIncident = {
-  incident_id: string;
-  title: string;
-  provider_id?: string;
-  providerId?: string;
-  updated_at?: string;
-  updatedAt?: string;
-  permalink: string;
-};
-
+// What the navbar's "Live - updated 3 min ago" pill and the home share image
+// need: when the official statuses were last read, and whether anything is in
+// trouble right now.
+//
+// This used to assemble a much larger snapshot (300 recent incidents, the last
+// 200 status_history rows, a casual_reports scan) on every refresh, although
+// the navbar only ever displayed the timestamp - about 500 document reads every
+// four minutes, the second-largest reader on the site. Everything it needs is
+// already in the provider summaries, which every page loads and caches anyway,
+// so this now costs no reads of its own.
 export type LivePulseSnapshot = {
   status: 'operational' | 'degraded' | 'down' | 'maintenance' | 'unknown';
-  tracking: number;
   lastUpdated: string | null;
-  avgLatency: number | null;
-  incidents24h: number;
-  recentIncidents: LivePulseIncident[];
-  communityReports: number | null;
 };
 
-function resolveOverallStatus(
-  totals: Record<string, number>,
-  providers: Array<Record<string, any>>
-) {
-  const activeIncidentCount = providers.reduce(
-    (acc, provider) => acc + Number(provider.active_incident_count || provider.activeIncidentCount || 0),
-    0
-  );
-  if (activeIncidentCount > 0) return 'degraded';
-  if ((totals.down || 0) > 0) return 'down';
-  if ((totals.degraded || 0) > 0) return 'degraded';
-  if ((totals.maintenance || 0) > 0) return 'maintenance';
-  if ((totals.operational || 0) > 0) return 'operational';
-  return 'unknown';
-}
-
-function parseLatestUpdated(providers: Array<Record<string, any>>): string | null {
-  const dates = providers
-    .map((provider) => provider.last_updated || provider.lastUpdated || provider.last_updated_at)
-    .filter(Boolean)
-    .map((value) => Date.parse(value))
-    .filter((value) => Number.isFinite(value))
-    .sort((a, b) => b - a);
-  return dates.length ? new Date(dates[0]).toISOString() : null;
-}
-
-const computeLivePulseSnapshot = async (): Promise<LivePulseSnapshot> => {
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return {
-      status: 'unknown',
-      tracking: providerService.getProviders().length,
-      lastUpdated: null,
-      avgLatency: null,
-      incidents24h: 0,
-      recentIncidents: [],
-      communityReports: null,
-    };
+export function summarizePulse(summaries: ProviderStatusSummary[]): LivePulseSnapshot {
+  let latest = 0;
+  let activeIncidents = 0;
+  const seen = { down: false, degraded: false, maintenance: false, operational: false };
+  for (const summary of summaries) {
+    const updated = summary.lastUpdated ? Date.parse(summary.lastUpdated) : NaN;
+    if (Number.isFinite(updated) && updated > latest) latest = updated;
+    activeIncidents += Number(summary.activeIncidentCount || 0);
+    const status = String(summary.status || '').toLowerCase();
+    if (status === 'down' || status.includes('major')) seen.down = true;
+    else if (status === 'degraded' || status.includes('partial')) seen.degraded = true;
+    else if (status === 'maintenance') seen.maintenance = true;
+    else if (status === 'operational') seen.operational = true;
   }
-
-  const now = Date.now();
-  const since24h = new Date(now - 24 * 60 * 60 * 1000).toISOString();
-
-  const [summaryPayload, incidentsPayload, communityReports] = await Promise.all([
-    getStatusSummary({ windowSeconds: 3600 }),
-    searchIncidents({ since: since24h, limit: 200 }),
-    getCommunityReportCount(10),
-  ]);
-
-  const providers = summaryPayload.data.providers || [];
-  const totals = summaryPayload.data.totals || { total: 0 };
-  const tracking = totals.total || providers.length || providerService.getProviders().length;
-  const status = resolveOverallStatus(totals, providers);
-  const lastUpdated = parseLatestUpdated(providers);
-
-  let avgLatency: number | null = null;
-  try {
-    const history = await persistenceService.getHistory({ limit: 200 });
-    const samples = history
-      .map((item) => item.responseTime)
-      .filter((value) => typeof value === 'number' && Number.isFinite(value));
-    if (samples.length) {
-      avgLatency = Math.round(samples.reduce((acc, value) => acc + value, 0) / samples.length);
-    }
-  } catch {
-    avgLatency = null;
-  }
-
-  const incidents = (incidentsPayload.data?.incidents || []) as LivePulseIncident[];
-  const incidents24h = incidents.length;
-
-  return {
-    status,
-    tracking,
-    lastUpdated,
-    avgLatency,
-    incidents24h,
-    recentIncidents: incidents.slice(0, 3),
-    communityReports,
-  };
-};
-
-// The navbar renders this on every page, so without a cross-request cache each
-// page render (and each ISR regeneration) re-read ~400 documents. React's
-// cache() only dedupes within one render pass; this TTL layer spans requests.
-const LIVE_PULSE_TTL_MS = 240_000;
-let livePulseCache: { at: number; data: LivePulseSnapshot } | null = null;
+  // Same precedence the old snapshot used: an open incident anywhere reads as
+  // "having issues" before any single provider's banner is considered.
+  const status: LivePulseSnapshot['status'] =
+    activeIncidents > 0 ? 'degraded'
+    : seen.down ? 'down'
+    : seen.degraded ? 'degraded'
+    : seen.maintenance ? 'maintenance'
+    : seen.operational ? 'operational'
+    : 'unknown';
+  return { status, lastUpdated: latest ? new Date(latest).toISOString() : null };
+}
 
 export const getLivePulseSnapshot = cache(async (): Promise<LivePulseSnapshot> => {
-  if (livePulseCache && Date.now() - livePulseCache.at < LIVE_PULSE_TTL_MS) {
-    return livePulseCache.data;
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return { status: 'unknown', lastUpdated: null };
   }
-  const data = await computeLivePulseSnapshot();
-  livePulseCache = { at: Date.now(), data };
-  return data;
+  return summarizePulse(await intelligenceService.getProviderSummaries());
 });

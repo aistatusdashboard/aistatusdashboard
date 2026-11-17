@@ -1,3 +1,4 @@
+import { TtlCache } from '@/lib/utils/ttl-cache';
 import { getDb } from '@/lib/db/firestore';
 import { providerService } from '@/lib/services/providers';
 import { statusService } from '@/lib/services/status';
@@ -283,36 +284,37 @@ export async function searchIncidents(options: {
   };
 }
 
-export async function getIncidentById(incidentId: string) {
+// An incident page asks for the same incident twice per render (metadata, then
+// body), and crawlers walk these pages all day. Remember each answer for one
+// ingest cycle so repeats cost nothing.
+type IncidentDetail = Awaited<ReturnType<typeof loadIncidentById>>;
+const incidentByIdCache = new TtlCache<{ value: IncidentDetail }>(240_000, 500);
+
+export async function getIncidentById(incidentId: string): Promise<IncidentDetail> {
+  const cached = incidentByIdCache.get(incidentId);
+  if (cached) return cached.value;
+  const value = await loadIncidentById(incidentId);
+  incidentByIdCache.set(incidentId, { value });
+  return value;
+}
+
+async function loadIncidentById(incidentId: string) {
   const db = getDb();
   let incident: NormalizedIncident | null = null;
   const [providerId, ...rest] = incidentId.split(':');
   const innerIncidentId = rest.join(':');
 
-  // The list endpoint is sourced from intelligenceService; consult it first so
-  // detail lookups work even before persistence catches up.
-  try {
-    const memoryIncidents = await intelligenceService.getIncidents({
-      providerId: providerId && innerIncidentId ? providerId : undefined,
-      limit: 500,
-    });
-    const memoryMatch = memoryIncidents.find((row) => {
-      if (`${row.providerId}:${row.id}` === incidentId) return true;
-      return row.id === incidentId;
-    });
-    if (memoryMatch) {
-      incident = memoryMatch as NormalizedIncident;
-    }
-  } catch {
-    incident = null;
-  }
-
-  // Firestore document IDs cannot contain "/" path separators. For encoded route
-  // params that decode to slash-containing IDs, skip direct doc lookup and query by fields.
-  if (!incident && !incidentId.includes('/')) {
-    const doc = await db.collection('incidents').doc(incidentId).get();
-    if (doc.exists) {
-      incident = doc.data() as NormalizedIncident;
+  // Incidents are stored under "<providerId>:<id>", which is exactly what the
+  // URL carries, so the normal case is a single document read. This used to
+  // start by loading up to 500 of the provider's incidents to find one - the
+  // largest reader on the site. Ids that are not document ids (bare ids, ids
+  // containing "/") fall through to the two single-row field queries below.
+  if (!incidentId.includes('/')) {
+    try {
+      const doc = await db.collection('incidents').doc(incidentId).get();
+      if (doc.exists) incident = doc.data() as NormalizedIncident;
+    } catch {
+      incident = null;
     }
   }
 
