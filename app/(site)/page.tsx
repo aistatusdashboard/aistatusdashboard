@@ -5,6 +5,7 @@ import NotifyInlineForm from '@/app/components/NotifyInlineForm';
 import SubscriptionNotice from '@/app/components/SubscriptionNotice';
 import { getCasualStatus, listCasualApps } from '@/lib/services/casual';
 import { getDb } from '@/lib/db/firestore';
+import { TtlCache } from '@/lib/utils/ttl-cache';
 import { categoryForApp, CATEGORIES } from '@/lib/ui/categories';
 import StatusBoard, { type BoardItem } from '@/app/components/casual/StatusBoard';
 import { OG_BASE } from '@/lib/ui/metadata';
@@ -12,15 +13,15 @@ import { searchIncidents } from '@/lib/services/public-data';
 import { formatTimeAgo } from '@/lib/utils/time';
 import { VERDICT_COPY, VERDICT_ORDER, shortName, verdictKey } from '@/lib/ui/verdict';
 
-// Deliberately shorter than the 5-minute cron that feeds this page. A longer
-// window would stack page staleness on top of data staleness, and "is it down
-// right now" is the whole product — surfacing a fresh verdict late is worse
-// than any read this saves.
-// (017e5ca raised this to 300 on the grounds that a 60s refresh re-read
-// Firestore 5x per cycle. That stacked five minutes of page staleness on top
-// of the cron, which efd3baf had already ruled out. The reads are no longer a
-// reason either: a refresh now reuses the in-memory read caches.)
-export const revalidate = 60;
+// Rendered for each visitor, never served from a saved copy. With ISR the site
+// handed out its saved page first and refreshed it afterwards, so a visitor
+// saw an answer as old as the gap since the previous visitor (measured: 591s
+// old after 9.5 idle minutes; app pages average a visit every ~17 minutes).
+// On a site whose whole job is "is it down right now" that is the wrong
+// answer, however fast it arrives. Rendering per request is cheap now: every
+// read behind this page goes through the 4-minute in-memory caches, so a
+// render only touches Firestore when the data could actually have changed.
+export const dynamic = 'force-dynamic';
 
 const DESCRIPTION =
   'Is ChatGPT down? Is Claude down? The official status of every major AI app, in one place and in plain English — read from each provider\'s own status page every 5 minutes.';
@@ -42,9 +43,23 @@ export const metadata: Metadata = {
   },
 };
 
+// The popularity order is rewritten once a week by a cron; reading it on every
+// render would be one Firestore read per visitor for no change.
+const popularityCache = new TtlCache<string[]>(600_000, 1);
+async function loadPopularityOrder(): Promise<string[]> {
+  return popularityCache.wrap('order', async () => {
+    const snap = await getDb().collection('config').doc('popularity').get();
+    return (snap.data()?.order as string[] | undefined) || [];
+  });
+}
+
 export default async function HomePage() {
   const apps = listCasualApps();
-  const sevenDaysAgoIso = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  // Rounded down to the hour so the incident query is identical from one render
+  // to the next and is served from the read cache (a millisecond-precise
+  // timestamp made every render a brand-new Firestore query).
+  const hourNow = Math.floor(new Date().getTime() / 3_600_000) * 3_600_000;
+  const sevenDaysAgoIso = new Date(hourNow - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const [statuses, incidentPayload] = await Promise.all([
     Promise.all(
@@ -63,8 +78,7 @@ export default async function HomePage() {
   const configOrder = new Map(apps.map((app, index) => [app.id, index]));
   const popRank = new Map<string, number>();
   try {
-    const snap = await getDb().collection('config').doc('popularity').get();
-    const order = (snap.data()?.order as string[] | undefined) || [];
+    const order = await loadPopularityOrder();
     order.forEach((id, i) => popRank.set(id, i));
   } catch {
     /* no popularity doc yet: fall back to config order below */

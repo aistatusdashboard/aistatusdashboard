@@ -29,21 +29,15 @@ import {
 
 type AppParams = { appId: string };
 
-// Deliberately shorter than the 5-minute cron that feeds this page. A longer
-// window would stack page staleness on top of data staleness, and "is it down
-// right now" is the whole product — surfacing a fresh verdict late is worse
-// than any read this saves. (017e5ca raised this to 300 to save reads; that
-// stacked five minutes of page staleness on top of the cron, which efd3baf had
-// already ruled out, and a refresh now reuses the in-memory read caches.)
-export const revalidate = 60;
-// Unknown slugs (scanner bots, old links) used to surface as Next's internal
-// NoFallbackError — ~700 logged errors a day burying real ones. They still 404,
-// but through notFound() below, which is silent.
-export const dynamicParams = true;
-
-export function generateStaticParams() {
-  return listCasualApps().map((app) => ({ appId: app.id }));
-}
+// Rendered for each visitor, never served from a saved copy. With ISR the site
+// handed out its saved page first and refreshed it afterwards, so a visitor
+// saw an answer as old as the gap since the previous visitor (measured: 591s
+// old after 9.5 idle minutes; app pages average a visit every ~17 minutes).
+// On a site whose whole job is "is it down right now" that is the wrong
+// answer, however fast it arrives. Rendering per request is cheap now: every
+// read behind this page goes through the 4-minute in-memory caches.
+// Unknown slugs (scanner bots, old links) 404 through notFound() below.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<AppParams> }): Promise<Metadata> {
   const { appId } = await params;

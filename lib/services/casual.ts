@@ -467,35 +467,41 @@ export async function getCasualStatus(options: { appId: string }): Promise<Exper
   }
 }
 
-async function getReportSummary(appId: string, surfaces: ExperienceSurfaceId[]): Promise<ExperienceReportSummary> {
-  const db = getDb();
-  const sinceRecent = new Date(Date.now() - REPORT_WINDOW_MINUTES * 60 * 1000);
-  const sinceBaseline = new Date(Date.now() - BASELINE_WINDOW_MINUTES * 60 * 1000);
+const REPORTS_SHARE_MS = 5_000;
+let recentReportsShared: { at: number; promise: Promise<FirebaseFirestore.DocumentData[]> } | null = null;
 
-  const fetchReports = async (since: Date) => {
+async function loadRecentReports(): Promise<FirebaseFirestore.DocumentData[]> {
+  const now = Date.now();
+  if (recentReportsShared && now - recentReportsShared.at < REPORTS_SHARE_MS) return recentReportsShared.promise;
+  const since = new Date(now - BASELINE_WINDOW_MINUTES * 60 * 1000);
+  const promise = (async () => {
     try {
-      const snapshot = await db
+      const snapshot = await getDb()
         .collection('casual_reports')
-        .where('appId', '==', appId)
         .where('createdAt', '>=', Timestamp.fromDate(since))
         .get();
       return snapshot.docs.map((doc) => doc.data());
-    } catch (error: any) {
-      if (error?.code === 9 || error?.message?.includes('index')) {
-        const fallback = await db.collection('casual_reports').limit(200).get();
-        return fallback.docs.map((doc) => doc.data()).filter((report) => {
-          const ts = report.createdAt?.toDate?.()?.getTime?.() || 0;
-          return ts >= since.getTime() && report.appId === appId;
-        });
-      }
+    } catch {
       return [];
     }
-  };
+  })();
+  recentReportsShared = { at: now, promise };
+  return promise;
+}
 
-  const [recentReports, baselineReports] = await Promise.all([
-    fetchReports(sinceRecent),
-    fetchReports(sinceBaseline),
-  ]);
+async function getReportSummary(appId: string, surfaces: ExperienceSurfaceId[]): Promise<ExperienceReportSummary> {
+  const sinceRecent = new Date(Date.now() - REPORT_WINDOW_MINUTES * 60 * 1000);
+  const sinceBaseline = new Date(Date.now() - BASELINE_WINDOW_MINUTES * 60 * 1000);
+
+  // One query for every app's reports in the baseline window, shared by all
+  // callers for a few seconds. The board asks for 42 apps at once; issuing two
+  // queries per app made each home render cost 84 reads for what is usually
+  // an empty result. Five seconds of sharing is not a freshness trade against
+  // a ten-minute report window (efd3baf rejected a four-MINUTE cache here).
+  const toMillis = (report: FirebaseFirestore.DocumentData) => report.createdAt?.toDate?.()?.getTime?.() || 0;
+  const allReports = await loadRecentReports();
+  const baselineReports = allReports.filter((r) => r.appId === appId && toMillis(r) >= sinceBaseline.getTime());
+  const recentReports = baselineReports.filter((r) => toMillis(r) >= sinceRecent.getTime());
 
   const recentIssues = recentReports.filter((r) => r.issue === true);
   const baselineIssues = baselineReports.filter((r) => r.issue === true);
