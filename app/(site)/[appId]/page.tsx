@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
@@ -75,6 +75,10 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const { appId } = await params;
   const app = getCasualApp(appId);
   if (!app) return notFound();
+  // Case-normalize (/ChatGPT -> /chatgpt) in one 308 so an uppercase variant
+  // isn't a duplicate 200. This lived in middleware, which made every route it
+  // matched uncacheable at the CDN.
+  if (appId !== app.id && appId.toLowerCase() === app.id) permanentRedirect(`/${app.id}`);
 
   const [status, reliability, recentIncidents] = await Promise.all([
     getCasualStatus({ appId: app.id }).catch(() => null),

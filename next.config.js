@@ -15,6 +15,24 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // www -> apex in one 308. Done here rather than in middleware because on
+      // Firebase App Hosting any route matched by middleware is never
+      // CDN-cached, and a host check has to match every path. Behind App
+      // Hosting the visitor's host arrives in `x-forwarded-host` (the `host`
+      // header is the internal Cloud Run host); the `host` rule covers anything
+      // that reaches the server directly.
+      {
+        source: '/:path*',
+        has: [{ type: 'header', key: 'x-forwarded-host', value: 'www\\.aistatusdashboard\\.com.*' }],
+        destination: 'https://aistatusdashboard.com/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.aistatusdashboard.com' }],
+        destination: 'https://aistatusdashboard.com/:path*',
+        permanent: true,
+      },
       // The old "casual mode" URLs are now the primary app pages.
       { source: '/casual', destination: '/', permanent: true },
       { source: '/casual/:appId', destination: '/:appId', permanent: true },
