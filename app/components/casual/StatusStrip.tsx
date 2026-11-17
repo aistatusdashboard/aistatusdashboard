@@ -34,10 +34,11 @@ export default function StatusStrip({ days, name, provider }: { days: StripDay[]
   const read = days.filter((d) => d.level === 'up' || d.level === 'wobbly' || d.level === 'down');
   if (!read.length) return null;
   const troubled = read.filter((d) => d.level !== 'up').length;
+  const span = read.length === 1 ? 'the one day' : `the last ${read.length} days`;
   const summary =
     troubled === 0
-      ? `No issues reported on any of the last ${read.length} days we have readings for.`
-      : `Issues reported on ${troubled} of the last ${read.length} days we have readings for.`;
+      ? `No issues reported on ${read.length === 1 ? span : `any of ${span}`} we have readings for.`
+      : `Issues reported on ${read.length === 1 ? span : `${troubled} of ${span}`} we have readings for.`;
 
   return (
     <section className="surface-card-strong p-6 space-y-3" aria-label={`${name} status, last 30 days`}>
