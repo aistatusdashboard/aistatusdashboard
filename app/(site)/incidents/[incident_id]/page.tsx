@@ -161,9 +161,12 @@ export default async function IncidentDetailPage({
   // reason to crawl deeper and keep a visitor on the site.
   let related: Array<{ id: string; title: string; startedAt: string; resolvedAt?: string }> = [];
   try {
-    const rows = await intelligenceService.getIncidents({ providerId: incident.providerId, limit: 8 });
+    // "Other incidents" means other incidents of the same product: a ChatGPT
+    // incident lists ChatGPT's, an API-only one lists the provider's API-only ones.
+    const rows = await intelligenceService.getIncidents({ providerId: incident.providerId, limit: 30 });
     related = rows
       .filter((row) => `${row.providerId}:${row.id}` !== incident.incident_id)
+      .filter((row) => appForIncident(row).appId === appId)
       .slice(0, 6)
       .map((row) => ({ id: `${row.providerId}:${row.id}`, title: row.title, startedAt: row.startedAt, resolvedAt: row.resolvedAt }));
   } catch {

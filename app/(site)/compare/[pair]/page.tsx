@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getCasualApp, getCasualStatus, listCasualApps } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
-import { intelligenceService } from '@/lib/services/intelligence';
+import { getAppIncidents } from '@/lib/services/app-incidents';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { shortName, verdictKey, VERDICT_COPY } from '@/lib/ui/verdict';
 import { breadcrumbLd } from '@/lib/ui/breadcrumbs';
@@ -74,9 +74,8 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
   const x = getCasualApp(xId)!;
   const y = getCasualApp(yId)!;
 
-  const latestIncident = (providerId: string) =>
-    intelligenceService
-      .getIncidents({ providerId, limit: 1 })
+  const latestIncident = (app: typeof x) =>
+    getAppIncidents(app, 1)
       .then((rows) => rows.map(normalizeIncidentDates)[0] || null)
       .catch(() => null);
 
@@ -85,8 +84,8 @@ export default async function ComparePage({ params }: { params: Promise<PairPara
     getCasualStatus({ appId: y.id }).catch(() => null),
     getAppReliability(x.providerId).catch(() => null),
     getAppReliability(y.providerId).catch(() => null),
-    latestIncident(x.providerId),
-    latestIncident(y.providerId),
+    latestIncident(x),
+    latestIncident(y),
   ]);
 
   const nx = shortName(x.id, x.label);

@@ -466,7 +466,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
               <Link href="/reliability" className="underline text-slate-700 dark:text-slate-200">
                 Compare AI reliability →
               </Link>
-              <Link href={`/incidents?provider=${app.providerId}`} className="underline text-slate-700 dark:text-slate-200">
+              <Link href={`/incidents?app=${app.id}`} className="underline text-slate-700 dark:text-slate-200">
                 {name}&apos;s full outage history →
               </Link>
               {rivalApp && (
@@ -527,7 +527,7 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
               })}
             </div>
             <p className="text-sm">
-              <Link href={`/incidents?provider=${app.providerId}`} className="underline text-slate-700 dark:text-slate-200">
+              <Link href={`/incidents?app=${app.id}`} className="underline text-slate-700 dark:text-slate-200">
                 {name}&apos;s full outage history →
               </Link>
             </p>

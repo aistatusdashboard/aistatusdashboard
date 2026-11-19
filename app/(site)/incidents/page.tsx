@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { providerService } from '@/lib/services/providers';
-import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
-import { listCasualApps } from '@/lib/services/casual';
+import { appForIncident } from '@/lib/casual/app-lookup';
+import { getCasualApp, listCasualApps } from '@/lib/services/casual';
+import { getAppIncidents } from '@/lib/services/app-incidents';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
 import { formatTimeAgo } from '@/lib/utils/time';
 
@@ -38,17 +39,18 @@ function providerLabel(providerId: string): string {
 export default async function IncidentsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ provider?: string }>;
+  searchParams?: Promise<{ app?: string; provider?: string }>;
 }) {
   const sp = (await searchParams) || {};
-  const requested = typeof sp.provider === 'string' ? sp.provider.toLowerCase() : undefined;
-  // Only honour a provider filter for a real provider; otherwise ignore it so
-  // arbitrary ?provider=<junk> can't render a page titled after raw input.
-  const knownProviders = new Set(listCasualApps().map((a) => a.providerId));
-  const providerId = requested && knownProviders.has(requested) ? requested : undefined;
-  const providerName = providerId ? appNameForProvider(providerId) : null;
+  // ?app=<id> is one app's history. ?provider=<id> is the older form of the
+  // same link and means the provider's first app. Anything unknown is ignored
+  // so arbitrary input can't render a page titled after it.
+  const requestedApp = typeof sp.app === 'string' ? getCasualApp(sp.app.toLowerCase()) : undefined;
+  const requestedProvider = typeof sp.provider === 'string' ? sp.provider.toLowerCase() : undefined;
+  const app = requestedApp || (requestedProvider ? listCasualApps().find((a) => a.providerId === requestedProvider) : undefined);
+  const providerName = app ? app.label.replace(/\s+status$/i, '').trim() : null;
 
-  const incidents = (await intelligenceService.getIncidents({ providerId, limit: 50 }))
+  const incidents = (app ? await getAppIncidents(app, 50) : await intelligenceService.getIncidents({ limit: 50 }))
     .map(normalizeIncidentDates)
     .slice(0, 50);
 
@@ -66,7 +68,7 @@ export default async function IncidentsPage({
           </p>
           {providerName && (
             <p className="text-sm">
-              <Link href={`/${appIdForProvider(providerId as string)}`} className="underline text-slate-700 dark:text-slate-200">
+              <Link href={`/${app!.id}`} className="underline text-slate-700 dark:text-slate-200">
                 Is {providerName} down right now? →
               </Link>
             </p>
@@ -92,7 +94,7 @@ export default async function IncidentsPage({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                      {providerLabel(incident.providerId)} · {formatTimeAgo(incident.updatedAt)}
+                      {appForIncident(incident).appId ? providerLabel(incident.providerId) : appForIncident(incident).appName} · {formatTimeAgo(incident.updatedAt)}
                     </p>
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
                       {incident.title}
