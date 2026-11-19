@@ -49,11 +49,18 @@ export function levelForDay(counts: DayCounts | undefined): StripLevel {
   return 'nodata';
 }
 
-export function buildStrip(doc: StripDoc | undefined, providerId: string, now = new Date()): StripDay[] {
+/** Tally key for an app that is only part of its provider's page. */
+export function appKey(appId: string): string {
+  return `app:${appId}`;
+}
+
+export function buildStrip(doc: StripDoc | undefined, providerId: string, now = new Date(), appId?: string): StripDay[] {
   const out: StripDay[] = [];
   for (let i = STRIP_DAYS - 1; i >= 0; i--) {
     const date = daysBack(now, i);
-    const counts = doc?.days?.[date]?.[providerId];
+    // A scoped app's own tally when that day has one; days recorded before
+    // scoping existed only have the provider-wide tally.
+    const counts = (appId && doc?.days?.[date]?.[appKey(appId)]) || doc?.days?.[date]?.[providerId];
     out.push({
       date,
       level: levelForDay(counts),
@@ -83,6 +90,13 @@ export async function recordStripCycle(now = new Date()): Promise<number> {
       const lastUpdatedMs = data.lastUpdated?.toDate?.()?.getTime?.() ?? NaN;
       const level = levelForOfficial(data.status, lastUpdatedMs, now.getTime());
       today[doc.id] = { [level]: FieldValue.increment(1) };
+      // Apps scoped to part of this provider's page get their own tally, so
+      // ChatGPT's bar is not coloured by an API-only incident.
+      const appStatus = data.appStatus && typeof data.appStatus === 'object' ? data.appStatus : {};
+      for (const [appId, status] of Object.entries(appStatus as Record<string, string | null>)) {
+        if (!status) continue;
+        today[appKey(appId)] = { [levelForOfficial(status, lastUpdatedMs, now.getTime())]: FieldValue.increment(1) };
+      }
     }
     const days: Record<string, unknown> = { [dayKey(now)]: today };
     // Drop days that have slid out of the window so the document stays small.
@@ -117,7 +131,7 @@ async function loadStripDoc(): Promise<StripDoc> {
   return inflight;
 }
 
-export async function getStatusStrip(providerId: string): Promise<StripDay[]> {
+export async function getStatusStrip(providerId: string, appId?: string): Promise<StripDay[]> {
   const doc = await loadStripDoc().catch(() => undefined);
-  return buildStrip(doc, providerId);
+  return buildStrip(doc, providerId, new Date(), appId);
 }

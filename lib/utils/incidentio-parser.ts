@@ -40,16 +40,31 @@ export function parseIncidentIoSummary(
   for (const item of Array.isArray(summary.affected_components) ? summary.affected_components : []) {
     if (item?.component_id) affected.set(String(item.component_id), severityFrom(item.status));
   }
+  // The page groups its components by product ("APIs", "ChatGPT", "Codex" on
+  // status.openai.com). Keep the group so an app can be read from its own
+  // components instead of the whole page.
+  const groupOf = new Map<string, string>();
+  for (const item of Array.isArray(summary.structure?.items) ? summary.structure.items : []) {
+    const group = item?.group;
+    if (!group?.name || !Array.isArray(group.components)) continue;
+    for (const member of group.components) {
+      if (member?.component_id) groupOf.set(String(member.component_id), String(group.name));
+    }
+  }
   const now = new Date().toISOString();
   const components: NormalizedComponent[] = (Array.isArray(summary.components) ? summary.components : [])
     .filter((c: any) => c?.id && c?.name)
-    .map((c: any) => ({
-      id: String(c.id),
-      providerId,
-      name: String(c.name),
-      status: affected.get(String(c.id)) || 'operational',
-      updatedAt: now,
-    }));
+    .map((c: any) => {
+      const groupName = groupOf.get(String(c.id));
+      return {
+        id: String(c.id),
+        providerId,
+        name: String(c.name),
+        status: affected.get(String(c.id)) || 'operational',
+        ...(groupName ? { groupName } : {}),
+        updatedAt: now,
+      };
+    });
   const ongoing = Array.isArray(summary.ongoing_incidents) ? summary.ongoing_incidents.length : 0;
   const status = worst([...components.map((c) => c.status), ...(ongoing ? (['degraded'] as NormalizedSeverity[]) : [])]);
   return { components, status, ongoing };

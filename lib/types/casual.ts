@@ -100,4 +100,6 @@ export type CasualAppConfig = {
   surfaces: ExperienceSurfaceId[];
   defaultModel?: string;
   defaultRegion?: string;
+  // Which of the provider's components are this app (see lib/services/app-scope.ts).
+  statusScope?: { groups?: string[]; components?: string[] };
 };

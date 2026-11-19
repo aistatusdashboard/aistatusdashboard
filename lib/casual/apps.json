@@ -17,7 +17,12 @@
       ],
       "defaultModel": "gpt-4o-mini",
       "defaultRegion": "us-east",
-      "webUrl": "https://chatgpt.com"
+      "webUrl": "https://chatgpt.com",
+      "statusScope": {
+        "groups": [
+          "ChatGPT"
+        ]
+      }
     },
     {
       "id": "claude",
@@ -435,7 +440,12 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://chatgpt.com"
+      "webUrl": "https://chatgpt.com",
+      "statusScope": {
+        "components": [
+          "dots"
+        ]
+      }
     },
     {
       "id": "codex",
@@ -448,7 +458,12 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://chatgpt.com/codex"
+      "webUrl": "https://chatgpt.com/codex",
+      "statusScope": {
+        "groups": [
+          "Codex"
+        ]
+      }
     },
     {
       "id": "comet",

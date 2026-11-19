@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getCasualApp, getCasualStatus, listCasualApps, listUpAlternatives } from '@/lib/services/casual';
 import { getAppReliability } from '@/lib/services/reliability';
 import { getStatusStrip } from '@/lib/services/status-strip';
+import { incidentAppliesToApp } from '@/lib/services/app-scope';
 import StatusStrip from '@/app/components/casual/StatusStrip';
 import { intelligenceService } from '@/lib/services/intelligence';
 import { normalizeIncidentDates } from '@/lib/utils/normalize-dates';
@@ -78,14 +79,16 @@ export default async function AppStatusPage({ params }: { params: Promise<AppPar
   const [status, reliability, strip, recentIncidents] = await Promise.all([
     getCasualStatus({ appId: app.id }).catch(() => null),
     getAppReliability(app.providerId).catch(() => null),
-    getStatusStrip(app.providerId).catch(() => []),
+    getStatusStrip(app.providerId, app.id).catch(() => []),
     // The app's own recent incidents, linked inline. Each incident page ranks
     // far better than this templated app page, so surfacing them here gives the
     // page unique, dated, per-app content and funnels crawl + link equity to
     // the pages that already rank.
+    // Same query the verdict uses (so it is served from the read cache), then
+    // only this app's incidents: ChatGPT's page does not list API-only ones.
     intelligenceService
-      .getIncidents({ providerId: app.providerId, limit: 6 })
-      .then((rows) => rows.map(normalizeIncidentDates))
+      .getIncidents({ providerId: app.providerId, limit: 20 })
+      .then((rows) => rows.filter((row) => incidentAppliesToApp(row, app)).slice(0, 6).map(normalizeIncidentDates))
       .catch(() => []),
   ]);
   const name = shortName(app.id, app.label);

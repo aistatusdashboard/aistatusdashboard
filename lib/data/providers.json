@@ -25,7 +25,8 @@
       "statusUrl": "https://status.openai.com/api/v2/status.json",
       "statusPageUrl": "https://status.openai.com",
       "format": "statuspage",
-      "enabled": true
+      "enabled": true,
+      "alertApp": "chatgpt"
     },
     {
       "id": "anthropic",

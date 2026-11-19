@@ -1,11 +1,11 @@
 {
   "sources": [
     {
-      "id": "openai-statuspage",
+      "id": "openai-incidentio",
       "providerId": "openai",
-      "name": "OpenAI Statuspage",
+      "name": "OpenAI (incident.io)",
       "baseUrl": "https://status.openai.com",
-      "platform": "statuspage",
+      "platform": "incidentio",
       "pollIntervalSeconds": 90
     },
     {

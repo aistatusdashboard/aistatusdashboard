@@ -76,6 +76,8 @@ export interface NormalizedIncident {
   resolvedAt?: string;
   impactedComponents?: string[];
   impactedComponentNames?: string[];
+  // Scoped apps this incident touches; absent when it names no components.
+  scopeApps?: string[];
   impactedRegions?: string[];
   impactedModels?: string[];
   sourceSeverity?: string;

@@ -1,3 +1,4 @@
+import { incidentAppliesToApp, statusForApp } from '@/lib/services/app-scope';
 import { getDb } from '@/lib/db/firestore';
 import { config } from '@/lib/config';
 import { intelligenceService } from '@/lib/services/intelligence';
@@ -273,23 +274,27 @@ export async function getCasualStatus(options: { appId: string }): Promise<Exper
   try {
     const now = new Date();
 
-    const [incidents, summaries] = await Promise.all([
+    const [providerIncidents, summaries] = await Promise.all([
       intelligenceService.getIncidents({ providerId: app.providerId, limit: 20 }),
       intelligenceService.getProviderSummaries().catch(() => []),
     ]);
+    // An app that is only part of its provider's page (ChatGPT on OpenAI's) is
+    // judged by its own components and its own incidents, not the whole page.
+    const incidents = providerIncidents.filter((incident) => incidentAppliesToApp(incident, app));
 
     // "Up" is only an honest default when something is actually reporting.
     // Character.AI deleted its status page and we have no probe for it; the
     // site kept saying "up" on no evidence at all.
     const official = summaries.find((s) => s.providerId === app.providerId);
     const officialAgeMs = official?.lastUpdated ? now.getTime() - Date.parse(official.lastUpdated) : Infinity;
-    const officialAlive = Boolean(official) && official!.status !== 'unknown' && officialAgeMs < OFFICIAL_FEED_STALE_MS;
+    const officialStatus = statusForApp(official, app.id);
+    const officialAlive = Boolean(official) && officialStatus !== 'unknown' && officialAgeMs < OFFICIAL_FEED_STALE_MS;
     // The site consolidates what providers publish; it does not second-guess
     // them. The official page decides the verdict. Only a provider that
     // publishes no status page at all (Character.AI, Meta AI) is judged by
     // whether its app answers our reachability check.
     const hasOfficialFeed = providerHasOfficialFeed(app.providerId);
-    const officialVerdict: ExperienceSignal | null = officialAlive ? officialSignal(official!.status) : null;
+    const officialVerdict: ExperienceSignal | null = officialAlive ? officialSignal(officialStatus) : null;
 
     const STALE_INCIDENT_MS = 24 * 60 * 60 * 1000;
     const activeIncidents = incidents.filter((incident) => {
@@ -421,8 +426,10 @@ export async function getCasualStatus(options: { appId: string }): Promise<Exper
         exists: hasOfficialFeed,
         url: providerService.getProvider(app.providerId)?.statusPageUrl,
         read_at: official?.lastUpdated || undefined,
-        says: official?.description || undefined,
-        status: official?.status ? String(official.status) : undefined,
+        // The provider's page-wide summary line ("1 ongoing incident") is not
+        // a statement about a scoped app, so it is only quoted for unscoped ones.
+        says: official?.appStatus?.[app.id] ? undefined : official?.description || undefined,
+        status: officialStatus ? String(officialStatus) : undefined,
       },
     };
   } catch (error) {
@@ -600,7 +607,11 @@ export async function listUpAlternatives(
     .filter((app) => app.id !== excludeAppId)
     .filter((app) => {
       const summary = byProvider.get(app.providerId);
-      if (!summary || summary.status !== 'operational') return false;
+      if (!summary) return false;
+      // A scoped app is "up" on its own components; the provider's incident
+      // count covers other products too, so it only disqualifies unscoped apps.
+      if (summary.appStatus?.[app.id]) return summary.appStatus[app.id] === 'operational';
+      if (summary.status !== 'operational') return false;
       return !summary.activeIncidentCount;
     })
     .slice(0, limit)

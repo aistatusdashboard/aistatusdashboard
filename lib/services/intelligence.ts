@@ -41,6 +41,8 @@ export type ProviderStatusSummary = {
   activeIncidentCount?: number;
   activeMaintenanceCount?: number;
   degradedComponentCount?: number;
+  // Per-app status for apps scoped to part of this provider's page.
+  appStatus?: Record<string, string | null> | null;
 };
 
 class IntelligenceService {
@@ -78,6 +80,7 @@ class IntelligenceService {
           activeIncidentCount: data.activeIncidentCount || 0,
           activeMaintenanceCount: data.activeMaintenanceCount || 0,
           degradedComponentCount: data.degradedComponentCount || 0,
+          appStatus: data.appStatus && typeof data.appStatus === 'object' ? data.appStatus : null,
         } as ProviderStatusSummary;
       });
     } catch (error) {

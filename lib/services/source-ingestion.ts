@@ -38,6 +38,7 @@ import { parseFlashcatActive, parseFlashcatChange } from '@/lib/utils/flashcat-p
 import { parseRootlySnapshot } from '@/lib/utils/rootly-parser';
 import { readFeedSnapshot, writeFeedSnapshot, type BrowserFeedSnapshot } from '@/lib/services/feed-snapshots';
 import { snapshotFromRootlyHtml } from '@/lib/utils/rootly-html';
+import { appStatusesFor, incidentScopeApps, scopedAppsForProvider } from '@/lib/services/app-scope';
 import { parseIncidentIoIncident, parseIncidentIoSummary } from '@/lib/utils/incidentio-parser';
 import { getGcpProductCatalog } from '@/lib/services/gcp-product-catalog';
 import { filterGoogleCloudIncidentsForAi, GOOGLE_AI_KEYWORDS } from '@/lib/utils/google-cloud';
@@ -429,6 +430,12 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
       activeIncidentCount: evidence.activeIncidentCount,
       activeMaintenanceCount: evidence.activeMaintenanceCount,
       degradedComponentCount: evidence.degradedComponentCount,
+      // Per-app status for apps that are only part of this provider's page
+      // (ChatGPT on OpenAI's). Every scoped app id is written each cycle, null
+      // when the feed exposes none of its components, so nothing stale lingers.
+      ...(scopedAppsForProvider(summary.providerId).length
+        ? { appStatus: appStatusesFor(summary.providerId, summary.components) }
+        : {}),
       updatedAt: FieldValue.serverTimestamp(),
     },
     { merge: true }
@@ -478,7 +485,9 @@ async function storeNormalized(summary: NormalizedProviderSummary) {
     });
   }
 
-  summary.incidents.forEach((incident) => {
+  summary.incidents.forEach((rawIncident) => {
+    const scopeApps = incidentScopeApps(summary.providerId, rawIncident.impactedComponents, summary.components);
+    const incident = scopeApps ? { ...rawIncident, scopeApps } : rawIncident;
     const docId = `${summary.providerId}:${incident.id}`;
     if (!hasChangedSinceLastWrite(`incidents/${docId}`, incident)) return;
     const ref = db.collection('incidents').doc(docId);
