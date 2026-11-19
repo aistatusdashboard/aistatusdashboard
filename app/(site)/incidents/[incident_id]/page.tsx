@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getIncidentById } from '@/lib/services/public-data';
 import { providerService } from '@/lib/services/providers';
 import { intelligenceService } from '@/lib/services/intelligence';
-import { appIdForProvider, appNameForProvider } from '@/lib/casual/app-lookup';
+import { appForIncident } from '@/lib/casual/app-lookup';
 import { getCasualStatus } from '@/lib/services/casual';
 import { verdictKey } from '@/lib/ui/verdict';
 import { OG_BASE } from '@/lib/ui/metadata';
@@ -92,8 +92,9 @@ export async function generateMetadata({
   // snippet with the app's CURRENT status so the result answers the live question
   // ("is it down now?") and earns the click, with the dated past incident as
   // context. Also stops an old incident from masquerading as a current outage.
-  const appName = incident ? appNameForProvider(incident.providerId) : null;
-  const appId = incident ? appIdForProvider(incident.providerId) : null;
+  const about = incident ? appForIncident(incident) : null;
+  const appName = about?.appName ?? null;
+  const appId = about?.appId ?? null;
   const live = appId ? await getCasualStatus({ appId }).catch(() => null) : null;
   const liveKey = live ? verdictKey(live.overall_status) : null;
   const liveWord =
@@ -148,9 +149,10 @@ export default async function IncidentDetailPage({
     notFound();
   }
 
-  const providerName = providerLabel(incident.providerId);
-  const appId = appIdForProvider(incident.providerId);
-  const appName = appNameForProvider(incident.providerId);
+  const { appId, appName } = appForIncident(incident);
+  // The provider's alert-style label ("ChatGPT (OpenAI)") names an app; an
+  // incident that touches none of the provider's apps is the provider's own.
+  const providerName = appId ? providerLabel(incident.providerId) : appName;
   const latestUpdate = [...(incident.updates || [])]
     .filter((u) => u.body?.trim())
     .sort((a, b) => Date.parse(b.createdAt || '') - Date.parse(a.createdAt || ''))[0]?.body?.trim();
@@ -221,7 +223,7 @@ export default async function IncidentDetailPage({
       <div className="max-w-3xl mx-auto space-y-6">
         <header className="pt-4 space-y-3">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-            <Link href={`/${appId}`} className="hover:underline">{providerName}</Link> · {formatTimeAgo(incident.updatedAt)}
+            {appId ? <Link href={`/${appId}`} className="hover:underline">{providerName}</Link> : providerName} · {formatTimeAgo(incident.updatedAt)}
           </p>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
             {incident.title}
@@ -244,11 +246,13 @@ export default async function IncidentDetailPage({
               : `Yes — ${appName} is having a problem right now. ${providerName} currently reports this incident as ${incident.status}.`}
             {latestUpdate ? ` ${providerName}'s latest word: “${latestUpdate}”` : ''}
           </p>
-          <p className="text-sm">
-            <Link href={`/${appId}`} className="underline text-slate-700 dark:text-slate-200">
-              See {appName}&apos;s live status →
-            </Link>
-          </p>
+          {appId && (
+            <p className="text-sm">
+              <Link href={`/${appId}`} className="underline text-slate-700 dark:text-slate-200">
+                See {appName}&apos;s live status →
+              </Link>
+            </p>
+          )}
         </header>
 
         <section className="surface-card p-6 space-y-2 text-sm text-slate-600 dark:text-slate-300">
@@ -306,9 +310,11 @@ export default async function IncidentDetailPage({
         )}
 
         <p className="flex flex-wrap gap-4 text-sm">
-          <Link href={`/${appId}`} className="underline text-slate-700 dark:text-slate-200">
-            Is {appName} down right now?
-          </Link>
+          {appId && (
+            <Link href={`/${appId}`} className="underline text-slate-700 dark:text-slate-200">
+              Is {appName} down right now?
+            </Link>
+          )}
           <Link href="/incidents" className="underline text-slate-700 dark:text-slate-200">
             All outage history →
           </Link>

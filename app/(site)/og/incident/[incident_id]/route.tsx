@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getIncidentById } from '@/lib/services/public-data';
-import { appNameForProvider } from '@/lib/casual/app-lookup';
+import { appForIncident } from '@/lib/casual/app-lookup';
 
 export const runtime = 'nodejs';
 export const revalidate = 600;
@@ -18,7 +18,7 @@ export async function GET(
   const resolved = await Promise.resolve(params as { incident_id: string });
   const incident = await getIncidentById(decode(resolved.incident_id)).catch(() => null);
   if (!incident) return new Response('Not found', { status: 404 });
-  const name = appNameForProvider(incident.providerId);
+  const name = appForIncident(incident).appName;
   const done = Boolean(incident.resolvedAt) || ['resolved', 'completed', 'cancelled'].includes(String(incident.status).toLowerCase());
   const accent = done ? '#34d399' : '#fb7185';
   const when = incident.startedAt

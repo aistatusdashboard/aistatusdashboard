@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { statusOrchestrator } from '@/lib/services/orchestrator';
 import { log } from '@/lib/utils/logger';
 import { drainEmailQueue } from '@/lib/services/email-queue';
 
@@ -38,9 +37,13 @@ export async function GET(request: NextRequest) {
     if (authResponse) return authResponse;
 
     try {
-        const stats = await statusOrchestrator.runCycle();
-        // The cycle above is the only thing that queues notifications, so drain
-        // the queue here rather than from a scheduled job of its own.
+        // This endpoint used to run a second, older status check of 28 providers
+        // that wrote the 5-minute status log and decided the email alerts. It
+        // disagreed with the pages, missed the 11 newer apps and went blind on
+        // Mistral; alerts now run at the end of the ingest cycle over the same
+        // reading the pages show (lib/services/alert-cycle.ts), and nothing reads
+        // the log. The route stays so the existing scheduler job keeps working;
+        // all it does is flush any queued email.
         const emails = await drainEmailQueue().catch((error) => {
             log('error', 'Email queue drain failed', { error });
             return null;
@@ -49,8 +52,7 @@ export async function GET(request: NextRequest) {
             success: true,
             timestamp: new Date().toISOString(),
             emails,
-            ...stats,
-            message: `Status check complete. Checked ${stats.providersChecked} providers, detected ${stats.changesDetected} changes.`
+            message: 'Status checks and alerts run in /api/cron/ingest; this endpoint only drains the email queue.',
         });
     } catch (error) {
         log('error', 'Cron status failed', { error });

@@ -40,37 +40,46 @@ class SourceRegistryService {
     );
   }
 
+  // One stored copy per feed, overwritten on each fetch. The only reader is
+  // the "not modified" path below, which needs the latest body and nothing
+  // else. This used to add a new ~30 KB document on every fetch (about 20,000
+  // a day, deleted a week later) - the same "only the newest row is ever read"
+  // waste 8731e93 set out to stop.
+  private payloadRef(sourceId: string) {
+    return getDb().collection('source_payloads').doc(`latest:${sourceId.replace(/\//g, '_')}`);
+  }
+
   async recordPayload(sourceId: string, statusCode: number, body: string | undefined, headers: Record<string, string>) {
-    const db = getDb();
     const safeBody = body && body.length > MAX_PAYLOAD_CHARS ? `${body.slice(0, MAX_PAYLOAD_CHARS)}\n...truncated` : body;
-    await db.collection('source_payloads').add({
+    await this.payloadRef(sourceId).set({
       sourceId,
       statusCode,
       body: safeBody || null,
       headers,
       fetchedAt: FieldValue.serverTimestamp(),
-      // Only the newest payload per source is ever read; a TTL policy on this
-      // field keeps the raw-body archive from growing without bound.
+      // A feed we stop reading leaves its last copy behind; TTL reclaims it.
       expiresAt: Timestamp.fromDate(new Date(Date.now() + PAYLOAD_TTL_DAYS * 86400_000)),
     });
   }
 
   async getLatestPayload(sourceId: string): Promise<{ body: string | null; headers: Record<string, string> } | null> {
-    const db = getDb();
+    const read = (data: FirebaseFirestore.DocumentData) => ({
+      body: typeof data.body === 'string' ? data.body : null,
+      headers: typeof data.headers === 'object' && data.headers ? data.headers : {},
+    });
     try {
-      const snapshot = await db
+      const latest = await this.payloadRef(sourceId).get();
+      if (latest.exists) return read(latest.data() || {});
+      // Copies written before the single-document scheme (they expire within
+      // PAYLOAD_TTL_DAYS of the change).
+      const snapshot = await getDb()
         .collection('source_payloads')
         .where('sourceId', '==', sourceId)
         .orderBy('fetchedAt', 'desc')
         .limit(1)
         .get();
-
       if (snapshot.empty) return null;
-      const data = snapshot.docs[0]?.data() || {};
-      return {
-        body: typeof data.body === 'string' ? data.body : null,
-        headers: typeof data.headers === 'object' && data.headers ? data.headers : {},
-      };
+      return read(snapshot.docs[0]?.data() || {});
     } catch {
       return null;
     }

@@ -485,6 +485,18 @@
       "metadata": {
         "expect": "200,403"
       }
+    },
+    {
+      "id": "sora-frontdoor",
+      "providerId": "sora",
+      "name": "Sora public front door",
+      "baseUrl": "https://sora.chatgpt.com",
+      "statusUrl": "https://sora.chatgpt.com",
+      "platform": "endpoint",
+      "pollIntervalSeconds": 120,
+      "metadata": {
+        "expect": "200,403"
+      }
     }
   ]
 }

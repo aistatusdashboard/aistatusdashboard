@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchIncidents } from "@/lib/services/public-data";
-import { appNameForProvider } from "@/lib/casual/app-lookup";
+import { appForIncident } from "@/lib/casual/app-lookup";
 
 // Cache the feed (regenerate every 5 min in the background) instead of running
 // a Firestore query at the origin on every hit. A crawler or health check then
@@ -41,7 +41,7 @@ export async function GET() {
   const items = incidents.slice(0, 25).map((incident: Record<string, unknown>) => {
     const incidentId = String(incident.incident_id || "");
     const providerId = String(incident.providerId || incident.provider_id || "provider");
-    const app = appNameForProvider(providerId);
+    const app = appForIncident({ providerId, scopeApps: Array.isArray(incident.scopeApps) ? (incident.scopeApps as string[]) : undefined }).appName;
     const rawTitle = String(incident.title || "Incident");
     const resolved = RESOLVED.has(String(incident.status || "").toLowerCase()) || Boolean(incident.resolvedAt);
     const permalink = `https://aistatusdashboard.com/incidents/${encodeURIComponent(incidentId)}`;

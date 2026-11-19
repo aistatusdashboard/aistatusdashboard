@@ -1,3 +1,6 @@
+import { loadProviderStatusDocs } from '@/lib/services/provider-status-docs';
+import { runAlertCycle } from '@/lib/services/alert-cycle';
+import { drainEmailQueue } from '@/lib/services/email-queue';
 import { recordStripCycle } from '@/lib/services/status-strip';
 import { NextRequest, NextResponse } from 'next/server';
 import { sourceIngestionService } from '@/lib/services/source-ingestion';
@@ -39,9 +42,20 @@ export async function GET(request: NextRequest) {
   try {
     const force = request.nextUrl.searchParams.get('force') === '1';
     const stats = await sourceIngestionService.ingestAll({ force });
+    // Everything below judges the reading the pages show, taken once.
+    const docs = await loadProviderStatusDocs().catch((error) => {
+      log('error', 'Could not load provider statuses after ingest', { error });
+      return [];
+    });
     // Tally this cycle's official statuses into the 30-day bar document.
-    await recordStripCycle();
-    return NextResponse.json({ success: true, ...stats, timestamp: new Date().toISOString() });
+    await recordStripCycle(docs);
+    // Decide alerts from the same reading, then send whatever was queued.
+    const alerts = await runAlertCycle(docs);
+    const emails = await drainEmailQueue().catch((error) => {
+      log('error', 'Email queue drain failed', { error });
+      return null;
+    });
+    return NextResponse.json({ success: true, ...stats, alerts, emails, timestamp: new Date().toISOString() });
   } catch (error) {
     log('error', 'Source ingestion cron failed', { error });
     return NextResponse.json({ error: 'Internal Error' }, { status: 500 });

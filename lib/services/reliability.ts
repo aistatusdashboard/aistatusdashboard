@@ -2,6 +2,7 @@ import { intelligenceService } from '@/lib/services/intelligence';
 import { listCasualApps } from '@/lib/services/casual';
 import sourcesConfig from '@/lib/data/sources.json';
 import { TtlCache } from '@/lib/utils/ttl-cache';
+import { incidentAppliesToApp } from '@/lib/services/app-scope';
 
 // 30-day reliability ranking computed from ingested incident history.
 // One row per status feed: apps sharing a provider (ChatGPT/Sora) are ranked
@@ -104,7 +105,12 @@ export async function getReliabilityRanking(): Promise<ReliabilityRow[]> {
 
   const rows = await Promise.all(
     Array.from(byProvider.entries()).map(async ([providerId, meta]) => {
-      const incidents = incidentsByProvider.get(providerId) || [];
+      // A row named for an app that is only part of its provider's page
+      // (ChatGPT) counts that app's incidents, not the whole page's.
+      const rowApp = apps.find((app) => app.id === meta.appId);
+      const incidents = (incidentsByProvider.get(providerId) || []).filter(
+        (incident) => !rowApp || incidentAppliesToApp(incident, rowApp)
+      );
 
       let downtimeMs = 0;
       let longestMs = 0;

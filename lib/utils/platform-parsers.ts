@@ -14,6 +14,14 @@ export function normalizeSeverity(raw: string | undefined | null): NormalizedSev
     return 'operational';
   }
   if (value.includes('minor')) return 'degraded';
+  // Statuspage's page indicator and incident impact run none / minor / major /
+  // critical, derived from the worst component: a partial outage reads "major"
+  // and only a major outage reads "critical". Treating "major" as down made us
+  // more alarmist than the provider (6f72bd4) - "ChatGPT is down" for an
+  // incident OpenAI itself rated a partial outage. Component statuses
+  // ("major_outage") are longer strings and are handled below.
+  if (value === 'major') return 'partial_outage';
+  if (value === 'critical') return 'major_outage';
   if (value.includes('maintenance') || value.includes('maint')) return 'maintenance';
   if (value.includes('partial')) return 'partial_outage';
   if (value.includes('major') || value.includes('critical') || value.includes('outage') || value.includes('downtime')) {
@@ -24,6 +32,17 @@ export function normalizeSeverity(raw: string | undefined | null): NormalizedSev
   }
   if (value.includes('inform') || value.includes('info')) return 'degraded';
   return 'unknown';
+}
+
+// Statuspage lists a group as a component with `group: true`; its members
+// point at it through `group_id`. Resolve the id to the name so an app can be
+// scoped to a group ("v0" on Vercel's page, "Canva AI Platform" on Canva's).
+function statuspageGroupNames(components: any[]): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const component of components) {
+    if (component?.group && component?.id && component?.name) names.set(String(component.id), String(component.name));
+  }
+  return names;
 }
 
 export function normalizeIncidentStatus(raw: string | undefined | null): NormalizedIncidentStatus {
@@ -44,6 +63,7 @@ export function normalizeIncidentStatus(raw: string | undefined | null): Normali
 
 export function parseStatuspageComponents(providerId: string, data: any): NormalizedComponent[] {
   const components = Array.isArray(data?.components) ? data.components : [];
+  const groupNames = statuspageGroupNames(components);
   return components.map((component: any) => ({
     id: component.id || component.name,
     providerId,
@@ -51,7 +71,7 @@ export function parseStatuspageComponents(providerId: string, data: any): Normal
     status: normalizeSeverity(component.status),
     description: component.description || undefined,
     groupId: component.group_id || undefined,
-    groupName: component.group_name || undefined,
+    groupName: component.group_name || groupNames.get(String(component.group_id)) || undefined,
     updatedAt: component.updated_at || undefined,
   }));
 }
@@ -133,6 +153,7 @@ export function parseInstatusSummary(
   const status = normalizeSeverity(
     data?.page?.status || data?.status?.indicator || data?.status || data?.page?.status_indicator
   );
+  const summaryGroupNames = statuspageGroupNames(Array.isArray(data?.components) ? data.components : []);
   const components = Array.isArray(data?.components)
     ? data.components.map((component: any) => ({
         id: component.id || component.name,
@@ -141,7 +162,7 @@ export function parseInstatusSummary(
         status: normalizeSeverity(component.status),
         description: component.description || undefined,
         groupId: component.group_id || undefined,
-        groupName: component.group_name || undefined,
+        groupName: component.group_name || summaryGroupNames.get(String(component.group_id)) || undefined,
         updatedAt: component.updated_at || undefined,
       }))
     : [];

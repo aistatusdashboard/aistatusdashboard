@@ -127,7 +127,13 @@
         "rate_limits"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://github.com/features/copilot"
+      "webUrl": "https://github.com/features/copilot",
+      "statusScope": {
+        "components": [
+          "Copilot",
+          "Copilot AI Model Providers"
+        ]
+      }
     },
     {
       "id": "cursor",
@@ -200,7 +206,7 @@
     {
       "id": "sora",
       "label": "Sora Status",
-      "providerId": "openai",
+      "providerId": "sora",
       "providerDisplay": "OpenAI",
       "surfaces": [
         "images",
@@ -261,7 +267,15 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://v0.app"
+      "webUrl": "https://v0.app",
+      "statusScope": {
+        "groups": [
+          "v0"
+        ],
+        "components": [
+          "v0"
+        ]
+      }
     },
     {
       "id": "notion-ai",
@@ -364,7 +378,15 @@
         "login"
       ],
       "defaultRegion": "global",
-      "webUrl": "https://www.canva.com"
+      "webUrl": "https://www.canva.com",
+      "statusScope": {
+        "groups": [
+          "Canva AI Platform"
+        ],
+        "components": [
+          "Canva AI Platform"
+        ]
+      }
     },
     {
       "id": "muse",

@@ -14,9 +14,6 @@ export interface Provider {
     category: string;
     statusUrl: string;
     statusPageUrl: string;
-    // When this provider's alerts are labelled with one app ("ChatGPT (OpenAI)"),
-    // the app whose scoped status decides them (see lib/services/app-scope.ts).
-    alertApp?: string;
     format?: string;
     timeout?: number;
     enabled?: boolean;

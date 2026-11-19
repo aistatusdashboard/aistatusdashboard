@@ -4,6 +4,7 @@ import { TtlCache } from '@/lib/utils/ttl-cache';
 import { verdictKey, type VerdictKey } from '@/lib/ui/verdict';
 import { OFFICIAL_FEED_STALE_MS, officialSignal } from '@/lib/services/casual';
 import { log } from '@/lib/utils/logger';
+import type { ProviderStatusDoc } from '@/lib/services/provider-status-docs';
 
 // The 30-day colour bar on each app page.
 //
@@ -78,24 +79,20 @@ export function levelForOfficial(status: string | undefined, lastUpdatedMs: numb
   return verdictKey(officialSignal(status));
 }
 
-/** Called once per ingest cycle. Reads the providers' current official
- *  statuses (one small collection) and tallies them. One write. */
-export async function recordStripCycle(now = new Date()): Promise<number> {
+/** Called once per ingest cycle with the providers' current official
+ *  statuses. One write. */
+export async function recordStripCycle(docs: ProviderStatusDoc[], now = new Date()): Promise<number> {
   try {
-    const snapshot = await getDb().collection('provider_status').get();
-    if (snapshot.empty) return 0;
+    if (!docs.length) return 0;
     const today: Record<string, Record<string, FieldValue>> = {};
-    for (const doc of snapshot.docs) {
-      const data = doc.data();
-      const lastUpdatedMs = data.lastUpdated?.toDate?.()?.getTime?.() ?? NaN;
-      const level = levelForOfficial(data.status, lastUpdatedMs, now.getTime());
+    for (const doc of docs) {
+      const level = levelForOfficial(doc.status, doc.lastUpdatedMs, now.getTime());
       today[doc.id] = { [level]: FieldValue.increment(1) };
       // Apps scoped to part of this provider's page get their own tally, so
       // ChatGPT's bar is not coloured by an API-only incident.
-      const appStatus = data.appStatus && typeof data.appStatus === 'object' ? data.appStatus : {};
-      for (const [appId, status] of Object.entries(appStatus as Record<string, string | null>)) {
+      for (const [appId, status] of Object.entries(doc.appStatus || {})) {
         if (!status) continue;
-        today[appKey(appId)] = { [levelForOfficial(status, lastUpdatedMs, now.getTime())]: FieldValue.increment(1) };
+        today[appKey(appId)] = { [levelForOfficial(status, doc.lastUpdatedMs, now.getTime())]: FieldValue.increment(1) };
       }
     }
     const days: Record<string, unknown> = { [dayKey(now)]: today };
@@ -104,7 +101,7 @@ export async function recordStripCycle(now = new Date()): Promise<number> {
       days[daysBack(now, i)] = FieldValue.delete();
     }
     await getDb().doc(DOC_PATH).set({ days, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-    return snapshot.size;
+    return docs.length;
   } catch (error) {
     log('error', 'Failed to record status strip cycle', { error });
     return 0;

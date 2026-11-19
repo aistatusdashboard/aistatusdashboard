@@ -35,7 +35,10 @@ export function parseStatusPageResponse(data: any): ProviderStatus {
         return 'operational';
       case 'minor':
         return 'degraded';
+      // "major" is Statuspage's word for a partial outage; only "critical" is
+      // the full one (see normalizeSeverity in platform-parsers.ts).
       case 'major':
+        return 'partial_outage';
       case 'critical':
         return 'down';
       default:
