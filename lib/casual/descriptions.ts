@@ -45,6 +45,10 @@ export const APP_DESCRIPTIONS: Record<string, string> = {
   comet: "Comet is Perplexity's AI-powered web browser.",
   dots: "Dots are OpenAI's always-on AI agents inside ChatGPT that work continuously in the background, using their own cloud computer, browser and app connections to carry out multi-step tasks.",
   codex: "Codex is OpenAI's AI software-engineering agent that writes, edits and runs code — in the terminal, the IDE and the cloud — and shares OpenAI's platform status.",
+  'claude-code':
+    "Claude Code is Anthropic's AI coding agent that reads, edits and runs code in the terminal, the IDE, the desktop app and the web. Its status here is the Claude Code line on Anthropic's status page.",
+  'claude-cowork':
+    "Claude Cowork is Anthropic's agent for everyday work in the Claude desktop app: it carries out multi-step tasks on your files and apps. Its status here is the Claude Cowork line on Anthropic's status page.",
   notebooklm:
     "NotebookLM is Google's AI research assistant that answers questions about your own sources and can turn them into audio overviews.",
   suno: "Suno is an AI music generator that creates full songs, including vocals, from a text prompt.",

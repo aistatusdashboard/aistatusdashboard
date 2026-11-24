@@ -2,7 +2,7 @@
 
 **Is ChatGPT down, or is it just you?**
 
-AI Status answers that one question, fast, for 42 AI apps people actually use:
+AI Status answers that one question, fast, for 44 AI apps people actually use:
 ChatGPT, Claude, Gemini, Grok, Perplexity, DeepSeek, GitHub Copilot, Cursor,
 and more (the full list is `lib/casual/apps.json`).
 

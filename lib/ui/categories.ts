@@ -10,7 +10,7 @@ export const CATEGORIES: Record<string, { label: string; noun: string; appIds: s
   'ai-coding-assistant': {
     label: 'AI coding assistant',
     noun: 'AI coding assistants',
-    appIds: ['copilot', 'cursor', 'windsurf', 'v0', 'lovable', 'replit', 'codex'],
+    appIds: ['copilot', 'cursor', 'windsurf', 'v0', 'lovable', 'replit', 'codex', 'claude-code'],
   },
   'ai-image-generator': {
     label: 'AI image generator',

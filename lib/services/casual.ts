@@ -501,7 +501,7 @@ async function getReportSummary(appId: string, surfaces: ExperienceSurfaceId[]):
   const sinceBaseline = new Date(Date.now() - BASELINE_WINDOW_MINUTES * 60 * 1000);
 
   // One query for every app's reports in the baseline window, shared by all
-  // callers for a few seconds. The board asks for 42 apps at once; issuing two
+  // callers for a few seconds. The board asks for every app at once; issuing two
   // queries per app made each home render cost 84 reads for what is usually
   // an empty result. Five seconds of sharing is not a freshness trade against
   // a ten-minute report window (efd3baf rejected a four-MINUTE cache here).

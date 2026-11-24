@@ -132,6 +132,8 @@ export const APP_LOGOS: Record<string, string> = {
   lovable: '/logos/lovable.svg',
   sora: '/logos/openai.svg',
   codex: '/logos/openai.svg',
+  'claude-code': '/logos/claude.svg',
+  'claude-cowork': '/logos/claude.svg',
   midjourney: '/logos/midjourney.svg',
   poe: '/logos/poe.svg',
   windsurf: '/logos/windsurf.svg',

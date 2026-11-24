@@ -38,7 +38,12 @@
       ],
       "defaultModel": "claude-haiku-4-5",
       "defaultRegion": "us-east",
-      "webUrl": "https://claude.ai"
+      "webUrl": "https://claude.ai",
+      "statusScope": {
+        "components": [
+          "claude.ai"
+        ]
+      }
     },
     {
       "id": "gemini",
@@ -484,6 +489,42 @@
       "statusScope": {
         "groups": [
           "Codex"
+        ]
+      }
+    },
+    {
+      "id": "claude-code",
+      "label": "Claude Code Status",
+      "providerId": "anthropic",
+      "providerDisplay": "Anthropic",
+      "surfaces": [
+        "text",
+        "tools",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://claude.com/product/claude-code",
+      "statusScope": {
+        "components": [
+          "Claude Code"
+        ]
+      }
+    },
+    {
+      "id": "claude-cowork",
+      "label": "Claude Cowork Status",
+      "providerId": "anthropic",
+      "providerDisplay": "Anthropic",
+      "surfaces": [
+        "text",
+        "tools",
+        "login"
+      ],
+      "defaultRegion": "global",
+      "webUrl": "https://claude.com/product/cowork",
+      "statusScope": {
+        "components": [
+          "Claude Cowork"
         ]
       }
     },
